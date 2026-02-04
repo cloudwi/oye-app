@@ -1,98 +1,235 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  RefreshControl,
+  ActivityIndicator,
+} from 'react-native';
+import { router } from 'expo-router';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { useFortuneStore } from '@/stores/fortune-store';
+import { useUserStore } from '@/stores/user-store';
+import { FortuneCard } from '@/components/fortune/fortune-card';
+import { CategoryCard } from '@/components/fortune/category-card';
+import { shareService } from '@/services/share';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import type { Fortune } from '@/types/fortune';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// Mock fortune data for testing
+function generateMockFortune(): Fortune {
+  const today = new Date();
+  return {
+    id: format(today, 'yyyy-MM-dd'),
+    date: today.toISOString(),
+    overallScore: Math.floor(Math.random() * 30) + 70,
+    overallMessage: '오늘은 새로운 시작에 좋은 날입니다. 평소 미뤄왔던 일을 시작해보세요. 예상치 못한 좋은 소식이 찾아올 수 있습니다.',
+    luckyColor: '파란색',
+    luckyNumber: Math.floor(Math.random() * 9) + 1,
+    luckyItem: '은반지',
+    categories: [
+      {
+        category: 'love',
+        score: Math.floor(Math.random() * 30) + 70,
+        title: '설레는 만남이 기다려요',
+        description: '오늘은 새로운 인연을 만날 수 있는 좋은 날입니다. 평소와 다른 장소에서 특별한 만남이 기다리고 있을지도 몰라요.',
+        advice: '마음을 열고 새로운 만남에 적극적으로 임해보세요.',
+      },
+      {
+        category: 'money',
+        score: Math.floor(Math.random() * 30) + 60,
+        title: '안정적인 재정 운',
+        description: '큰 지출은 피하고 저축에 집중하면 좋은 결과가 있을 것입니다. 충동구매는 자제하세요.',
+        advice: '오늘은 큰 금액의 결정은 내일로 미루세요.',
+      },
+      {
+        category: 'health',
+        score: Math.floor(Math.random() * 30) + 70,
+        title: '활력 넘치는 하루',
+        description: '에너지가 넘치는 하루입니다. 가벼운 운동으로 하루를 시작하면 더욱 좋습니다.',
+        advice: '충분한 수분 섭취를 잊지 마세요.',
+      },
+      {
+        category: 'work',
+        score: Math.floor(Math.random() * 30) + 65,
+        title: '집중력이 높아지는 날',
+        description: '업무 처리 능력이 높아지는 날입니다. 중요한 프로젝트나 회의가 있다면 좋은 성과를 기대할 수 있어요.',
+        advice: '오전 시간대에 중요한 업무를 처리하세요.',
+      },
+      {
+        category: 'study',
+        score: Math.floor(Math.random() * 30) + 70,
+        title: '학습 효율이 좋은 날',
+        description: '새로운 것을 배우기에 적합한 날입니다. 집중력이 높아져 있으니 어려운 과목도 도전해보세요.',
+        advice: '조용한 환경에서 공부하면 효과가 배가됩니다.',
+      },
+    ],
+    createdAt: today.toISOString(),
+  };
+}
 
-export default function HomeScreen() {
+export default function TodayFortuneScreen() {
+  const textColor = useThemeColor({}, 'text');
+  const backgroundColor = useThemeColor({}, 'background');
+  const subtextColor = useThemeColor({ light: '#666', dark: '#999' }, 'icon');
+
+  const { user } = useUserStore();
+  const { todayFortune, setTodayFortune, isLoading, setLoading } = useFortuneStore();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchTodayFortune = async () => {
+    setLoading(true);
+    try {
+      // TODO: Replace with actual API call
+      // const fortune = await fortuneApi.getToday();
+      const fortune = generateMockFortune();
+      setTodayFortune(fortune);
+    } catch (error) {
+      console.error('Error fetching fortune:', error);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!todayFortune) {
+      fetchTodayFortune();
+    }
+  }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchTodayFortune();
+    setRefreshing(false);
+  };
+
+  const handleShare = async () => {
+    if (todayFortune) {
+      await shareService.shareFortune(todayFortune);
+    }
+  };
+
+  const handleViewDetail = () => {
+    if (todayFortune) {
+      router.push(`/fortune/${todayFortune.id}`);
+    }
+  };
+
+  const handleCategoryPress = (categoryIndex: number) => {
+    if (todayFortune) {
+      router.push(`/fortune/${todayFortune.id}?category=${categoryIndex}`);
+    }
+  };
+
+  const today = format(new Date(), 'M월 d일 EEEE', { locale: ko });
+
+  if (isLoading && !todayFortune) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor }]}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B6B" />
+          <Text style={[styles.loadingText, { color: subtextColor }]}>
+            오늘의 운세를 불러오는 중...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
+      >
+        <View style={styles.header}>
+          <Text style={[styles.greeting, { color: subtextColor }]}>
+            {user?.birthDate ? '당신을 위한' : '오늘의'}
+          </Text>
+          <Text style={[styles.title, { color: textColor }]}>오늘의 운세</Text>
+          <Text style={[styles.date, { color: subtextColor }]}>{today}</Text>
+        </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {todayFortune && (
+          <>
+            <FortuneCard
+              fortune={todayFortune}
+              onPress={handleViewDetail}
+              onShare={handleShare}
+              showDate={false}
+            />
+
+            <View style={styles.categoriesSection}>
+              <Text style={[styles.sectionTitle, { color: textColor }]}>
+                카테고리별 운세
+              </Text>
+              <View style={styles.categoriesGrid}>
+                {todayFortune.categories.map((category, index) => (
+                  <CategoryCard
+                    key={category.category}
+                    category={category}
+                    onPress={() => handleCategoryPress(index)}
+                  />
+                ))}
+              </View>
+            </View>
+          </>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: 20,
+  },
+  loadingContainer: {
+    flex: 1,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    gap: 16,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  loadingText: {
+    fontSize: 16,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  header: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  greeting: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  date: {
+    fontSize: 14,
+  },
+  categoriesSection: {
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  categoriesGrid: {
+    gap: 12,
   },
 });
