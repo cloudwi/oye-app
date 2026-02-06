@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,21 +6,20 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
-  Platform,
+  Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Button } from '@/components/ui/button';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
 export default function OnboardingBirthdate() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const subtextColor = useThemeColor({ light: '#666', dark: '#999' }, 'icon');
-  const cardColor = useThemeColor({ light: '#F5F5F5', dark: '#2A2A2A' }, 'background');
-  const tintColor = useThemeColor({}, 'tint');
-  const accentColor = '#FF6B6B';
+  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
+  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
   const { setBirthDate } = useUserStore();
 
@@ -29,7 +28,7 @@ export default function OnboardingBirthdate() {
   const [selectedMonth, setSelectedMonth] = useState(1);
   const [selectedDay, setSelectedDay] = useState(1);
 
-  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+  const years = Array.from({ length: 80 }, (_, i) => currentYear - 10 - i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
   const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -44,133 +43,100 @@ export default function OnboardingBirthdate() {
     router.back();
   };
 
+  const renderPicker = (
+    data: number[],
+    selected: number,
+    onSelect: (value: number) => void,
+    suffix: string = ''
+  ) => (
+    <ScrollView
+      style={styles.picker}
+      contentContainerStyle={styles.pickerContent}
+      showsVerticalScrollIndicator={false}
+      snapToInterval={44}
+      decelerationRate="fast"
+    >
+      {data.map((item) => {
+        const isSelected = selected === item;
+        return (
+          <TouchableOpacity
+            key={item}
+            style={[
+              styles.pickerItem,
+              isSelected && { backgroundColor: BrandColors.primary + '15' },
+            ]}
+            onPress={() => onSelect(item)}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.pickerText,
+                { color: isSelected ? BrandColors.primary : textSecondary },
+                isSelected && styles.pickerTextSelected,
+              ]}
+            >
+              {item}{suffix}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  );
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
           <IconSymbol name="chevron.left" size={24} color={textColor} />
         </TouchableOpacity>
       </View>
 
+      {/* Content */}
       <View style={styles.content}>
-        <Text style={[styles.title, { color: textColor }]}>생년월일을 알려주세요</Text>
-        <Text style={[styles.subtitle, { color: subtextColor }]}>
-          정확한 운세를 위해 필요해요
+        <Text style={[styles.title, { color: textColor }]}>생년월일</Text>
+        <Text style={[styles.subtitle, { color: textSecondary }]}>
+          맞춤 운세를 위해 알려주세요
         </Text>
 
-        <View style={styles.pickerContainer}>
-          <View style={styles.pickerColumn}>
-            <Text style={[styles.pickerLabel, { color: subtextColor }]}>년도</Text>
-            <ScrollView
-              style={[styles.picker, { backgroundColor: cardColor }]}
-              showsVerticalScrollIndicator={false}
-              snapToInterval={48}
-              decelerationRate="fast"
-            >
-              {years.map((year) => (
-                <TouchableOpacity
-                  key={year}
-                  style={[
-                    styles.pickerItem,
-                    selectedYear === year && styles.pickerItemSelected,
-                    selectedYear === year && { backgroundColor: accentColor + '20' },
-                  ]}
-                  onPress={() => setSelectedYear(year)}
-                >
-                  <Text
-                    style={[
-                      styles.pickerItemText,
-                      { color: selectedYear === year ? accentColor : textColor },
-                      selectedYear === year && styles.pickerItemTextSelected,
-                    ]}
-                  >
-                    {year}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          <View style={styles.pickerColumn}>
-            <Text style={[styles.pickerLabel, { color: subtextColor }]}>월</Text>
-            <ScrollView
-              style={[styles.picker, { backgroundColor: cardColor }]}
-              showsVerticalScrollIndicator={false}
-              snapToInterval={48}
-              decelerationRate="fast"
-            >
-              {months.map((month) => (
-                <TouchableOpacity
-                  key={month}
-                  style={[
-                    styles.pickerItem,
-                    selectedMonth === month && styles.pickerItemSelected,
-                    selectedMonth === month && { backgroundColor: accentColor + '20' },
-                  ]}
-                  onPress={() => setSelectedMonth(month)}
-                >
-                  <Text
-                    style={[
-                      styles.pickerItemText,
-                      { color: selectedMonth === month ? accentColor : textColor },
-                      selectedMonth === month && styles.pickerItemTextSelected,
-                    ]}
-                  >
-                    {month}월
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          <View style={styles.pickerColumn}>
-            <Text style={[styles.pickerLabel, { color: subtextColor }]}>일</Text>
-            <ScrollView
-              style={[styles.picker, { backgroundColor: cardColor }]}
-              showsVerticalScrollIndicator={false}
-              snapToInterval={48}
-              decelerationRate="fast"
-            >
-              {days.map((day) => (
-                <TouchableOpacity
-                  key={day}
-                  style={[
-                    styles.pickerItem,
-                    selectedDay === day && styles.pickerItemSelected,
-                    selectedDay === day && { backgroundColor: accentColor + '20' },
-                  ]}
-                  onPress={() => setSelectedDay(day)}
-                >
-                  <Text
-                    style={[
-                      styles.pickerItemText,
-                      { color: selectedDay === day ? accentColor : textColor },
-                      selectedDay === day && styles.pickerItemTextSelected,
-                    ]}
-                  >
-                    {day}일
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-
-        <View style={[styles.selectedDate, { backgroundColor: cardColor }]}>
-          <Text style={[styles.selectedDateText, { color: textColor }]}>
+        {/* Date Display */}
+        <View style={[styles.dateDisplay, { backgroundColor: surfaceColor }, Shadows.md]}>
+          <Text style={[styles.dateText, { color: textColor }]}>
             {selectedYear}년 {selectedMonth}월 {selectedDay}일
           </Text>
         </View>
+
+        {/* Pickers */}
+        <View style={styles.pickerContainer}>
+          <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <Text style={[styles.pickerLabel, { color: textSecondary }]}>년</Text>
+            {renderPicker(years, selectedYear, setSelectedYear)}
+          </View>
+
+          <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <Text style={[styles.pickerLabel, { color: textSecondary }]}>월</Text>
+            {renderPicker(months, selectedMonth, setSelectedMonth)}
+          </View>
+
+          <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <Text style={[styles.pickerLabel, { color: textSecondary }]}>일</Text>
+            {renderPicker(days, selectedDay, setSelectedDay)}
+          </View>
+        </View>
       </View>
 
+      {/* Footer */}
       <View style={styles.footer}>
-        <Button
-          title="다음"
-          onPress={handleNext}
-          variant="secondary"
-          size="large"
-          style={styles.button}
-        />
+        <TouchableOpacity onPress={handleNext} activeOpacity={0.9}>
+          <LinearGradient
+            colors={[BrandColors.primary, BrandColors.secondary]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>다음</Text>
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -181,73 +147,88 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   backButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.lg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontSize: FontSizes.xxl,
+    fontWeight: '700',
+    marginBottom: Spacing.xs,
   },
   subtitle: {
-    fontSize: 16,
-    marginBottom: 32,
+    fontSize: FontSizes.md,
+    marginBottom: Spacing.xl,
+  },
+  dateDisplay: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+  },
+  dateText: {
+    fontSize: FontSizes.xl,
+    fontWeight: '600',
   },
   pickerContainer: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
-  pickerColumn: {
+    gap: Spacing.sm,
     flex: 1,
   },
+  pickerWrapper: {
+    flex: 1,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+    maxHeight: 280,
+  },
   pickerLabel: {
-    fontSize: 14,
+    fontSize: FontSizes.xs,
     fontWeight: '600',
-    marginBottom: 8,
     textAlign: 'center',
+    paddingVertical: Spacing.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   picker: {
-    height: 200,
-    borderRadius: 12,
+    flex: 1,
+  },
+  pickerContent: {
+    paddingVertical: Spacing.xs,
   },
   pickerItem: {
-    height: 48,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
-    marginHorizontal: 4,
+    marginHorizontal: Spacing.xs,
+    borderRadius: BorderRadius.sm,
   },
-  pickerItemSelected: {
-    borderRadius: 8,
+  pickerText: {
+    fontSize: FontSizes.md,
   },
-  pickerItemText: {
-    fontSize: 16,
-  },
-  pickerItemTextSelected: {
-    fontWeight: 'bold',
-  },
-  selectedDate: {
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  selectedDateText: {
-    fontSize: 20,
-    fontWeight: '600',
+  pickerTextSelected: {
+    fontWeight: '700',
   },
   footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 32,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
   button: {
-    width: '100%',
+    paddingVertical: Spacing.md + 2,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
   },
 });

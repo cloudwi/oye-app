@@ -15,50 +15,76 @@ import { useSettingsStore } from '@/stores/settings-store';
 import { useFortuneStore } from '@/stores/fortune-store';
 import { notificationService } from '@/services/notification';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Card } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { router } from 'expo-router';
+import {
+  BrandColors,
+  Spacing,
+  BorderRadius,
+  FontSizes,
+  Shadows,
+} from '@/constants/theme';
 
-interface SettingItemProps {
+interface SettingRowProps {
   icon: string;
+  iconColor?: string;
   title: string;
-  value?: string;
+  subtitle?: string;
   onPress?: () => void;
   rightElement?: React.ReactNode;
+  isLast?: boolean;
+  destructive?: boolean;
 }
 
-function SettingItem({ icon, title, value, onPress, rightElement }: SettingItemProps) {
+function SettingRow({
+  icon,
+  iconColor,
+  title,
+  subtitle,
+  onPress,
+  rightElement,
+  isLast = false,
+  destructive = false,
+}: SettingRowProps) {
   const textColor = useThemeColor({}, 'text');
-  const subtextColor = useThemeColor({ light: '#666', dark: '#999' }, 'icon');
-  const tintColor = useThemeColor({}, 'tint');
+  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
+  const dividerColor = useThemeColor({ light: '#E5E7EB', dark: '#374151' }, 'divider');
 
   return (
     <TouchableOpacity
-      style={styles.settingItem}
+      style={[
+        styles.settingRow,
+        !isLast && { borderBottomWidth: 1, borderBottomColor: dividerColor },
+      ]}
       onPress={onPress}
       disabled={!onPress && !rightElement}
+      activeOpacity={0.6}
     >
-      <View style={styles.settingLeft}>
-        <IconSymbol name={icon as any} size={22} color={tintColor} />
-        <Text style={[styles.settingTitle, { color: textColor }]}>{title}</Text>
+      <View style={[styles.iconContainer, { backgroundColor: (iconColor || BrandColors.primary) + '15' }]}>
+        <IconSymbol name={icon as any} size={18} color={iconColor || BrandColors.primary} />
       </View>
-      {value && (
-        <Text style={[styles.settingValue, { color: subtextColor }]}>{value}</Text>
-      )}
+      <View style={styles.settingContent}>
+        <Text style={[styles.settingTitle, { color: destructive ? '#EF4444' : textColor }]}>
+          {title}
+        </Text>
+        {subtitle && (
+          <Text style={[styles.settingSubtitle, { color: textSecondary }]}>{subtitle}</Text>
+        )}
+      </View>
       {rightElement}
       {onPress && !rightElement && (
-        <IconSymbol name="chevron.right" size={16} color={subtextColor} />
+        <IconSymbol name="chevron.right" size={14} color={textSecondary} />
       )}
     </TouchableOpacity>
   );
 }
 
 export default function SettingsScreen() {
-  const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const subtextColor = useThemeColor({ light: '#666', dark: '#999' }, 'icon');
-  const cardColor = useThemeColor({ light: '#F5F5F5', dark: '#2A2A2A' }, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
+  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
   const { user, reset: resetUser } = useUserStore();
   const {
@@ -72,8 +98,8 @@ export default function SettingsScreen() {
   const { reset: resetFortune } = useFortuneStore();
 
   const formattedBirthDate = user?.birthDate
-    ? format(new Date(user.birthDate), 'yyyy년 M월 d일', { locale: ko })
-    : '설정되지 않음';
+    ? format(new Date(user.birthDate), 'yyyy.MM.dd', { locale: ko })
+    : '미설정';
 
   const handleNotificationToggle = async (enabled: boolean) => {
     if (enabled) {
@@ -101,41 +127,20 @@ export default function SettingsScreen() {
 
   const getDarkModeLabel = () => {
     switch (darkMode) {
-      case 'system':
-        return '시스템 설정';
-      case 'light':
-        return '라이트 모드';
-      case 'dark':
-        return '다크 모드';
+      case 'system': return '시스템';
+      case 'light': return '라이트';
+      case 'dark': return '다크';
     }
-  };
-
-  const handleResetOnboarding = () => {
-    Alert.alert(
-      '온보딩 초기화',
-      '온보딩을 다시 진행하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '확인',
-          style: 'destructive',
-          onPress: () => {
-            resetUser();
-            router.replace('/(onboarding)');
-          },
-        },
-      ]
-    );
   };
 
   const handleResetData = () => {
     Alert.alert(
       '데이터 초기화',
-      '모든 데이터가 삭제됩니다. 계속하시겠습니까?',
+      '모든 데이터가 삭제됩니다.\n계속하시겠습니까?',
       [
         { text: '취소', style: 'cancel' },
         {
-          text: '삭제',
+          text: '초기화',
           style: 'destructive',
           onPress: () => {
             resetUser();
@@ -155,72 +160,76 @@ export default function SettingsScreen() {
           <Text style={[styles.title, { color: textColor }]}>설정</Text>
         </View>
 
+        {/* Profile Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: subtextColor }]}>프로필</Text>
-          <Card variant="outlined" style={{ backgroundColor: cardColor }}>
-            <SettingItem
+          <Text style={[styles.sectionLabel, { color: textSecondary }]}>프로필</Text>
+          <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <SettingRow
               icon="calendar"
+              iconColor={BrandColors.primary}
               title="생년월일"
-              value={formattedBirthDate}
+              subtitle={formattedBirthDate}
+              isLast
             />
-          </Card>
+          </View>
         </View>
 
+        {/* Notification Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: subtextColor }]}>알림</Text>
-          <Card variant="outlined" style={{ backgroundColor: cardColor }}>
-            <SettingItem
+          <Text style={[styles.sectionLabel, { color: textSecondary }]}>알림</Text>
+          <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <SettingRow
               icon="bell.fill"
+              iconColor="#F59E0B"
               title="푸시 알림"
+              subtitle={notificationEnabled ? `매일 ${notificationTime}` : '꺼짐'}
               rightElement={
                 <Switch
                   value={notificationEnabled}
                   onValueChange={handleNotificationToggle}
-                  trackColor={{ false: '#ccc', true: '#FF6B6B' }}
+                  trackColor={{ false: '#E5E7EB', true: BrandColors.primary + '60' }}
+                  thumbColor={notificationEnabled ? BrandColors.primary : '#F3F4F6'}
                 />
               }
+              isLast
             />
-            {notificationEnabled && (
-              <SettingItem
-                icon="clock.fill"
-                title="알림 시간"
-                value={notificationTime}
-              />
-            )}
-          </Card>
+          </View>
         </View>
 
+        {/* Appearance Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: subtextColor }]}>앱 설정</Text>
-          <Card variant="outlined" style={{ backgroundColor: cardColor }}>
-            <SettingItem
+          <Text style={[styles.sectionLabel, { color: textSecondary }]}>화면</Text>
+          <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <SettingRow
               icon="moon.fill"
+              iconColor="#8B5CF6"
               title="다크 모드"
-              value={getDarkModeLabel()}
+              subtitle={getDarkModeLabel()}
               onPress={handleDarkModeChange}
+              isLast
             />
-          </Card>
+          </View>
         </View>
 
+        {/* Danger Zone */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: subtextColor }]}>기타</Text>
-          <Card variant="outlined" style={{ backgroundColor: cardColor }}>
-            <SettingItem
-              icon="arrow.counterclockwise"
-              title="온보딩 다시 보기"
-              onPress={handleResetOnboarding}
-            />
-            <SettingItem
+          <Text style={[styles.sectionLabel, { color: textSecondary }]}>데이터</Text>
+          <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <SettingRow
               icon="trash.fill"
+              iconColor="#EF4444"
               title="데이터 초기화"
               onPress={handleResetData}
+              destructive
+              isLast
             />
-          </Card>
+          </View>
         </View>
 
+        {/* App Info */}
         <View style={styles.appInfo}>
-          <Text style={[styles.appName, { color: subtextColor }]}>오늘의 운세</Text>
-          <Text style={[styles.appVersion, { color: subtextColor }]}>버전 1.0.0</Text>
+          <Text style={[styles.appName, { color: textSecondary }]}>오늘의 운세</Text>
+          <Text style={[styles.appVersion, { color: textSecondary }]}>v1.0.0</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -235,53 +244,64 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 8,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.sm,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: FontSizes.xxl,
+    fontWeight: '700',
   },
   section: {
-    paddingHorizontal: 20,
-    marginTop: 24,
+    paddingHorizontal: Spacing.lg,
+    marginTop: Spacing.lg,
   },
-  sectionTitle: {
-    fontSize: 13,
+  sectionLabel: {
+    fontSize: FontSizes.xs,
     fontWeight: '600',
     textTransform: 'uppercase',
-    marginBottom: 8,
-    marginLeft: 4,
+    letterSpacing: 0.5,
+    marginBottom: Spacing.sm,
+    marginLeft: Spacing.xs,
   },
-  settingItem: {
+  card: {
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+  },
+  settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E5E5',
+    padding: Spacing.md,
+    gap: Spacing.md,
   },
-  settingLeft: {
-    flexDirection: 'row',
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'center',
+  },
+  settingContent: {
+    flex: 1,
   },
   settingTitle: {
-    fontSize: 16,
+    fontSize: FontSizes.md,
+    fontWeight: '500',
   },
-  settingValue: {
-    fontSize: 14,
+  settingSubtitle: {
+    fontSize: FontSizes.sm,
+    marginTop: 2,
   },
   appInfo: {
     alignItems: 'center',
-    paddingVertical: 40,
+    paddingVertical: Spacing.xxl,
+    gap: Spacing.xs,
   },
   appName: {
-    fontSize: 14,
-    marginBottom: 4,
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
   },
   appVersion: {
-    fontSize: 12,
+    fontSize: FontSizes.xs,
   },
 });

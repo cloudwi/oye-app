@@ -1,15 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Button } from '@/components/ui/button';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { BrandColors, Spacing, BorderRadius, FontSizes } from '@/constants/theme';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function OnboardingWelcome() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const subtextColor = useThemeColor({ light: '#666', dark: '#999' }, 'icon');
-  const accentColor = '#FF6B6B';
+  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
 
   const handleNext = () => {
     router.push('/(onboarding)/birthdate');
@@ -18,48 +19,39 @@ export default function OnboardingWelcome() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <View style={[styles.iconBackground, { backgroundColor: accentColor + '20' }]}>
-            <IconSymbol name="sparkles" size={80} color={accentColor} />
-          </View>
+        {/* Logo/Icon Area */}
+        <View style={styles.logoArea}>
+          <LinearGradient
+            colors={[BrandColors.primary, BrandColors.secondary]}
+            style={styles.logoGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.logoText}>OYE</Text>
+          </LinearGradient>
         </View>
 
-        <Text style={[styles.title, { color: textColor }]}>오늘의 운세</Text>
-        <Text style={[styles.subtitle, { color: subtextColor }]}>
-          매일 아침, 당신만을 위한{'\n'}
-          특별한 운세를 확인하세요
-        </Text>
-
-        <View style={styles.features}>
-          <View style={styles.featureItem}>
-            <View style={[styles.featureDot, { backgroundColor: accentColor }]} />
-            <Text style={[styles.featureText, { color: textColor }]}>
-              생년월일 기반 맞춤 운세
-            </Text>
-          </View>
-          <View style={styles.featureItem}>
-            <View style={[styles.featureDot, { backgroundColor: accentColor }]} />
-            <Text style={[styles.featureText, { color: textColor }]}>
-              연애, 금전, 건강, 직장, 학업운
-            </Text>
-          </View>
-          <View style={styles.featureItem}>
-            <View style={[styles.featureDot, { backgroundColor: accentColor }]} />
-            <Text style={[styles.featureText, { color: textColor }]}>
-              매일 아침 알림으로 받아보기
-            </Text>
-          </View>
+        {/* Text Content */}
+        <View style={styles.textContent}>
+          <Text style={[styles.title, { color: textColor }]}>오늘의 운세</Text>
+          <Text style={[styles.subtitle, { color: textSecondary }]}>
+            매일 아침, 당신만을 위한{'\n'}특별한 운세를 만나보세요
+          </Text>
         </View>
       </View>
 
+      {/* Bottom Button */}
       <View style={styles.footer}>
-        <Button
-          title="시작하기"
-          onPress={handleNext}
-          variant="secondary"
-          size="large"
-          style={styles.button}
-        />
+        <TouchableOpacity onPress={handleNext} activeOpacity={0.9}>
+          <LinearGradient
+            colors={[BrandColors.primary, BrandColors.secondary]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>시작하기</Text>
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -73,51 +65,49 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing.xl,
   },
-  iconContainer: {
-    marginBottom: 32,
+  logoArea: {
+    marginBottom: Spacing.xxl,
   },
-  iconBackground: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
+  logoGradient: {
+    width: 120,
+    height: 120,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
+  logoText: {
     fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 12,
+    fontWeight: '800',
+    color: '#FFF',
+    letterSpacing: 2,
+  },
+  textContent: {
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: FontSizes.xxxl,
+    fontWeight: '700',
+    marginBottom: Spacing.sm,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: FontSizes.lg,
     textAlign: 'center',
     lineHeight: 26,
-    marginBottom: 40,
-  },
-  features: {
-    alignSelf: 'stretch',
-    gap: 16,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  featureDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  featureText: {
-    fontSize: 16,
   },
   footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 32,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
   button: {
-    width: '100%',
+    paddingVertical: Spacing.md + 2,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
   },
 });

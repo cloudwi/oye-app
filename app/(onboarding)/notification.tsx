@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Button } from '@/components/ui/button';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { notificationService } from '@/services/notification';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
 export default function OnboardingNotification() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const subtextColor = useThemeColor({ light: '#666', dark: '#999' }, 'icon');
-  const cardColor = useThemeColor({ light: '#F5F5F5', dark: '#2A2A2A' }, 'background');
-  const accentColor = '#FF6B6B';
+  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
+  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
   const { completeOnboarding } = useUserStore();
   const { setNotificationEnabled } = useSettingsStore();
@@ -48,60 +55,70 @@ export default function OnboardingNotification() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
           <IconSymbol name="chevron.left" size={24} color={textColor} />
         </TouchableOpacity>
       </View>
 
+      {/* Content */}
       <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <View style={[styles.iconBackground, { backgroundColor: accentColor + '20' }]}>
-            <IconSymbol name="bell.fill" size={60} color={accentColor} />
+        {/* Icon */}
+        <View style={styles.iconArea}>
+          <View style={[styles.iconOuter, { backgroundColor: '#F59E0B' + '20' }]}>
+            <View style={[styles.iconInner, { backgroundColor: '#F59E0B' + '30' }]}>
+              <IconSymbol name="bell.fill" size={48} color="#F59E0B" />
+            </View>
           </View>
         </View>
 
-        <Text style={[styles.title, { color: textColor }]}>
-          알림을 켜시겠어요?
-        </Text>
-        <Text style={[styles.subtitle, { color: subtextColor }]}>
-          매일 아침 8시에{'\n'}
-          오늘의 운세 알림을 보내드려요
+        {/* Text */}
+        <Text style={[styles.title, { color: textColor }]}>알림 설정</Text>
+        <Text style={[styles.subtitle, { color: textSecondary }]}>
+          매일 아침 8시에{'\n'}오늘의 운세를 알려드릴게요
         </Text>
 
-        <View style={[styles.benefitCard, { backgroundColor: cardColor }]}>
-          <View style={styles.benefitItem}>
-            <IconSymbol name="sun.max.fill" size={24} color={accentColor} />
-            <View style={styles.benefitText}>
-              <Text style={[styles.benefitTitle, { color: textColor }]}>아침을 운세와 함께</Text>
-              <Text style={[styles.benefitDesc, { color: subtextColor }]}>
-                하루를 시작하기 전 오늘의 운세를 확인하세요
-              </Text>
+        {/* Preview Card */}
+        <View style={[styles.previewCard, { backgroundColor: surfaceColor }, Shadows.md]}>
+          <View style={styles.previewHeader}>
+            <View style={[styles.previewIcon, { backgroundColor: BrandColors.primary + '15' }]}>
+              <Text style={styles.previewIconText}>OYE</Text>
+            </View>
+            <View style={styles.previewHeaderText}>
+              <Text style={[styles.previewApp, { color: textColor }]}>오늘의 운세</Text>
+              <Text style={[styles.previewTime, { color: textSecondary }]}>오전 8:00</Text>
             </View>
           </View>
-          <View style={styles.benefitItem}>
-            <IconSymbol name="clock.fill" size={24} color={accentColor} />
-            <View style={styles.benefitText}>
-              <Text style={[styles.benefitTitle, { color: textColor }]}>놓치지 않게</Text>
-              <Text style={[styles.benefitDesc, { color: subtextColor }]}>
-                바쁜 하루에도 운세 확인을 잊지 않아요
-              </Text>
-            </View>
-          </View>
+          <Text style={[styles.previewMessage, { color: textColor }]}>
+            좋은 아침이에요! 오늘의 운세가 도착했어요
+          </Text>
         </View>
       </View>
 
+      {/* Footer */}
       <View style={styles.footer}>
-        <Button
-          title="알림 받기"
+        <TouchableOpacity
           onPress={handleEnableNotification}
-          variant="secondary"
-          size="large"
-          style={styles.button}
-          loading={isLoading}
-        />
-        <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-          <Text style={[styles.skipText, { color: subtextColor }]}>나중에 할게요</Text>
+          activeOpacity={0.9}
+          disabled={isLoading}
+        >
+          <LinearGradient
+            colors={[BrandColors.primary, BrandColors.secondary]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.button}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.buttonText}>알림 받기</Text>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7}>
+          <Text style={[styles.skipText, { color: textSecondary }]}>나중에 설정할게요</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -113,75 +130,108 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   backButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xxl,
   },
-  iconContainer: {
-    marginBottom: 32,
+  iconArea: {
+    marginBottom: Spacing.xl,
   },
-  iconBackground: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  iconOuter: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconInner: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    textAlign: 'center',
+    fontSize: FontSizes.xxl,
+    fontWeight: '700',
+    marginBottom: Spacing.sm,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: FontSizes.md,
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 40,
+    marginBottom: Spacing.xl,
   },
-  benefitCard: {
+  previewCard: {
     width: '100%',
-    padding: 20,
-    borderRadius: 16,
-    gap: 20,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
   },
-  benefitItem: {
+  previewHeader: {
     flexDirection: 'row',
-    gap: 16,
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
   },
-  benefitText: {
+  previewIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.sm,
+  },
+  previewIconText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: BrandColors.primary,
+  },
+  previewHeaderText: {
     flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  benefitTitle: {
-    fontSize: 16,
+  previewApp: {
+    fontSize: FontSizes.sm,
     fontWeight: '600',
-    marginBottom: 4,
   },
-  benefitDesc: {
-    fontSize: 14,
-    lineHeight: 20,
+  previewTime: {
+    fontSize: FontSizes.xs,
+  },
+  previewMessage: {
+    fontSize: FontSizes.md,
+    lineHeight: 22,
   },
   footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 32,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
   button: {
-    width: '100%',
+    paddingVertical: Spacing.md + 2,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
   },
   skipButton: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: Spacing.md,
   },
   skipText: {
-    fontSize: 16,
+    fontSize: FontSizes.md,
   },
 });

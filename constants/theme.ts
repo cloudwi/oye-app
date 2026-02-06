@@ -1,86 +1,110 @@
 /**
  * Theme constants for the OYE (오늘의 운세) App
+ * Minimal & Modern Design System
  */
 
 import { Platform } from 'react-native';
 
-// Brand colors
+// Brand colors - Soft & Calming palette
 export const BrandColors = {
-  primary: '#FF6B6B', // Main accent color (coral red)
-  secondary: '#4ECDC4', // Secondary accent (teal)
-  tertiary: '#FFE66D', // Tertiary accent (yellow)
-  success: '#4CAF50',
-  warning: '#FFC107',
-  error: '#F44336',
-  info: '#2196F3',
+  primary: '#6366F1', // Indigo - 신비로운 느낌
+  secondary: '#8B5CF6', // Violet
+  tertiary: '#EC4899', // Pink
+  accent: '#F59E0B', // Amber - 포인트
+  success: '#10B981', // Emerald
+  warning: '#F59E0B',
+  error: '#EF4444',
+  info: '#3B82F6',
 };
 
-// Score colors
+// Gradient presets
+export const Gradients = {
+  primary: ['#6366F1', '#8B5CF6'],
+  fortune: ['#6366F1', '#EC4899'],
+  warm: ['#F59E0B', '#EF4444'],
+  cool: ['#06B6D4', '#3B82F6'],
+  calm: ['#8B5CF6', '#6366F1'],
+};
+
+// Score colors - More vibrant
 export const ScoreColors = {
-  excellent: '#4CAF50', // 80-100
-  good: '#8BC34A', // 60-79
-  average: '#FFC107', // 40-59
-  belowAverage: '#FF9800', // 20-39
-  poor: '#F44336', // 0-19
+  excellent: '#10B981', // 80-100 Emerald
+  good: '#22C55E', // 60-79 Green
+  average: '#F59E0B', // 40-59 Amber
+  belowAverage: '#F97316', // 20-39 Orange
+  poor: '#EF4444', // 0-19 Red
 };
 
-// Category colors
+// Category colors - Harmonious palette
 export const CategoryColors = {
-  love: '#FF6B6B',
-  money: '#4ECDC4',
-  health: '#8BC34A',
-  work: '#5C6BC0',
-  study: '#FFB74D',
+  love: '#EC4899', // Pink
+  money: '#10B981', // Emerald
+  health: '#22C55E', // Green
+  work: '#6366F1', // Indigo
+  study: '#F59E0B', // Amber
 };
 
-const tintColorLight = '#FF6B6B';
-const tintColorDark = '#FF8A8A';
+// Category icons (SF Symbols)
+export const CategoryIcons = {
+  love: 'heart.fill',
+  money: 'won.circle.fill',
+  health: 'leaf.fill',
+  work: 'briefcase.fill',
+  study: 'book.fill',
+};
+
+const tintColorLight = '#6366F1';
+const tintColorDark = '#818CF8';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#FFFFFF',
+    text: '#1F2937',
+    textSecondary: '#6B7280',
+    textTertiary: '#9CA3AF',
+    background: '#FAFAFA',
+    surface: '#FFFFFF',
+    surfaceSecondary: '#F3F4F6',
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: '#6B7280',
+    tabIconDefault: '#9CA3AF',
     tabIconSelected: tintColorLight,
     card: '#FFFFFF',
-    cardBorder: '#E5E5E5',
-    inputBackground: '#F5F5F5',
-    placeholder: '#999999',
+    cardBorder: '#E5E7EB',
+    inputBackground: '#F3F4F6',
+    placeholder: '#9CA3AF',
+    divider: '#E5E7EB',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: '#F9FAFB',
+    textSecondary: '#D1D5DB',
+    textTertiary: '#9CA3AF',
+    background: '#0F0F0F',
+    surface: '#1A1A1A',
+    surfaceSecondary: '#262626',
     tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: '#9CA3AF',
+    tabIconDefault: '#6B7280',
     tabIconSelected: tintColorDark,
-    card: '#1E2022',
-    cardBorder: '#333333',
-    inputBackground: '#2A2A2A',
-    placeholder: '#666666',
+    card: '#1A1A1A',
+    cardBorder: '#374151',
+    inputBackground: '#262626',
+    placeholder: '#6B7280',
+    divider: '#374151',
   },
 };
 
 export const Fonts = Platform.select({
   ios: {
-    sans: 'system-ui',
-    serif: 'ui-serif',
-    rounded: 'ui-rounded',
-    mono: 'ui-monospace',
+    regular: 'System',
+    medium: 'System',
+    semibold: 'System',
+    bold: 'System',
   },
   default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    regular: 'System',
+    medium: 'System',
+    semibold: 'System',
+    bold: 'System',
   },
 });
 
@@ -91,6 +115,7 @@ export const Spacing = {
   lg: 24,
   xl: 32,
   xxl: 48,
+  xxxl: 64,
 };
 
 export const BorderRadius = {
@@ -98,15 +123,48 @@ export const BorderRadius = {
   md: 12,
   lg: 16,
   xl: 24,
+  xxl: 32,
   full: 9999,
 };
 
 export const FontSizes = {
-  xs: 10,
-  sm: 12,
-  md: 14,
-  lg: 16,
-  xl: 18,
-  xxl: 24,
-  xxxl: 32,
+  xs: 11,
+  sm: 13,
+  md: 15,
+  lg: 17,
+  xl: 20,
+  xxl: 28,
+  xxxl: 36,
+  display: 48,
+};
+
+export const FontWeights = {
+  regular: '400' as const,
+  medium: '500' as const,
+  semibold: '600' as const,
+  bold: '700' as const,
+};
+
+export const Shadows = {
+  sm: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 5,
+  },
 };
