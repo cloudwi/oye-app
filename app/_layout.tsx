@@ -1,7 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -40,14 +40,14 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
-function useProtectedRoute() {
+function useProtectedRoute(isLayoutReady: boolean) {
   const segments = useSegments();
   const { onboarding } = useUserStore();
   const { isAuthenticated } = useAuthStore();
   const navigationState = useRootNavigationState();
 
   useEffect(() => {
-    if (!navigationState?.key) return;
+    if (!isLayoutReady || !navigationState?.key) return;
 
     const inOnboarding = segments[0] === '(onboarding)';
     const inAuth = segments[0] === 'auth';
@@ -55,7 +55,7 @@ function useProtectedRoute() {
     // /auth/callback 경로는 보호에서 제외
     if (inAuth) return;
 
-    const navigate = () => {
+    try {
       if (!isAuthenticated) {
         if (!inOnboarding) {
           router.replace('/(onboarding)');
@@ -67,12 +67,10 @@ function useProtectedRoute() {
       } else if (inOnboarding) {
         router.replace('/(tabs)');
       }
-    };
-
-    // 레이아웃 마운트 완료 후 네비게이션 실행
-    const timeout = setTimeout(navigate, 0);
-    return () => clearTimeout(timeout);
-  }, [segments, isAuthenticated, onboarding.completed, navigationState?.key]);
+    } catch (e) {
+      // 레이아웃 마운트 전 네비게이션 시도 시 무시 (다음 렌더에서 재시도)
+    }
+  }, [segments, isAuthenticated, onboarding.completed, navigationState?.key, isLayoutReady]);
 }
 
 export default function RootLayout() {
@@ -83,13 +81,14 @@ export default function RootLayout() {
   const effectiveColorScheme =
     darkMode === 'system' ? systemColorScheme : darkMode;
 
-  useProtectedRoute();
+  const [isLayoutReady, setIsLayoutReady] = useState(false);
+  useProtectedRoute(isLayoutReady);
 
   return (
     <ThemeProvider
       value={effectiveColorScheme === 'dark' ? FortuneDarkTheme : FortuneDefaultTheme}
     >
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false }} onReady={() => setIsLayoutReady(true)}>
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="auth" />
