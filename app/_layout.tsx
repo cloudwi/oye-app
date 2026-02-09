@@ -1,7 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -40,14 +40,15 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
-function useProtectedRoute(isLayoutReady: boolean) {
+function useProtectedRoute() {
   const segments = useSegments();
   const { onboarding } = useUserStore();
   const { isAuthenticated } = useAuthStore();
   const navigationState = useRootNavigationState();
+  const hasNavigated = useRef(false);
 
   useEffect(() => {
-    if (!isLayoutReady || !navigationState?.key) return;
+    if (!navigationState?.key) return;
 
     const inOnboarding = segments[0] === '(onboarding)';
     const inAuth = segments[0] === 'auth';
@@ -55,40 +56,48 @@ function useProtectedRoute(isLayoutReady: boolean) {
     // /auth/callback 경로는 보호에서 제외
     if (inAuth) return;
 
-    try {
-      if (!isAuthenticated) {
-        if (!inOnboarding) {
-          router.replace('/(onboarding)');
+    const navigate = () => {
+      try {
+        if (!isAuthenticated) {
+          if (!inOnboarding) {
+            router.replace('/(onboarding)');
+          }
+        } else if (!onboarding.completed) {
+          if (!inOnboarding) {
+            router.replace('/(onboarding)/birthdate');
+          }
+        } else if (inOnboarding) {
+          router.replace('/(tabs)');
         }
-      } else if (!onboarding.completed) {
-        if (!inOnboarding) {
-          router.replace('/(onboarding)/birthdate');
+        hasNavigated.current = true;
+      } catch (e) {
+        // 마운트 전이면 다음 프레임에서 재시도
+        if (!hasNavigated.current) {
+          requestAnimationFrame(navigate);
         }
-      } else if (inOnboarding) {
-        router.replace('/(tabs)');
       }
-    } catch (e) {
-      // 레이아웃 마운트 전 네비게이션 시도 시 무시 (다음 렌더에서 재시도)
-    }
-  }, [segments, isAuthenticated, onboarding.completed, navigationState?.key, isLayoutReady]);
+    };
+
+    // 첫 렌더 후 다음 프레임에서 네비게이션 실행
+    const rafId = requestAnimationFrame(navigate);
+    return () => cancelAnimationFrame(rafId);
+  }, [segments, isAuthenticated, onboarding.completed, navigationState?.key]);
 }
 
 export default function RootLayout() {
   const systemColorScheme = useColorScheme();
   const { darkMode } = useSettingsStore();
 
-  // Determine the effective color scheme
   const effectiveColorScheme =
     darkMode === 'system' ? systemColorScheme : darkMode;
 
-  const [isLayoutReady, setIsLayoutReady] = useState(false);
-  useProtectedRoute(isLayoutReady);
+  useProtectedRoute();
 
   return (
     <ThemeProvider
       value={effectiveColorScheme === 'dark' ? FortuneDarkTheme : FortuneDefaultTheme}
     >
-      <Stack screenOptions={{ headerShown: false }} onReady={() => setIsLayoutReady(true)}>
+      <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="auth" />
