@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '@/stores/auth-store';
 import { authService } from '@/services/auth';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.226.225:8080';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -78,6 +78,12 @@ apiClient.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
+    }
+
+    // USER_NOT_FOUND: 서버 재시작 등으로 사용자가 없는 경우 → 로그아웃
+    if (error.response?.status === 404 && error.response?.data?.code === 'USER_NOT_FOUND') {
+      useAuthStore.getState().logout();
+      return Promise.reject(error);
     }
 
     if (error.response) {

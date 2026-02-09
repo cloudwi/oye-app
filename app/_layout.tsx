@@ -55,20 +55,23 @@ function useProtectedRoute() {
     // /auth/callback 경로는 보호에서 제외
     if (inAuth) return;
 
-    if (!isAuthenticated) {
-      // 인증 안됨 → 로그인 화면 (온보딩 첫 화면)
-      if (!inOnboarding) {
-        router.replace('/(onboarding)');
+    const navigate = () => {
+      if (!isAuthenticated) {
+        if (!inOnboarding) {
+          router.replace('/(onboarding)');
+        }
+      } else if (!onboarding.completed) {
+        if (!inOnboarding) {
+          router.replace('/(onboarding)/birthdate');
+        }
+      } else if (inOnboarding) {
+        router.replace('/(tabs)');
       }
-    } else if (!onboarding.completed) {
-      // 인증됨 + 온보딩 미완료 → 생년월일 입력
-      if (!inOnboarding) {
-        router.replace('/(onboarding)/birthdate');
-      }
-    } else if (inOnboarding) {
-      // 인증됨 + 온보딩 완료 → 메인 탭
-      router.replace('/(tabs)');
-    }
+    };
+
+    // 레이아웃 마운트 완료 후 네비게이션 실행
+    const timeout = setTimeout(navigate, 0);
+    return () => clearTimeout(timeout);
   }, [segments, isAuthenticated, onboarding.completed, navigationState?.key]);
 }
 

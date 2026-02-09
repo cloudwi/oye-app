@@ -4,8 +4,8 @@ import * as Linking from 'expo-linking';
 import { useAuthStore } from '@/stores/auth-store';
 import type { AuthToken } from '@/types/auth';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
-const KAKAO_LOGIN_PATH = '/oauth2/authorization/kakao';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.226.225:8080';
+const KAKAO_LOGIN_PATH = '/api/auth/login/kakao';
 const NATIVE_CALLBACK_SCHEME = 'oyeapp://auth/callback';
 
 export const authService = {

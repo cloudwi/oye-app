@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xl,
+    paddingBottom: Spacing.xxl,
   },
   kakaoButton: {
     backgroundColor: '#FEE500',
