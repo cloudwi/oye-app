@@ -15,7 +15,15 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
+        tabBarLabelStyle: {
+          fontSize: 11,
+        },
+        tabBarIconStyle: {
+          marginTop: 2,
+        },
         tabBarStyle: {
+          height: 52,
+          paddingBottom: 4,
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
@@ -25,21 +33,21 @@ export default function TabLayout() {
         name="index"
         options={{
           title: '오늘의 예감',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="sparkles" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="sparkles" color={color} />,
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
           title: '히스토리',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="calendar" color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: '설정',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gearshape.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="gearshape.fill" color={color} />,
         }}
       />
     </Tabs>

@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   RefreshControl,
   ActivityIndicator,
   TouchableOpacity,
   Share,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useFortuneStore } from '@/stores/fortune-store';

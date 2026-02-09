@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useUserStore } from '@/stores/user-store';
+import { useAuthStore } from '@/stores/auth-store';
 import { useSettingsStore } from '@/stores/settings-store';
 
 // Custom themes for the fortune app
@@ -42,22 +43,33 @@ export const unstable_settings = {
 function useProtectedRoute() {
   const segments = useSegments();
   const { onboarding } = useUserStore();
+  const { isAuthenticated } = useAuthStore();
   const navigationState = useRootNavigationState();
 
   useEffect(() => {
     if (!navigationState?.key) return;
 
     const inOnboarding = segments[0] === '(onboarding)';
-    const onboardingComplete = onboarding.completed;
+    const inAuth = segments[0] === 'auth';
 
-    if (!onboardingComplete && !inOnboarding) {
-      // User hasn't completed onboarding, redirect to onboarding
-      router.replace('/(onboarding)');
-    } else if (onboardingComplete && inOnboarding) {
-      // User has completed onboarding but is in onboarding, redirect to main
+    // /auth/callback 경로는 보호에서 제외
+    if (inAuth) return;
+
+    if (!isAuthenticated) {
+      // 인증 안됨 → 로그인 화면 (온보딩 첫 화면)
+      if (!inOnboarding) {
+        router.replace('/(onboarding)');
+      }
+    } else if (!onboarding.completed) {
+      // 인증됨 + 온보딩 미완료 → 생년월일 입력
+      if (!inOnboarding) {
+        router.replace('/(onboarding)/birthdate');
+      }
+    } else if (inOnboarding) {
+      // 인증됨 + 온보딩 완료 → 메인 탭
       router.replace('/(tabs)');
     }
-  }, [segments, onboarding.completed, navigationState?.key]);
+  }, [segments, isAuthenticated, onboarding.completed, navigationState?.key]);
 }
 
 export default function RootLayout() {
@@ -77,13 +89,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="fortune/[id]"
-          options={{
-            presentation: 'card',
-            animation: 'slide_from_right',
-          }}
-        />
+        <Stack.Screen name="auth" />
       </Stack>
       <StatusBar style={effectiveColorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>

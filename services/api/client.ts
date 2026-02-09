@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { useAuthStore } from '@/stores/auth-store';
+import { authService } from '@/services/auth';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -10,10 +12,74 @@ export const apiClient = axios.create({
   },
 });
 
-// Response interceptor
+// Request interceptor: Bearer 토큰 추가
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = useAuthStore.getState().token;
+    if (token?.accessToken) {
+      config.headers.Authorization = `Bearer ${token.accessToken}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor: 401 시 토큰 갱신 시도
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiClient(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const newToken = await authService.refreshToken();
+        if (newToken) {
+          processQueue(null, newToken.accessToken);
+          originalRequest.headers.Authorization = `Bearer ${newToken.accessToken}`;
+          return apiClient(originalRequest);
+        } else {
+          processQueue(error);
+          useAuthStore.getState().logout();
+          return Promise.reject(error);
+        }
+      } catch (refreshError) {
+        processQueue(refreshError);
+        useAuthStore.getState().logout();
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     if (error.response) {
       console.error('API Error:', error.response.status, error.response.data);
     } else if (error.request) {

@@ -1,19 +1,44 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useUserStore } from '@/stores/user-store';
+import { authService } from '@/services/auth';
 import { BrandColors, Spacing, BorderRadius, FontSizes } from '@/constants/theme';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { KakaoSymbol } from '@/components/ui/kakao-symbol';
 
 export default function OnboardingWelcome() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
+  const [isLoading, setIsLoading] = useState(false);
+  const { onboarding } = useUserStore();
 
-  const handleNext = () => {
-    router.push('/(onboarding)/birthdate');
+  const handleKakaoLogin = async () => {
+    setIsLoading(true);
+    try {
+      const token = await authService.loginWithKakao();
+
+      // 웹에서는 페이지 리다이렉트이므로 여기에 도달하지 않음
+      if (Platform.OS === 'web') return;
+
+      if (token) {
+        if (onboarding.completed) {
+          router.replace('/(tabs)');
+        } else {
+          router.push('/(onboarding)/birthdate');
+        }
+      } else {
+        Alert.alert('로그인 실패', '카카오 로그인에 실패했습니다. 다시 시도해주세요.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('로그인 오류', '로그인 중 문제가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -42,15 +67,20 @@ export default function OnboardingWelcome() {
 
       {/* Bottom Button */}
       <View style={styles.footer}>
-        <TouchableOpacity onPress={handleNext} activeOpacity={0.9}>
-          <LinearGradient
-            colors={[BrandColors.primary, BrandColors.secondary]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>시작하기</Text>
-          </LinearGradient>
+        <TouchableOpacity
+          onPress={handleKakaoLogin}
+          activeOpacity={0.9}
+          disabled={isLoading}
+          style={styles.kakaoButton}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#3C1E1E" />
+          ) : (
+            <>
+              <KakaoSymbol size={20} color="#000000" />
+              <Text style={styles.kakaoButtonText}>카카오로 시작하기</Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -100,13 +130,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
   },
-  button: {
+  kakaoButton: {
+    backgroundColor: '#FEE500',
     paddingVertical: Spacing.md + 2,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: Spacing.sm,
   },
-  buttonText: {
-    color: '#FFF',
+  kakaoIcon: {
+    width: 20,
+    height: 20,
+  },
+  kakaoButtonText: {
+    color: '#3C1E1E',
     fontSize: FontSizes.lg,
     fontWeight: '600',
   },

@@ -5,8 +5,9 @@ import { storage } from './storage';
 let Notifications: typeof import('expo-notifications') | null = null;
 
 if (Platform.OS !== 'web') {
-  Notifications = require('expo-notifications');
-  Notifications.setNotificationHandler({
+  const NotificationsModule = require('expo-notifications');
+  Notifications = NotificationsModule;
+  NotificationsModule.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
       shouldPlaySound: true,
@@ -50,8 +51,14 @@ export const notificationService = {
         });
       }
 
+      const projectId = process.env.EXPO_PUBLIC_PROJECT_ID;
+      if (!projectId) {
+        console.warn('Push token: EXPO_PUBLIC_PROJECT_ID가 설정되지 않았습니다. `eas init`을 실행하세요.');
+        return null;
+      }
+
       const token = await Notifications.getExpoPushTokenAsync({
-        projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+        projectId,
       });
 
       await storage.set(storage.keys.DEVICE_TOKEN, token.data);

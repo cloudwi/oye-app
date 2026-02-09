@@ -3,14 +3,15 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Switch,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
+import { useAuthStore } from '@/stores/auth-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { useFortuneStore } from '@/stores/fortune-store';
 import { notificationService } from '@/services/notification';
@@ -87,6 +88,7 @@ export default function SettingsScreen() {
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
   const { user, reset: resetUser } = useUserStore();
+  const { logout: authLogout } = useAuthStore();
   const {
     darkMode,
     notificationEnabled,
@@ -133,6 +135,27 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      '로그아웃',
+      '로그아웃 하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '로그아웃',
+          style: 'destructive',
+          onPress: () => {
+            authLogout();
+            resetUser();
+            resetSettings();
+            resetFortune();
+            router.replace('/(onboarding)');
+          },
+        },
+      ]
+    );
+  };
+
   const handleResetData = () => {
     Alert.alert(
       '데이터 초기화',
@@ -143,6 +166,7 @@ export default function SettingsScreen() {
           text: '초기화',
           style: 'destructive',
           onPress: () => {
+            authLogout();
             resetUser();
             resetSettings();
             resetFortune();
@@ -211,10 +235,16 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Danger Zone */}
+        {/* Account & Data */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: textSecondary }]}>데이터</Text>
+          <Text style={[styles.sectionLabel, { color: textSecondary }]}>계정</Text>
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <SettingRow
+              icon="rectangle.portrait.and.arrow.right"
+              iconColor="#F59E0B"
+              title="로그아웃"
+              onPress={handleLogout}
+            />
             <SettingRow
               icon="trash.fill"
               iconColor="#EF4444"
