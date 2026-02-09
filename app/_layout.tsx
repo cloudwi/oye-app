@@ -1,7 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, router, useSegments, useRootNavigationState } from 'expo-router';
+import { Stack, Redirect, useSegments, useRootNavigationState } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -40,48 +39,28 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
-function useProtectedRoute() {
+function useRedirectTarget(): string | null {
   const segments = useSegments();
   const { onboarding } = useUserStore();
   const { isAuthenticated } = useAuthStore();
   const navigationState = useRootNavigationState();
-  const hasNavigated = useRef(false);
 
-  useEffect(() => {
-    if (!navigationState?.key) return;
+  if (!navigationState?.key) return null;
 
-    const inOnboarding = segments[0] === '(onboarding)';
-    const inAuth = segments[0] === 'auth';
+  const inOnboarding = segments[0] === '(onboarding)';
+  const inAuth = segments[0] === 'auth';
 
-    // /auth/callback 경로는 보호에서 제외
-    if (inAuth) return;
+  if (inAuth) return null;
 
-    const navigate = () => {
-      try {
-        if (!isAuthenticated) {
-          if (!inOnboarding) {
-            router.replace('/(onboarding)');
-          }
-        } else if (!onboarding.completed) {
-          if (!inOnboarding) {
-            router.replace('/(onboarding)/birthdate');
-          }
-        } else if (inOnboarding) {
-          router.replace('/(tabs)');
-        }
-        hasNavigated.current = true;
-      } catch (e) {
-        // 마운트 전이면 다음 프레임에서 재시도
-        if (!hasNavigated.current) {
-          requestAnimationFrame(navigate);
-        }
-      }
-    };
+  if (!isAuthenticated) {
+    return inOnboarding ? null : '/(onboarding)';
+  } else if (!onboarding.completed) {
+    return inOnboarding ? null : '/(onboarding)/birthdate';
+  } else if (inOnboarding) {
+    return '/(tabs)';
+  }
 
-    // 첫 렌더 후 다음 프레임에서 네비게이션 실행
-    const rafId = requestAnimationFrame(navigate);
-    return () => cancelAnimationFrame(rafId);
-  }, [segments, isAuthenticated, onboarding.completed, navigationState?.key]);
+  return null;
 }
 
 export default function RootLayout() {
@@ -91,7 +70,7 @@ export default function RootLayout() {
   const effectiveColorScheme =
     darkMode === 'system' ? systemColorScheme : darkMode;
 
-  useProtectedRoute();
+  const redirectTarget = useRedirectTarget();
 
   return (
     <ThemeProvider
@@ -102,6 +81,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="auth" />
       </Stack>
+      {redirectTarget && <Redirect href={redirectTarget} />}
       <StatusBar style={effectiveColorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>
   );
