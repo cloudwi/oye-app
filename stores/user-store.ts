@@ -45,11 +45,11 @@ export const useUserStore = create<UserState>()(
           user: state.user
             ? { ...state.user, birthDate }
             : {
-                id: '',
+                id: 0,
+                kakaoId: '',
+                name: '',
                 birthDate,
-                notificationEnabled: false,
                 createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
               },
         })),
 

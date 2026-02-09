@@ -1,11 +1,15 @@
+// API 응답에 맞는 User 타입
 export interface User {
-  id: string;
-  birthDate: string; // ISO date string (YYYY-MM-DD)
-  deviceToken?: string;
-  notificationEnabled: boolean;
-  notificationTime?: string; // HH:mm format
-  createdAt: string;
-  updatedAt: string;
+  id: number;
+  kakaoId: string;
+  name: string;
+  birthDate: string | null; // YYYY-MM-DD
+  createdAt: string; // ISO datetime
+}
+
+export interface UserUpdateRequest {
+  name: string;
+  birthDate?: string; // YYYY-MM-DD
 }
 
 export interface UserSettings {

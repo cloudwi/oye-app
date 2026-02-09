@@ -76,7 +76,7 @@ export default function OnboardingNotification() {
         {/* Text */}
         <Text style={[styles.title, { color: textColor }]}>알림 설정</Text>
         <Text style={[styles.subtitle, { color: textSecondary }]}>
-          매일 아침 8시에{'\n'}오늘의 운세를 알려드릴게요
+          매일 아침 8시에{'\n'}오늘의 예감를 알려드릴게요
         </Text>
 
         {/* Preview Card */}
@@ -86,12 +86,12 @@ export default function OnboardingNotification() {
               <Text style={styles.previewIconText}>OYE</Text>
             </View>
             <View style={styles.previewHeaderText}>
-              <Text style={[styles.previewApp, { color: textColor }]}>오늘의 운세</Text>
+              <Text style={[styles.previewApp, { color: textColor }]}>오늘의 예감</Text>
               <Text style={[styles.previewTime, { color: textSecondary }]}>오전 8:00</Text>
             </View>
           </View>
           <Text style={[styles.previewMessage, { color: textColor }]}>
-            좋은 아침이에요! 오늘의 운세가 도착했어요
+            좋은 아침이에요! 오늘의 예감이 도착했어요
           </Text>
         </View>
       </View>

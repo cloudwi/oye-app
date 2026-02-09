@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { storage } from '../storage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -10,18 +9,6 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-// Request interceptor
-apiClient.interceptors.request.use(
-  async (config) => {
-    const deviceToken = await storage.get<string>(storage.keys.DEVICE_TOKEN);
-    if (deviceToken) {
-      config.headers['X-Device-Token'] = deviceToken;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 // Response interceptor
 apiClient.interceptors.response.use(
@@ -35,9 +22,3 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-export type ApiResponse<T> = {
-  success: boolean;
-  data: T;
-  message?: string;
-};

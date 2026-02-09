@@ -33,9 +33,9 @@ export default function OnboardingWelcome() {
 
         {/* Text Content */}
         <View style={styles.textContent}>
-          <Text style={[styles.title, { color: textColor }]}>오늘의 운세</Text>
+          <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
           <Text style={[styles.subtitle, { color: textSecondary }]}>
-            매일 아침, 당신만을 위한{'\n'}특별한 운세를 만나보세요
+            매일 아침, 당신만을 위한{'\n'}특별한 예감을 만나보세요
           </Text>
         </View>
       </View>

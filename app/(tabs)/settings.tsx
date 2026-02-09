@@ -228,7 +228,7 @@ export default function SettingsScreen() {
 
         {/* App Info */}
         <View style={styles.appInfo}>
-          <Text style={[styles.appName, { color: textSecondary }]}>오늘의 운세</Text>
+          <Text style={[styles.appName, { color: textSecondary }]}>오늘의 예감</Text>
           <Text style={[styles.appVersion, { color: textSecondary }]}>v1.0.0</Text>
         </View>
       </ScrollView>

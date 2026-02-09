@@ -8,134 +8,47 @@ import {
   RefreshControl,
   ActivityIndicator,
   TouchableOpacity,
-  Dimensions,
+  Share,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useFortuneStore } from '@/stores/fortune-store';
-import { useUserStore } from '@/stores/user-store';
+import { fortuneApi } from '@/services/api/fortune';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { shareService } from '@/services/share';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
   BrandColors,
-  CategoryColors,
-  ScoreColors,
   Spacing,
   BorderRadius,
   FontSizes,
   Shadows,
 } from '@/constants/theme';
-import type { Fortune, FortuneCategory } from '@/types/fortune';
-import { CATEGORY_LABELS } from '@/types/fortune';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SCORE_RING_SIZE = 180;
-
-// Mock fortune data for testing
-function generateMockFortune(): Fortune {
-  const today = new Date();
-  return {
-    id: format(today, 'yyyy-MM-dd'),
-    date: today.toISOString(),
-    overallScore: Math.floor(Math.random() * 30) + 70,
-    overallMessage: '새로운 시작에 좋은 날이에요. 평소 미뤄왔던 일을 시작해보세요.',
-    luckyColor: '파란색',
-    luckyNumber: Math.floor(Math.random() * 9) + 1,
-    luckyItem: '은반지',
-    categories: [
-      {
-        category: 'love',
-        score: Math.floor(Math.random() * 30) + 70,
-        title: '설레는 만남',
-        description: '새로운 인연을 만날 수 있는 좋은 날입니다.',
-        advice: '마음을 열고 새로운 만남에 적극적으로 임해보세요.',
-      },
-      {
-        category: 'money',
-        score: Math.floor(Math.random() * 30) + 60,
-        title: '안정적인 재정',
-        description: '저축에 집중하면 좋은 결과가 있을 것입니다.',
-        advice: '큰 금액의 결정은 내일로 미루세요.',
-      },
-      {
-        category: 'health',
-        score: Math.floor(Math.random() * 30) + 70,
-        title: '활력 넘치는 하루',
-        description: '에너지가 넘치는 하루입니다.',
-        advice: '충분한 수분 섭취를 잊지 마세요.',
-      },
-      {
-        category: 'work',
-        score: Math.floor(Math.random() * 30) + 65,
-        title: '집중력 UP',
-        description: '업무 처리 능력이 높아지는 날입니다.',
-        advice: '오전에 중요한 업무를 처리하세요.',
-      },
-      {
-        category: 'study',
-        score: Math.floor(Math.random() * 30) + 70,
-        title: '학습 효율 상승',
-        description: '새로운 것을 배우기에 적합한 날입니다.',
-        advice: '조용한 환경에서 공부하세요.',
-      },
-    ],
-    createdAt: today.toISOString(),
-  };
-}
-
-function getScoreColor(score: number): string {
-  if (score >= 80) return ScoreColors.excellent;
-  if (score >= 60) return ScoreColors.good;
-  if (score >= 40) return ScoreColors.average;
-  if (score >= 20) return ScoreColors.belowAverage;
-  return ScoreColors.poor;
-}
-
-function getScoreLabel(score: number): string {
-  if (score >= 90) return '대길';
-  if (score >= 70) return '길';
-  if (score >= 50) return '보통';
-  if (score >= 30) return '소흉';
-  return '흉';
-}
-
-const categoryIcons: Record<FortuneCategory, string> = {
-  love: 'heart.fill',
-  money: 'wonsign.circle.fill',
-  health: 'leaf.fill',
-  work: 'briefcase.fill',
-  study: 'book.fill',
-};
 
 export default function TodayFortuneScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
-  const dividerColor = useThemeColor({ light: '#E5E7EB', dark: '#374151' }, 'divider');
 
-  const { user } = useUserStore();
-  const { todayFortune, setTodayFortune, isLoading, setLoading } = useFortuneStore();
+  const { todayFortune, setTodayFortune, isLoading, setLoading, setError } = useFortuneStore();
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchTodayFortune = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const fortune = generateMockFortune();
+      const fortune = await fortuneApi.getToday();
       setTodayFortune(fortune);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching fortune:', error);
+      setError(error.message || '운세를 불러오는데 실패했습니다.');
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    if (!todayFortune) {
-      fetchTodayFortune();
-    }
+    fetchTodayFortune();
   }, []);
 
   const handleRefresh = async () => {
@@ -146,13 +59,13 @@ export default function TodayFortuneScreen() {
 
   const handleShare = async () => {
     if (todayFortune) {
-      await shareService.shareFortune(todayFortune);
-    }
-  };
-
-  const handleCategoryPress = (categoryIndex: number) => {
-    if (todayFortune) {
-      router.push(`/fortune/${todayFortune.id}?category=${categoryIndex}`);
+      try {
+        await Share.share({
+          message: `[오늘의 예감 - ${format(new Date(todayFortune.date), 'M월 d일', { locale: ko })}]\n\n${todayFortune.content}\n\n- OYE 오늘의 예감`,
+        });
+      } catch (error) {
+        console.error('Share error:', error);
+      }
     }
   };
 
@@ -171,8 +84,6 @@ export default function TodayFortuneScreen() {
     );
   }
 
-  const scoreColor = todayFortune ? getScoreColor(todayFortune.overallScore) : BrandColors.primary;
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <ScrollView
@@ -190,61 +101,29 @@ export default function TodayFortuneScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.dateText, { color: textSecondary }]}>{today}</Text>
-          <Text style={[styles.title, { color: textColor }]}>오늘의 운세</Text>
+          <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
         </View>
 
-        {todayFortune && (
+        {todayFortune ? (
           <>
-            {/* Main Score Card */}
-            <View style={[styles.scoreCard, { backgroundColor: surfaceColor }, Shadows.lg]}>
-              {/* Score Ring */}
-              <View style={styles.scoreRingContainer}>
-                <View style={[styles.scoreRingOuter, { borderColor: scoreColor + '30' }]}>
-                  <View style={[styles.scoreRingInner, { borderColor: scoreColor }]}>
-                    <Text style={[styles.scoreNumber, { color: scoreColor }]}>
-                      {todayFortune.overallScore}
-                    </Text>
-                    <Text style={[styles.scoreLabel, { color: scoreColor }]}>
-                      {getScoreLabel(todayFortune.overallScore)}
-                    </Text>
-                  </View>
-                </View>
+            {/* Main Fortune Card */}
+            <View style={[styles.fortuneCard, { backgroundColor: surfaceColor }, Shadows.lg]}>
+              {/* Fortune Icon */}
+              <View style={styles.iconContainer}>
+                <LinearGradient
+                  colors={[BrandColors.primary, BrandColors.secondary]}
+                  style={styles.iconGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <IconSymbol name="sparkles" size={32} color="#FFF" />
+                </LinearGradient>
               </View>
 
-              {/* Message */}
-              <Text style={[styles.fortuneMessage, { color: textColor }]}>
-                {todayFortune.overallMessage}
+              {/* Fortune Content */}
+              <Text style={[styles.fortuneContent, { color: textColor }]}>
+                {todayFortune.content}
               </Text>
-
-              {/* Lucky Items */}
-              <View style={[styles.luckySection, { borderTopColor: dividerColor }]}>
-                <View style={styles.luckyItem}>
-                  <View style={[styles.luckyIcon, { backgroundColor: BrandColors.primary + '15' }]}>
-                    <IconSymbol name="paintpalette.fill" size={16} color={BrandColors.primary} />
-                  </View>
-                  <Text style={[styles.luckyValue, { color: textColor }]}>
-                    {todayFortune.luckyColor}
-                  </Text>
-                </View>
-                <View style={styles.luckyDivider} />
-                <View style={styles.luckyItem}>
-                  <View style={[styles.luckyIcon, { backgroundColor: BrandColors.secondary + '15' }]}>
-                    <IconSymbol name="number" size={16} color={BrandColors.secondary} />
-                  </View>
-                  <Text style={[styles.luckyValue, { color: textColor }]}>
-                    {todayFortune.luckyNumber}
-                  </Text>
-                </View>
-                <View style={styles.luckyDivider} />
-                <View style={styles.luckyItem}>
-                  <View style={[styles.luckyIcon, { backgroundColor: BrandColors.accent + '15' }]}>
-                    <IconSymbol name="star.fill" size={16} color={BrandColors.accent} />
-                  </View>
-                  <Text style={[styles.luckyValue, { color: textColor }]}>
-                    {todayFortune.luckyItem}
-                  </Text>
-                </View>
-              </View>
 
               {/* Share Button */}
               <TouchableOpacity
@@ -264,38 +143,29 @@ export default function TodayFortuneScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Category Grid */}
-            <View style={styles.categorySection}>
-              <Text style={[styles.sectionTitle, { color: textColor }]}>카테고리별 운세</Text>
-              <View style={styles.categoryGrid}>
-                {todayFortune.categories.map((cat, index) => {
-                  const catColor = CategoryColors[cat.category as keyof typeof CategoryColors];
-                  return (
-                    <TouchableOpacity
-                      key={cat.category}
-                      style={[styles.categoryCard, { backgroundColor: surfaceColor }, Shadows.sm]}
-                      onPress={() => handleCategoryPress(index)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={[styles.categoryIconBg, { backgroundColor: catColor + '15' }]}>
-                        <IconSymbol
-                          name={categoryIcons[cat.category as FortuneCategory] as any}
-                          size={20}
-                          color={catColor}
-                        />
-                      </View>
-                      <Text style={[styles.categoryName, { color: textSecondary }]}>
-                        {CATEGORY_LABELS[cat.category as FortuneCategory]}
-                      </Text>
-                      <Text style={[styles.categoryScore, { color: catColor }]}>
-                        {cat.score}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+            {/* Tips Section */}
+            <View style={styles.tipsSection}>
+              <Text style={[styles.tipsTitle, { color: textColor }]}>오늘의 팁</Text>
+              <View style={[styles.tipCard, { backgroundColor: surfaceColor }, Shadows.sm]}>
+                <View style={[styles.tipIconBg, { backgroundColor: '#F59E0B' + '15' }]}>
+                  <IconSymbol name="lightbulb.fill" size={20} color="#F59E0B" />
+                </View>
+                <Text style={[styles.tipText, { color: textSecondary }]}>
+                  운세는 참고용입니다. 긍정적인 마음으로 하루를 시작하세요!
+                </Text>
               </View>
             </View>
           </>
+        ) : (
+          <View style={[styles.emptyCard, { backgroundColor: surfaceColor }, Shadows.md]}>
+            <IconSymbol name="exclamationmark.circle" size={48} color={textSecondary} />
+            <Text style={[styles.emptyTitle, { color: textColor }]}>
+              운세를 불러올 수 없어요
+            </Text>
+            <Text style={[styles.emptySubtitle, { color: textSecondary }]}>
+              아래로 당겨서 다시 시도해주세요
+            </Text>
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -338,78 +208,27 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // Score Card
-  scoreCard: {
+  // Fortune Card
+  fortuneCard: {
     borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
+    padding: Spacing.xl,
     alignItems: 'center',
   },
-  scoreRingContainer: {
+  iconContainer: {
     marginBottom: Spacing.lg,
   },
-  scoreRingOuter: {
-    width: SCORE_RING_SIZE,
-    height: SCORE_RING_SIZE,
-    borderRadius: SCORE_RING_SIZE / 2,
-    borderWidth: 12,
+  iconGradient: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  scoreRingInner: {
-    width: SCORE_RING_SIZE - 32,
-    height: SCORE_RING_SIZE - 32,
-    borderRadius: (SCORE_RING_SIZE - 32) / 2,
-    borderWidth: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scoreNumber: {
-    fontSize: FontSizes.display,
-    fontWeight: '700',
-  },
-  scoreLabel: {
+  fortuneContent: {
     fontSize: FontSizes.lg,
-    fontWeight: '600',
-    marginTop: -4,
-  },
-  fortuneMessage: {
-    fontSize: FontSizes.lg,
-    lineHeight: 26,
+    lineHeight: 28,
     textAlign: 'center',
-    marginBottom: Spacing.lg,
-    paddingHorizontal: Spacing.sm,
-  },
-
-  // Lucky Section
-  luckySection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: Spacing.lg,
-    borderTopWidth: 1,
-    width: '100%',
-    marginBottom: Spacing.lg,
-  },
-  luckyItem: {
-    alignItems: 'center',
-    flex: 1,
-    gap: Spacing.sm,
-  },
-  luckyIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  luckyValue: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-  },
-  luckyDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: '#E5E7EB',
+    marginBottom: Spacing.xl,
   },
 
   // Share Button
@@ -430,42 +249,47 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Category Section
-  categorySection: {
+  // Tips Section
+  tipsSection: {
     marginTop: Spacing.xl,
   },
-  sectionTitle: {
+  tipsTitle: {
     fontSize: FontSizes.lg,
     fontWeight: '600',
     marginBottom: Spacing.md,
   },
-  categoryGrid: {
+  tipCard: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  categoryCard: {
-    width: (SCREEN_WIDTH - Spacing.lg * 2 - Spacing.sm * 2) / 3,
-    aspectRatio: 1,
-    borderRadius: BorderRadius.lg,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.xs,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.md,
   },
-  categoryIconBg: {
+  tipIconBg: {
     width: 40,
     height: 40,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Spacing.xs,
   },
-  categoryName: {
-    fontSize: FontSizes.xs,
-    fontWeight: '500',
+  tipText: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    lineHeight: 20,
   },
-  categoryScore: {
-    fontSize: FontSizes.xl,
-    fontWeight: '700',
+
+  // Empty State
+  emptyCard: {
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xxl,
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  emptyTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+  },
+  emptySubtitle: {
+    fontSize: FontSizes.md,
   },
 });

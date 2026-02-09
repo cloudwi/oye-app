@@ -43,7 +43,7 @@ export const notificationService = {
     try {
       if (Platform.OS === 'android') {
         await Notifications.setNotificationChannelAsync('fortune', {
-          name: '오늘의 운세',
+          name: '오늘의 예감',
           importance: Notifications.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
           lightColor: '#FF6B6B',
@@ -72,7 +72,7 @@ export const notificationService = {
 
       const identifier = await Notifications.scheduleNotificationAsync({
         content: {
-          title: '오늘의 운세가 도착했어요!',
+          title: '오늘의 예감가 도착했어요!',
           body: '새로운 하루, 당신의 운세를 확인해보세요.',
           data: { type: 'daily_fortune' },
         },

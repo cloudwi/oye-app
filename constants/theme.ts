@@ -1,5 +1,5 @@
 /**
- * Theme constants for the OYE (오늘의 운세) App
+ * Theme constants for the OYE (오늘의 예감) App
  * Minimal & Modern Design System
  */
 

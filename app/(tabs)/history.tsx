@@ -9,62 +9,20 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useFortuneStore } from '@/stores/fortune-store';
-import { format, subDays } from 'date-fns';
+import { fortuneApi } from '@/services/api/fortune';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
   BrandColors,
-  ScoreColors,
   Spacing,
   BorderRadius,
   FontSizes,
   Shadows,
 } from '@/constants/theme';
 import type { Fortune } from '@/types/fortune';
-
-// Mock history data
-function generateMockHistory(): Fortune[] {
-  const history: Fortune[] = [];
-  for (let i = 1; i <= 14; i++) {
-    const date = subDays(new Date(), i);
-    history.push({
-      id: format(date, 'yyyy-MM-dd'),
-      date: date.toISOString(),
-      overallScore: Math.floor(Math.random() * 40) + 60,
-      overallMessage: '하루를 돌아보며 감사함을 느껴보세요.',
-      luckyColor: ['빨간색', '파란색', '노란색', '초록색'][Math.floor(Math.random() * 4)],
-      luckyNumber: Math.floor(Math.random() * 9) + 1,
-      luckyItem: ['열쇠', '반지', '우산', '책'][Math.floor(Math.random() * 4)],
-      categories: [
-        { category: 'love', score: Math.floor(Math.random() * 40) + 60, title: '', description: '', advice: '' },
-        { category: 'money', score: Math.floor(Math.random() * 40) + 60, title: '', description: '', advice: '' },
-        { category: 'health', score: Math.floor(Math.random() * 40) + 60, title: '', description: '', advice: '' },
-        { category: 'work', score: Math.floor(Math.random() * 40) + 60, title: '', description: '', advice: '' },
-        { category: 'study', score: Math.floor(Math.random() * 40) + 60, title: '', description: '', advice: '' },
-      ],
-      createdAt: date.toISOString(),
-    });
-  }
-  return history;
-}
-
-function getScoreColor(score: number): string {
-  if (score >= 80) return ScoreColors.excellent;
-  if (score >= 60) return ScoreColors.good;
-  if (score >= 40) return ScoreColors.average;
-  if (score >= 20) return ScoreColors.belowAverage;
-  return ScoreColors.poor;
-}
-
-function getScoreLabel(score: number): string {
-  if (score >= 90) return '대길';
-  if (score >= 70) return '길';
-  if (score >= 50) return '보통';
-  if (score >= 30) return '소흉';
-  return '흉';
-}
 
 export default function HistoryScreen() {
   const backgroundColor = useThemeColor({}, 'background');
@@ -74,12 +32,13 @@ export default function HistoryScreen() {
 
   const { history, setHistory, isLoadingHistory, setLoadingHistory } = useFortuneStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const fetchHistory = async () => {
     setLoadingHistory(true);
     try {
-      const mockHistory = generateMockHistory();
-      setHistory({ fortunes: mockHistory, hasMore: false });
+      const fortunes = await fortuneApi.getHistory();
+      setHistory(fortunes);
     } catch (error) {
       console.error('Error fetching history:', error);
     }
@@ -87,9 +46,7 @@ export default function HistoryScreen() {
   };
 
   useEffect(() => {
-    if (history.length === 0) {
-      fetchHistory();
-    }
+    fetchHistory();
   }, []);
 
   const handleRefresh = async () => {
@@ -99,13 +56,13 @@ export default function HistoryScreen() {
   };
 
   const handleItemPress = (fortune: Fortune) => {
-    router.push(`/fortune/${fortune.id}`);
+    setSelectedId(selectedId === fortune.id ? null : fortune.id);
   };
 
-  const renderItem = ({ item, index }: { item: Fortune; index: number }) => {
-    const scoreColor = getScoreColor(item.overallScore);
+  const renderItem = ({ item }: { item: Fortune }) => {
     const formattedDate = format(new Date(item.date), 'M월 d일', { locale: ko });
-    const dayOfWeek = format(new Date(item.date), 'EEE', { locale: ko });
+    const dayOfWeek = format(new Date(item.date), 'EEEE', { locale: ko });
+    const isExpanded = selectedId === item.id;
 
     return (
       <TouchableOpacity
@@ -113,37 +70,38 @@ export default function HistoryScreen() {
         onPress={() => handleItemPress(item)}
         activeOpacity={0.7}
       >
-        <View style={styles.dateSection}>
-          <Text style={[styles.dateDay, { color: textColor }]}>{formattedDate}</Text>
-          <Text style={[styles.dateDayOfWeek, { color: textSecondary }]}>{dayOfWeek}</Text>
-        </View>
-
-        <View style={styles.scoreSection}>
-          <View style={[styles.scoreCircle, { borderColor: scoreColor }]}>
-            <Text style={[styles.scoreText, { color: scoreColor }]}>{item.overallScore}</Text>
+        <View style={styles.itemHeader}>
+          <View style={styles.dateSection}>
+            <Text style={[styles.dateDay, { color: textColor }]}>{formattedDate}</Text>
+            <Text style={[styles.dateDayOfWeek, { color: textSecondary }]}>{dayOfWeek}</Text>
           </View>
-          <Text style={[styles.scoreLabel, { color: scoreColor }]}>
-            {getScoreLabel(item.overallScore)}
-          </Text>
+          <IconSymbol
+            name={isExpanded ? 'chevron.up' : 'chevron.down'}
+            size={16}
+            color={textSecondary}
+          />
         </View>
 
-        <View style={styles.chevron}>
-          <Text style={{ color: textSecondary, fontSize: 18 }}>{'>'}</Text>
-        </View>
+        {isExpanded && (
+          <View style={styles.expandedContent}>
+            <View style={[styles.divider, { backgroundColor: textSecondary + '20' }]} />
+            <Text style={[styles.contentText, { color: textColor }]}>{item.content}</Text>
+          </View>
+        )}
       </TouchableOpacity>
     );
   };
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <View style={styles.emptyIcon}>
-        <Text style={{ fontSize: 48 }}>{'( )'}</Text>
+      <View style={[styles.emptyIconBg, { backgroundColor: BrandColors.primary + '15' }]}>
+        <IconSymbol name="clock" size={32} color={BrandColors.primary} />
       </View>
       <Text style={[styles.emptyText, { color: textColor }]}>
-        아직 운세 기록이 없어요
+        아직 기록이 없어요
       </Text>
       <Text style={[styles.emptySubtext, { color: textSecondary }]}>
-        매일 운세를 확인해보세요
+        매일 운세를 확인하면 이곳에 기록됩니다
       </Text>
     </View>
   );
@@ -165,15 +123,17 @@ export default function HistoryScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: textColor }]}>히스토리</Text>
-        <Text style={[styles.subtitle, { color: textSecondary }]}>
-          지난 {history.length}일간의 운세
-        </Text>
+        {history.length > 0 && (
+          <Text style={[styles.subtitle, { color: textSecondary }]}>
+            총 {history.length}개의 기록
+          </Text>
+        )}
       </View>
 
       <FlatList
         data={history}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => String(item.id)}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmpty}
@@ -219,10 +179,13 @@ const styles = StyleSheet.create({
 
   // History Item
   historyItem: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+  },
+  itemHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    justifyContent: 'space-between',
   },
   dateSection: {
     flex: 1,
@@ -235,29 +198,16 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     marginTop: 2,
   },
-  scoreSection: {
-    alignItems: 'center',
-    marginRight: Spacing.md,
+  expandedContent: {
+    marginTop: Spacing.md,
   },
-  scoreCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
+  divider: {
+    height: 1,
+    marginBottom: Spacing.md,
   },
-  scoreText: {
-    fontSize: FontSizes.lg,
-    fontWeight: '700',
-  },
-  scoreLabel: {
-    fontSize: FontSizes.xs,
-    fontWeight: '500',
-    marginTop: 4,
-  },
-  chevron: {
-    marginLeft: Spacing.sm,
+  contentText: {
+    fontSize: FontSizes.md,
+    lineHeight: 24,
   },
 
   // Empty State
@@ -266,9 +216,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: Spacing.xxxl,
   },
-  emptyIcon: {
+  emptyIconBg: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: Spacing.lg,
-    opacity: 0.3,
   },
   emptyText: {
     fontSize: FontSizes.lg,

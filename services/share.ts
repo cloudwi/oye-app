@@ -14,7 +14,7 @@ export interface ShareContent {
 function formatFortuneMessage(fortune: Fortune): string {
   const date = format(new Date(fortune.date), 'M월 d일 (EEEE)', { locale: ko });
 
-  let message = `${date} 오늘의 운세\n\n`;
+  let message = `${date} 오늘의 예감\n\n`;
   message += `총운: ${fortune.overallScore}점\n`;
   message += `${fortune.overallMessage}\n\n`;
 
