@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '@/stores/auth-store';
 import { authService } from '@/services/auth';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || (__DEV__ ? 'http://192.168.226.225:8080' : 'https://api.yegam.today');
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.yegam.today';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
