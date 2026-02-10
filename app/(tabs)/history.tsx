@@ -13,7 +13,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useFortuneStore } from '@/stores/fortune-store';
 import { fortuneApi } from '@/services/api/fortune';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
   BrandColors,
@@ -60,8 +60,9 @@ export default function HistoryScreen() {
   };
 
   const renderItem = ({ item }: { item: Fortune }) => {
-    const formattedDate = format(new Date(item.date), 'M월 d일', { locale: ko });
-    const dayOfWeek = format(new Date(item.date), 'EEEE', { locale: ko });
+    const date = parseISO(item.date);
+    const formattedDate = format(date, 'M월 d일', { locale: ko });
+    const dayOfWeek = format(date, 'EEEE', { locale: ko });
     const isExpanded = selectedId === item.id;
 
     return (
