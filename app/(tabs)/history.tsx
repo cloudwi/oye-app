@@ -55,20 +55,17 @@ export default function HistoryScreen() {
     setRefreshing(false);
   };
 
-  const handleItemPress = (fortune: Fortune) => {
-    setSelectedId(selectedId === fortune.id ? null : fortune.id);
-  };
-
-  const renderItem = ({ item }: { item: Fortune }) => {
-    const date = parseISO(item.date);
+  const renderItem = ({ item, index }: { item: Fortune; index: number }) => {
+    const dateStr = item.date || item.createdAt;
+    const date = dateStr ? parseISO(dateStr) : new Date();
     const formattedDate = format(date, 'M월 d일', { locale: ko });
     const dayOfWeek = format(date, 'EEEE', { locale: ko });
-    const isExpanded = selectedId === item.id;
+    const isExpanded = selectedId === (item.id ?? index);
 
     return (
       <TouchableOpacity
         style={[styles.historyItem, { backgroundColor: surfaceColor }, Shadows.sm]}
-        onPress={() => handleItemPress(item)}
+        onPress={() => setSelectedId(selectedId === (item.id ?? index) ? null : (item.id ?? index))}
         activeOpacity={0.7}
       >
         <View style={styles.itemHeader}>
@@ -134,7 +131,7 @@ export default function HistoryScreen() {
       <FlatList
         data={history}
         renderItem={renderItem}
-        keyExtractor={(item) => String(item.id)}
+        keyExtractor={(item, index) => String(item.id ?? index)}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmpty}
