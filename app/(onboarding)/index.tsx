@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { authService } from '@/services/auth';
-import { BrandColors, Spacing, BorderRadius, FontSizes } from '@/constants/theme';
+import { Spacing, BorderRadius, FontSizes } from '@/constants/theme';
 import { KakaoSymbol } from '@/components/ui/kakao-symbol';
 
 export default function OnboardingWelcome() {
@@ -46,14 +45,11 @@ export default function OnboardingWelcome() {
       <View style={styles.content}>
         {/* Logo/Icon Area */}
         <View style={styles.logoArea}>
-          <LinearGradient
-            colors={[BrandColors.primary, BrandColors.secondary]}
-            style={styles.logoGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Text style={styles.logoText}>OYE</Text>
-          </LinearGradient>
+          <Image
+            source={require('@/assets/images/logo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
         </View>
 
         {/* Text Content */}
@@ -100,18 +96,10 @@ const styles = StyleSheet.create({
   logoArea: {
     marginBottom: Spacing.xxl,
   },
-  logoGradient: {
-    width: 120,
-    height: 120,
+  logoImage: {
+    width: 140,
+    height: 140,
     borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#FFF',
-    letterSpacing: 2,
   },
   textContent: {
     alignItems: 'center',
