@@ -14,6 +14,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import type { Gender, CalendarType } from '@/types/user';
 
 export default function OnboardingBirthdate() {
   const textColor = useThemeColor({}, 'text');
@@ -21,12 +22,14 @@ export default function OnboardingBirthdate() {
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
-  const { setBirthDate } = useUserStore();
+  const { setBirthDate, setGender, setCalendarType } = useUserStore();
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(1990);
   const [selectedMonth, setSelectedMonth] = useState(1);
   const [selectedDay, setSelectedDay] = useState(1);
+  const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
+  const [selectedCalendarType, setSelectedCalendarType] = useState<CalendarType>('SOLAR');
 
   const years = Array.from({ length: 80 }, (_, i) => currentYear - 10 - i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -36,6 +39,10 @@ export default function OnboardingBirthdate() {
   const handleNext = () => {
     const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
     setBirthDate(birthDate);
+    if (selectedGender) {
+      setGender(selectedGender);
+    }
+    setCalendarType(selectedCalendarType);
     router.push('/(onboarding)/notification');
   };
 
@@ -99,6 +106,48 @@ export default function OnboardingBirthdate() {
           맞춤 운세를 위해 알려주세요
         </Text>
 
+        {/* Gender Selection */}
+        <View style={styles.genderContainer}>
+          <TouchableOpacity
+            style={[
+              styles.genderButton,
+              { backgroundColor: surfaceColor },
+              selectedGender === 'MALE' && styles.genderButtonActive,
+            ]}
+            onPress={() => setSelectedGender('MALE')}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.genderText,
+                { color: textSecondary },
+                selectedGender === 'MALE' && styles.genderTextActive,
+              ]}
+            >
+              남성
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.genderButton,
+              { backgroundColor: surfaceColor },
+              selectedGender === 'FEMALE' && styles.genderButtonActive,
+            ]}
+            onPress={() => setSelectedGender('FEMALE')}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.genderText,
+                { color: textSecondary },
+                selectedGender === 'FEMALE' && styles.genderTextActive,
+              ]}
+            >
+              여성
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Date Display */}
         <View style={[styles.dateDisplay, { backgroundColor: surfaceColor }, Shadows.md]}>
           <Text style={[styles.dateText, { color: textColor }]}>
@@ -122,6 +171,46 @@ export default function OnboardingBirthdate() {
             <Text style={[styles.pickerLabel, { color: textSecondary }]}>일</Text>
             {renderPicker(days, selectedDay, setSelectedDay)}
           </View>
+        </View>
+
+        {/* Calendar Type Toggle */}
+        <View style={[styles.calendarToggle, { backgroundColor: surfaceColor }, Shadows.sm]}>
+          <TouchableOpacity
+            style={[
+              styles.calendarOption,
+              selectedCalendarType === 'SOLAR' && styles.calendarOptionActive,
+            ]}
+            onPress={() => setSelectedCalendarType('SOLAR')}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.calendarOptionText,
+                { color: textSecondary },
+                selectedCalendarType === 'SOLAR' && styles.calendarOptionTextActive,
+              ]}
+            >
+              양력
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.calendarOption,
+              selectedCalendarType === 'LUNAR' && styles.calendarOptionActive,
+            ]}
+            onPress={() => setSelectedCalendarType('LUNAR')}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.calendarOptionText,
+                { color: textSecondary },
+                selectedCalendarType === 'LUNAR' && styles.calendarOptionTextActive,
+              ]}
+            >
+              음력
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -167,13 +256,37 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: FontSizes.md,
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  genderContainer: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  genderButton: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  genderButtonActive: {
+    borderColor: BrandColors.primary,
+    backgroundColor: BrandColors.primary + '10',
+  },
+  genderText: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  genderTextActive: {
+    color: BrandColors.primary,
   },
   dateDisplay: {
     padding: Spacing.lg,
     borderRadius: BorderRadius.xl,
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   dateText: {
     fontSize: FontSizes.xl,
@@ -188,7 +301,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: BorderRadius.lg,
     overflow: 'hidden',
-    maxHeight: 280,
+    maxHeight: 220,
   },
   pickerLabel: {
     fontSize: FontSizes.xs,
@@ -216,6 +329,27 @@ const styles = StyleSheet.create({
   },
   pickerTextSelected: {
     fontWeight: '700',
+  },
+  calendarToggle: {
+    flexDirection: 'row',
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+    marginTop: Spacing.lg,
+  },
+  calendarOption: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+  },
+  calendarOptionActive: {
+    backgroundColor: BrandColors.primary + '15',
+  },
+  calendarOptionText: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  calendarOptionTextActive: {
+    color: BrandColors.primary,
   },
   footer: {
     paddingHorizontal: Spacing.lg,

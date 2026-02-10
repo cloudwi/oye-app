@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { User, OnboardingState } from '@/types/user';
+import type { User, OnboardingState, Gender, CalendarType } from '@/types/user';
 
 interface UserState {
   user: User | null;
@@ -13,6 +13,8 @@ interface UserState {
   setUser: (user: User | null) => void;
   updateUser: (updates: Partial<User>) => void;
   setBirthDate: (birthDate: string) => void;
+  setGender: (gender: Gender) => void;
+  setCalendarType: (calendarType: CalendarType) => void;
   setOnboardingStep: (step: OnboardingState['currentStep']) => void;
   completeOnboarding: () => void;
   setLoading: (loading: boolean) => void;
@@ -49,6 +51,38 @@ export const useUserStore = create<UserState>()(
                 kakaoId: '',
                 name: '',
                 birthDate,
+                gender: null,
+                calendarType: null,
+                createdAt: new Date().toISOString(),
+              },
+        })),
+
+      setGender: (gender) =>
+        set((state) => ({
+          user: state.user
+            ? { ...state.user, gender }
+            : {
+                id: 0,
+                kakaoId: '',
+                name: '',
+                birthDate: null,
+                gender,
+                calendarType: null,
+                createdAt: new Date().toISOString(),
+              },
+        })),
+
+      setCalendarType: (calendarType) =>
+        set((state) => ({
+          user: state.user
+            ? { ...state.user, calendarType }
+            : {
+                id: 0,
+                kakaoId: '',
+                name: '',
+                birthDate: null,
+                gender: null,
+                calendarType,
                 createdAt: new Date().toISOString(),
               },
         })),

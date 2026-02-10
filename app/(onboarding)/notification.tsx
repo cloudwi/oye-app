@@ -13,6 +13,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { notificationService } from '@/services/notification';
+import { userApi } from '@/services/api/user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
@@ -22,9 +23,22 @@ export default function OnboardingNotification() {
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
-  const { completeOnboarding } = useUserStore();
+  const { user, completeOnboarding } = useUserStore();
   const { setNotificationEnabled } = useSettingsStore();
   const [isLoading, setIsLoading] = useState(false);
+
+  const sendUserProfile = async () => {
+    try {
+      await userApi.updateMe({
+        name: user?.name || '사용자',
+        birthDate: user?.birthDate || undefined,
+        gender: user?.gender || undefined,
+        calendarType: user?.calendarType || undefined,
+      });
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+    }
+  };
 
   const handleEnableNotification = async () => {
     setIsLoading(true);
@@ -38,13 +52,15 @@ export default function OnboardingNotification() {
     } catch (error) {
       console.error('Error setting up notifications:', error);
     }
+    await sendUserProfile();
     setIsLoading(false);
     completeOnboarding();
     router.replace('/(tabs)');
   };
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     setNotificationEnabled(false);
+    await sendUserProfile();
     completeOnboarding();
     router.replace('/(tabs)');
   };
