@@ -238,18 +238,15 @@ export default function SettingsScreen() {
                   thumbColor={notificationEnabled ? BrandColors.primary : '#F3F4F6'}
                 />
               }
-              isLast={!notificationEnabled}
             />
-            {notificationEnabled && (
-              <SettingRow
-                icon="clock.fill"
-                iconColor="#F59E0B"
-                title="알림 시간"
-                subtitle={formatNotificationTime(notificationTime)}
-                onPress={() => router.push('/settings/notification-time')}
-                isLast
-              />
-            )}
+            <SettingRow
+              icon="clock.fill"
+              iconColor="#F59E0B"
+              title="알림 시간"
+              subtitle={formatNotificationTime(notificationTime)}
+              onPress={() => router.push('/settings/notification-time')}
+              isLast
+            />
           </View>
         </View>
 
