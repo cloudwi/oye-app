@@ -42,7 +42,7 @@ export default function TodayFortuneScreen() {
       setTodayFortune(fortune);
     } catch (error: any) {
       console.error('Error fetching fortune:', error);
-      setError(error.message || '운세를 불러오는데 실패했습니다.');
+      setError(error.message || '예감을 불러오는데 실패했습니다.');
     }
     setLoading(false);
   };
@@ -77,7 +77,7 @@ export default function TodayFortuneScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={BrandColors.primary} />
           <Text style={[styles.loadingText, { color: textSecondary }]}>
-            운세를 불러오는 중...
+            예감을 불러오는 중...
           </Text>
         </View>
       </SafeAreaView>
@@ -151,7 +151,7 @@ export default function TodayFortuneScreen() {
                   <IconSymbol name="lightbulb.fill" size={20} color="#F59E0B" />
                 </View>
                 <Text style={[styles.tipText, { color: textSecondary }]}>
-                  운세는 참고용입니다. 긍정적인 마음으로 하루를 시작하세요!
+                  예감은 참고용입니다. 긍정적인 마음으로 하루를 시작하세요!
                 </Text>
               </View>
             </View>
@@ -160,7 +160,7 @@ export default function TodayFortuneScreen() {
           <View style={[styles.emptyCard, { backgroundColor: surfaceColor }, Shadows.md]}>
             <IconSymbol name="exclamationmark.circle" size={48} color={textSecondary} />
             <Text style={[styles.emptyTitle, { color: textColor }]}>
-              운세를 불러올 수 없어요
+              예감을 불러올 수 없어요
             </Text>
             <Text style={[styles.emptySubtitle, { color: textSecondary }]}>
               아래로 당겨서 다시 시도해주세요

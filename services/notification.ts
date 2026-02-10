@@ -79,8 +79,8 @@ export const notificationService = {
 
       const identifier = await Notifications.scheduleNotificationAsync({
         content: {
-          title: '오늘의 예감가 도착했어요!',
-          body: '새로운 하루, 당신의 운세를 확인해보세요.',
+          title: '오늘의 예감이 도착했어요!',
+          body: '새로운 하루, 당신의 예감을 확인해보세요.',
           data: { type: 'daily_fortune' },
         },
         trigger: {

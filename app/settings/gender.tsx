@@ -4,37 +4,42 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
+import { userApi } from '@/services/api/user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 import type { Gender } from '@/types/user';
 
-export default function OnboardingGender() {
+export default function GenderEditScreen() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
-  const { setGender } = useUserStore();
-  const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
+  const { user, setGender } = useUserStore();
+  const [isSaving, setIsSaving] = useState(false);
+  const [selectedGender, setSelectedGender] = useState<Gender | null>(user?.gender || null);
 
-  const handleNext = () => {
-    if (selectedGender) {
-      setGender(selectedGender);
+  const handleSave = async () => {
+    setIsSaving(true);
+    setGender(selectedGender!);
+
+    try {
+      await userApi.updateMe({
+        name: user?.name || '사용자',
+        birthDate: user?.birthDate || undefined,
+        gender: selectedGender || undefined,
+        calendarType: user?.calendarType || undefined,
+      });
+    } catch (error) {
+      console.error('Error updating gender:', error);
     }
-    router.push('/(onboarding)/birthdate');
-  };
-
-  const handleSkip = () => {
-    router.push('/(onboarding)/birthdate');
-  };
-
-  const handleBack = () => {
+    setIsSaving(false);
     router.back();
   };
 
@@ -42,30 +47,26 @@ export default function OnboardingGender() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} activeOpacity={0.7}>
           <IconSymbol name="chevron.left" size={24} color={textColor} />
         </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: textColor }]}>성별 수정</Text>
+        <View style={styles.backButton} />
       </View>
 
-      {/* Content */}
       <View style={styles.content}>
-        <Text style={[styles.title, { color: textColor }]}>성별</Text>
-        <Text style={[styles.subtitle, { color: textSecondary }]}>
-          더 정확한 예감을 위해 알려주세요
-        </Text>
-
-        <View style={styles.optionsContainer}>
+        <View style={styles.optionRow}>
           <TouchableOpacity
             style={[
-              styles.optionCard,
+              styles.optionButton,
               { backgroundColor: surfaceColor },
-              Shadows.md,
-              selectedGender === 'MALE' && styles.optionCardActive,
+              Shadows.sm,
+              selectedGender === 'MALE' && styles.optionButtonActive,
             ]}
-            onPress={() => setSelectedGender('MALE')}
+            onPress={() => setSelectedGender(selectedGender === 'MALE' ? null : 'MALE')}
             activeOpacity={0.7}
           >
-            <IconSymbol name="figure.stand" size={48} color={selectedGender === 'MALE' ? BrandColors.primary : textSecondary} />
+            <IconSymbol name="figure.stand" size={28} color={selectedGender === 'MALE' ? BrandColors.primary : textSecondary} />
             <Text
               style={[
                 styles.optionText,
@@ -76,18 +77,17 @@ export default function OnboardingGender() {
               남성
             </Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={[
-              styles.optionCard,
+              styles.optionButton,
               { backgroundColor: surfaceColor },
-              Shadows.md,
-              selectedGender === 'FEMALE' && styles.optionCardActive,
+              Shadows.sm,
+              selectedGender === 'FEMALE' && styles.optionButtonActive,
             ]}
-            onPress={() => setSelectedGender('FEMALE')}
+            onPress={() => setSelectedGender(selectedGender === 'FEMALE' ? null : 'FEMALE')}
             activeOpacity={0.7}
           >
-            <IconSymbol name="figure.stand.dress" size={48} color={selectedGender === 'FEMALE' ? BrandColors.primary : textSecondary} />
+            <IconSymbol name="figure.stand.dress" size={28} color={selectedGender === 'FEMALE' ? BrandColors.primary : textSecondary} />
             <Text
               style={[
                 styles.optionText,
@@ -101,29 +101,19 @@ export default function OnboardingGender() {
         </View>
       </View>
 
-      {/* Footer */}
+      {/* Save Button */}
       <View style={styles.footer}>
         <TouchableOpacity
-          onPress={handleNext}
+          onPress={handleSave}
           activeOpacity={0.9}
-          disabled={!selectedGender}
+          disabled={isSaving}
+          style={[styles.saveButton, { backgroundColor: BrandColors.primary }]}
         >
-          <LinearGradient
-            colors={
-              selectedGender
-                ? [BrandColors.primary, BrandColors.secondary]
-                : ['#D1D5DB', '#D1D5DB']
-            }
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>다음</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7}>
-          <Text style={[styles.skipText, { color: textSecondary }]}>건너뛰기</Text>
+          {isSaving ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.saveButtonText}>저장</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -135,6 +125,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
   },
@@ -144,37 +137,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  headerTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+  },
   content: {
     flex: 1,
     paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xl,
   },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-    marginBottom: Spacing.xs,
-  },
-  subtitle: {
-    fontSize: FontSizes.md,
-    marginBottom: Spacing.xxl,
-  },
-  optionsContainer: {
+  optionRow: {
     flexDirection: 'row',
     gap: Spacing.md,
   },
-  optionCard: {
+  optionButton: {
     flex: 1,
-    paddingVertical: Spacing.xl + Spacing.sm,
+    paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.xl,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
+    gap: Spacing.sm,
   },
-  optionCardActive: {
+  optionButtonActive: {
     borderColor: BrandColors.primary,
     backgroundColor: BrandColors.primary + '10',
   },
   optionText: {
-    fontSize: FontSizes.lg,
+    fontSize: FontSizes.md,
     fontWeight: '600',
   },
   optionTextActive: {
@@ -183,22 +173,16 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
+    paddingTop: Spacing.sm,
   },
-  button: {
+  saveButton: {
     paddingVertical: Spacing.md + 2,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
   },
-  buttonText: {
+  saveButtonText: {
     color: '#FFF',
     fontSize: FontSizes.lg,
     fontWeight: '600',
-  },
-  skipButton: {
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-  },
-  skipText: {
-    fontSize: FontSizes.md,
   },
 });

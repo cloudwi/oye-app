@@ -99,7 +99,7 @@ export default function HistoryScreen() {
         아직 기록이 없어요
       </Text>
       <Text style={[styles.emptySubtext, { color: textSecondary }]}>
-        매일 운세를 확인하면 이곳에 기록됩니다
+        매일 예감을 확인하면 이곳에 기록됩니다
       </Text>
     </View>
   );

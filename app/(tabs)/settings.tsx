@@ -107,6 +107,13 @@ export default function SettingsScreen() {
   const genderLabel = user?.gender === 'MALE' ? '남성' : user?.gender === 'FEMALE' ? '여성' : '미설정';
   const calendarLabel = user?.calendarType === 'SOLAR' ? '양력' : user?.calendarType === 'LUNAR' ? '음력' : '미설정';
 
+  const formatNotificationTime = (time: string) => {
+    const [h, m] = time.split(':').map(Number);
+    const period = h < 12 ? '오전' : '오후';
+    const displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return `매일 ${period} ${displayHour}시 ${String(m).padStart(2, '0')}분`;
+  };
+
   const handleNotificationToggle = async (enabled: boolean) => {
     if (enabled) {
       const granted = await notificationService.requestPermissions();
@@ -201,21 +208,14 @@ export default function SettingsScreen() {
               iconColor={BrandColors.primary}
               title="성별"
               subtitle={genderLabel}
-              onPress={() => router.push('/settings/profile')}
+              onPress={() => router.push('/settings/gender')}
             />
             <SettingRow
               icon="calendar"
               iconColor={BrandColors.primary}
               title="생년월일"
-              subtitle={formattedBirthDate}
-              onPress={() => router.push('/settings/profile')}
-            />
-            <SettingRow
-              icon="sun.max.fill"
-              iconColor="#F59E0B"
-              title="달력 유형"
-              subtitle={calendarLabel}
-              onPress={() => router.push('/settings/profile')}
+              subtitle={`${formattedBirthDate} (${calendarLabel})`}
+              onPress={() => router.push('/settings/birthdate')}
               isLast
             />
           </View>
@@ -229,7 +229,7 @@ export default function SettingsScreen() {
               icon="bell.fill"
               iconColor="#F59E0B"
               title="푸시 알림"
-              subtitle={notificationEnabled ? `매일 ${notificationTime}` : '꺼짐'}
+              subtitle={notificationEnabled ? '켜짐' : '꺼짐'}
               rightElement={
                 <Switch
                   value={notificationEnabled}
@@ -238,8 +238,18 @@ export default function SettingsScreen() {
                   thumbColor={notificationEnabled ? BrandColors.primary : '#F3F4F6'}
                 />
               }
-              isLast
+              isLast={!notificationEnabled}
             />
+            {notificationEnabled && (
+              <SettingRow
+                icon="clock.fill"
+                iconColor="#F59E0B"
+                title="알림 시간"
+                subtitle={formatNotificationTime(notificationTime)}
+                onPress={() => router.push('/settings/notification-time')}
+                isLast
+              />
+            )}
           </View>
         </View>
 

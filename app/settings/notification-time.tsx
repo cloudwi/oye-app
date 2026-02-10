@@ -7,38 +7,32 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { useUserStore } from '@/stores/user-store';
+import { useSettingsStore } from '@/stores/settings-store';
+import { notificationService } from '@/services/notification';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
-export default function OnboardingBirthdate() {
+export default function NotificationTimeScreen() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
-  const { setBirthDate } = useUserStore();
+  const { notificationTime, setNotificationTime } = useSettingsStore();
+  const [hour, minute] = notificationTime.split(':').map(Number);
 
-  const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(1990);
-  const [selectedMonth, setSelectedMonth] = useState(1);
-  const [selectedDay, setSelectedDay] = useState(1);
+  const [selectedHour, setSelectedHour] = useState(hour);
+  const [selectedMinute, setSelectedMinute] = useState(minute);
 
-  const years = Array.from({ length: 80 }, (_, i) => currentYear - 10 - i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
 
-  const handleNext = () => {
-    const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
-    setBirthDate(birthDate);
-    router.push('/(onboarding)/calendartype');
-  };
-
-  const handleBack = () => {
+  const handleSave = async () => {
+    const timeStr = `${String(selectedHour).padStart(2, '0')}:${String(selectedMinute).padStart(2, '0')}`;
+    setNotificationTime(timeStr);
+    await notificationService.scheduleDailyNotification(selectedHour, selectedMinute);
     router.back();
   };
 
@@ -46,7 +40,7 @@ export default function OnboardingBirthdate() {
     data: number[],
     selected: number,
     onSelect: (value: number) => void,
-    suffix: string = ''
+    formatter?: (value: number) => string,
   ) => (
     <ScrollView
       style={styles.picker}
@@ -57,6 +51,7 @@ export default function OnboardingBirthdate() {
     >
       {data.map((item) => {
         const isSelected = selected === item;
+        const label = formatter ? formatter(item) : String(item).padStart(2, '0');
         return (
           <TouchableOpacity
             key={item}
@@ -74,7 +69,7 @@ export default function OnboardingBirthdate() {
                 isSelected && styles.pickerTextSelected,
               ]}
             >
-              {item}{suffix}
+              {label}
             </Text>
           </TouchableOpacity>
         );
@@ -82,59 +77,49 @@ export default function OnboardingBirthdate() {
     </ScrollView>
   );
 
+  const period = selectedHour < 12 ? '오전' : '오후';
+  const displayHour = selectedHour === 0 ? 12 : selectedHour > 12 ? selectedHour - 12 : selectedHour;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} activeOpacity={0.7}>
           <IconSymbol name="chevron.left" size={24} color={textColor} />
         </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: textColor }]}>알림 시간</Text>
+        <View style={styles.backButton} />
       </View>
 
-      {/* Content */}
       <View style={styles.content}>
-        <Text style={[styles.title, { color: textColor }]}>생년월일</Text>
-        <Text style={[styles.subtitle, { color: textSecondary }]}>
-          맞춤 예감을 위해 알려주세요
-        </Text>
-
-        {/* Date Display */}
-        <View style={[styles.dateDisplay, { backgroundColor: surfaceColor }, Shadows.md]}>
-          <Text style={[styles.dateText, { color: textColor }]}>
-            {selectedYear}년 {selectedMonth}월 {selectedDay}일
+        {/* Time Display */}
+        <View style={[styles.timeDisplay, { backgroundColor: surfaceColor }, Shadows.sm]}>
+          <Text style={[styles.timeText, { color: textColor }]}>
+            {period} {displayHour}시 {String(selectedMinute).padStart(2, '0')}분
           </Text>
         </View>
 
         {/* Pickers */}
         <View style={styles.pickerContainer}>
           <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
-            <Text style={[styles.pickerLabel, { color: textSecondary }]}>년</Text>
-            {renderPicker(years, selectedYear, setSelectedYear)}
+            <Text style={[styles.pickerLabel, { color: textSecondary }]}>시</Text>
+            {renderPicker(hours, selectedHour, setSelectedHour)}
           </View>
-
           <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
-            <Text style={[styles.pickerLabel, { color: textSecondary }]}>월</Text>
-            {renderPicker(months, selectedMonth, setSelectedMonth)}
-          </View>
-
-          <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
-            <Text style={[styles.pickerLabel, { color: textSecondary }]}>일</Text>
-            {renderPicker(days, selectedDay, setSelectedDay)}
+            <Text style={[styles.pickerLabel, { color: textSecondary }]}>분</Text>
+            {renderPicker(minutes, selectedMinute, setSelectedMinute)}
           </View>
         </View>
       </View>
 
-      {/* Footer */}
+      {/* Save Button */}
       <View style={styles.footer}>
-        <TouchableOpacity onPress={handleNext} activeOpacity={0.9}>
-          <LinearGradient
-            colors={[BrandColors.primary, BrandColors.secondary]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>다음</Text>
-          </LinearGradient>
+        <TouchableOpacity
+          onPress={handleSave}
+          activeOpacity={0.9}
+          style={[styles.saveButton, { backgroundColor: BrandColors.primary }]}
+        >
+          <Text style={styles.saveButtonText}>저장</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -146,6 +131,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
   },
@@ -155,39 +143,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  headerTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+  },
   content: {
     flex: 1,
     paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xl,
   },
-  title: {
+  timeDisplay: {
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  timeText: {
     fontSize: FontSizes.xxl,
     fontWeight: '700',
-    marginBottom: Spacing.xs,
-  },
-  subtitle: {
-    fontSize: FontSizes.md,
-    marginBottom: Spacing.xl,
-  },
-  dateDisplay: {
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-  },
-  dateText: {
-    fontSize: FontSizes.xl,
-    fontWeight: '600',
   },
   pickerContainer: {
     flexDirection: 'row',
-    gap: Spacing.sm,
-    flex: 1,
+    gap: Spacing.md,
   },
   pickerWrapper: {
     flex: 1,
     borderRadius: BorderRadius.lg,
     overflow: 'hidden',
-    maxHeight: 280,
+    maxHeight: 300,
   },
   pickerLabel: {
     fontSize: FontSizes.xs,
@@ -219,13 +202,14 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
+    paddingTop: Spacing.sm,
   },
-  button: {
+  saveButton: {
     paddingVertical: Spacing.md + 2,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
   },
-  buttonText: {
+  saveButtonText: {
     color: '#FFF',
     fontSize: FontSizes.lg,
     fontWeight: '600',

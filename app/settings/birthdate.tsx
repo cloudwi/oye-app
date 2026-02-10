@@ -14,19 +14,17 @@ import { useUserStore } from '@/stores/user-store';
 import { userApi } from '@/services/api/user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
-import type { Gender, CalendarType } from '@/types/user';
+import type { CalendarType } from '@/types/user';
 
-export default function ProfileEditScreen() {
+export default function BirthDateEditScreen() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
-  const dividerColor = useThemeColor({ light: '#E5E7EB', dark: '#374151' }, 'divider');
 
-  const { user, setGender, setCalendarType, setBirthDate } = useUserStore();
+  const { user, setBirthDate, setCalendarType } = useUserStore();
   const [isSaving, setIsSaving] = useState(false);
 
-  const [selectedGender, setSelectedGender] = useState<Gender | null>(user?.gender || null);
   const [selectedCalendarType, setSelectedCalendarType] = useState<CalendarType | null>(user?.calendarType || null);
 
   const currentYear = new Date().getFullYear();
@@ -45,9 +43,6 @@ export default function ProfileEditScreen() {
     const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
 
     setBirthDate(birthDate);
-    if (selectedGender) {
-      setGender(selectedGender);
-    }
     if (selectedCalendarType) {
       setCalendarType(selectedCalendarType);
     }
@@ -56,17 +51,13 @@ export default function ProfileEditScreen() {
       await userApi.updateMe({
         name: user?.name || '사용자',
         birthDate,
-        gender: selectedGender || undefined,
+        gender: user?.gender || undefined,
         calendarType: selectedCalendarType || undefined,
       });
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('Error updating birthdate:', error);
     }
     setIsSaving(false);
-    router.back();
-  };
-
-  const handleBack = () => {
     router.back();
   };
 
@@ -113,63 +104,14 @@ export default function ProfileEditScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} activeOpacity={0.7}>
           <IconSymbol name="chevron.left" size={24} color={textColor} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>프로필 수정</Text>
+        <Text style={[styles.headerTitle, { color: textColor }]}>생년월일 수정</Text>
         <View style={styles.backButton} />
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Gender Section */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: textSecondary }]}>성별</Text>
-          <View style={styles.optionRow}>
-            <TouchableOpacity
-              style={[
-                styles.optionButton,
-                { backgroundColor: surfaceColor },
-                Shadows.sm,
-                selectedGender === 'MALE' && styles.optionButtonActive,
-              ]}
-              onPress={() => setSelectedGender(selectedGender === 'MALE' ? null : 'MALE')}
-              activeOpacity={0.7}
-            >
-              <IconSymbol name="figure.stand" size={28} color={selectedGender === 'MALE' ? BrandColors.primary : textSecondary} />
-              <Text
-                style={[
-                  styles.optionText,
-                  { color: textColor },
-                  selectedGender === 'MALE' && styles.optionTextActive,
-                ]}
-              >
-                남성
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.optionButton,
-                { backgroundColor: surfaceColor },
-                Shadows.sm,
-                selectedGender === 'FEMALE' && styles.optionButtonActive,
-              ]}
-              onPress={() => setSelectedGender(selectedGender === 'FEMALE' ? null : 'FEMALE')}
-              activeOpacity={0.7}
-            >
-              <IconSymbol name="figure.stand.dress" size={28} color={selectedGender === 'FEMALE' ? BrandColors.primary : textSecondary} />
-              <Text
-                style={[
-                  styles.optionText,
-                  { color: textColor },
-                  selectedGender === 'FEMALE' && styles.optionTextActive,
-                ]}
-              >
-                여성
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
         {/* Birth Date Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionLabel, { color: textSecondary }]}>생년월일</Text>

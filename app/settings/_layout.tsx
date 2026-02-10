@@ -8,7 +8,9 @@ export default function SettingsLayout() {
         animation: 'slide_from_right',
       }}
     >
-      <Stack.Screen name="profile" />
+      <Stack.Screen name="gender" />
+      <Stack.Screen name="birthdate" />
+      <Stack.Screen name="notification-time" />
     </Stack>
   );
 }
