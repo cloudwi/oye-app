@@ -65,17 +65,32 @@ export const authService = {
    */
   parseTokenFromUrl(url: string): AuthToken | null {
     try {
-      const parsed = Linking.parse(url);
-      const params = parsed.queryParams;
+      // 웹: 표준 URL API 사용, 네이티브: expo-linking 사용
+      let token: string | null = null;
+      let refreshToken: string | null = null;
+      let expiresAt: string | null = null;
 
-      if (!params?.token) {
+      if (Platform.OS === 'web' && typeof URL !== 'undefined') {
+        const parsed = new URL(url);
+        token = parsed.searchParams.get('token');
+        refreshToken = parsed.searchParams.get('refresh_token');
+        expiresAt = parsed.searchParams.get('expires_at');
+      } else {
+        const parsed = Linking.parse(url);
+        const params = parsed.queryParams;
+        token = (params?.token as string) || null;
+        refreshToken = (params?.refresh_token as string) || null;
+        expiresAt = (params?.expires_at as string) || null;
+      }
+
+      if (!token) {
         return null;
       }
 
       return {
-        accessToken: params.token as string,
-        refreshToken: (params.refresh_token as string) || undefined,
-        expiresAt: params.expires_at ? Number(params.expires_at) : undefined,
+        accessToken: token,
+        refreshToken: refreshToken || undefined,
+        expiresAt: expiresAt ? Number(expiresAt) : undefined,
       };
     } catch (error) {
       console.error('Token parsing error:', error);

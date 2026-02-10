@@ -4,19 +4,19 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useSettingsStore } from '@/stores/settings-store';
+import { Colors } from '@/constants/theme';
 
 // Custom themes for the fortune app
 const FortuneDefaultTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#FF6B6B',
-    background: '#FFFFFF',
-    card: '#FFFFFF',
-    text: '#11181C',
-    border: '#E5E5E5',
-    notification: '#FF6B6B',
+    primary: Colors.light.tint,
+    background: Colors.light.background,
+    card: Colors.light.card,
+    text: Colors.light.text,
+    border: Colors.light.divider,
+    notification: Colors.light.tint,
   },
 };
 
@@ -24,12 +24,12 @@ const FortuneDarkTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    primary: '#FF6B6B',
-    background: '#151718',
-    card: '#1E2022',
-    text: '#ECEDEE',
-    border: '#333333',
-    notification: '#FF6B6B',
+    primary: Colors.dark.tint,
+    background: Colors.dark.background,
+    card: Colors.dark.card,
+    text: Colors.dark.text,
+    border: Colors.dark.divider,
+    notification: Colors.dark.tint,
   },
 };
 
@@ -38,22 +38,18 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
-  const systemColorScheme = useColorScheme();
-  const { darkMode } = useSettingsStore();
-
-  const effectiveColorScheme =
-    darkMode === 'system' ? systemColorScheme : darkMode;
+  const colorScheme = useColorScheme();
 
   return (
     <ThemeProvider
-      value={effectiveColorScheme === 'dark' ? FortuneDarkTheme : FortuneDefaultTheme}
+      value={colorScheme === 'dark' ? FortuneDarkTheme : FortuneDefaultTheme}
     >
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="auth" />
       </Stack>
-      <StatusBar style={effectiveColorScheme === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>
   );
 }
