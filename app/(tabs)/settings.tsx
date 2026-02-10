@@ -104,6 +104,9 @@ export default function SettingsScreen() {
     ? format(new Date(user.birthDate), 'yyyy.MM.dd', { locale: ko })
     : '미설정';
 
+  const genderLabel = user?.gender === 'MALE' ? '남성' : user?.gender === 'FEMALE' ? '여성' : '미설정';
+  const calendarLabel = user?.calendarType === 'SOLAR' ? '양력' : user?.calendarType === 'LUNAR' ? '음력' : '미설정';
+
   const handleNotificationToggle = async (enabled: boolean) => {
     if (enabled) {
       const granted = await notificationService.requestPermissions();
@@ -194,10 +197,25 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionLabel, { color: textSecondary }]}>프로필</Text>
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
+              icon="person.fill"
+              iconColor={BrandColors.primary}
+              title="성별"
+              subtitle={genderLabel}
+              onPress={() => router.push('/settings/profile')}
+            />
+            <SettingRow
               icon="calendar"
               iconColor={BrandColors.primary}
               title="생년월일"
               subtitle={formattedBirthDate}
+              onPress={() => router.push('/settings/profile')}
+            />
+            <SettingRow
+              icon="sun.max.fill"
+              iconColor="#F59E0B"
+              title="달력 유형"
+              subtitle={calendarLabel}
+              onPress={() => router.push('/settings/profile')}
               isLast
             />
           </View>
