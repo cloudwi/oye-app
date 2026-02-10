@@ -1,20 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
+import { Redirect } from 'expo-router';
 import { useAuthStore } from '@/stores/auth-store';
-import { useUserStore } from '@/stores/user-store';
 import { authService } from '@/services/auth';
 import { BrandColors } from '@/constants/theme';
 
 export default function AuthCallback() {
   const { setToken } = useAuthStore();
-  const { onboarding } = useUserStore();
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
-    handleCallback();
-  }, []);
-
-  const handleCallback = () => {
     if (typeof window === 'undefined') return;
 
     const url = window.location.href;
@@ -22,17 +17,14 @@ export default function AuthCallback() {
 
     if (token) {
       setToken(token);
-
-      if (onboarding.completed) {
-        router.replace('/(tabs)');
-      } else {
-        router.replace('/(onboarding)/birthdate');
-      }
-    } else {
-      // 토큰 파싱 실패 시 로그인 화면으로
-      router.replace('/(onboarding)');
     }
-  };
+
+    setDone(true);
+  }, []);
+
+  if (done) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   return (
     <View style={styles.container}>
