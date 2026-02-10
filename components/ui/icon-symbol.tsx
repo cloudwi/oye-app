@@ -30,6 +30,11 @@ const MAPPING = {
   'rectangle.portrait.and.arrow.right': 'logout',
   'trash.fill': 'delete',
   'clock': 'schedule',
+  'clock.fill': 'schedule',
+  'person.fill': 'person',
+  'sun.max.fill': 'wb-sunny',
+  'figure.stand': 'male',
+  'figure.stand.dress': 'female',
 } as IconMapping;
 
 /**
