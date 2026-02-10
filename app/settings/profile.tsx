@@ -135,7 +135,7 @@ export default function ProfileEditScreen() {
               onPress={() => setSelectedGender(selectedGender === 'MALE' ? null : 'MALE')}
               activeOpacity={0.7}
             >
-              <Text style={styles.optionEmoji}>👨</Text>
+              <IconSymbol name="figure.stand" size={28} color={selectedGender === 'MALE' ? BrandColors.primary : textSecondary} />
               <Text
                 style={[
                   styles.optionText,
@@ -156,7 +156,7 @@ export default function ProfileEditScreen() {
               onPress={() => setSelectedGender(selectedGender === 'FEMALE' ? null : 'FEMALE')}
               activeOpacity={0.7}
             >
-              <Text style={styles.optionEmoji}>👩</Text>
+              <IconSymbol name="figure.stand.dress" size={28} color={selectedGender === 'FEMALE' ? BrandColors.primary : textSecondary} />
               <Text
                 style={[
                   styles.optionText,
@@ -315,9 +315,6 @@ const styles = StyleSheet.create({
   optionButtonActive: {
     borderColor: BrandColors.primary,
     backgroundColor: BrandColors.primary + '10',
-  },
-  optionEmoji: {
-    fontSize: 28,
   },
   optionText: {
     fontSize: FontSizes.md,

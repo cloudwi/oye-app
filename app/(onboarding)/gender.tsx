@@ -65,7 +65,7 @@ export default function OnboardingGender() {
             onPress={() => setSelectedGender('MALE')}
             activeOpacity={0.7}
           >
-            <Text style={styles.optionEmoji}>👨</Text>
+            <IconSymbol name="figure.stand" size={48} color={selectedGender === 'MALE' ? BrandColors.primary : textSecondary} />
             <Text
               style={[
                 styles.optionText,
@@ -87,7 +87,7 @@ export default function OnboardingGender() {
             onPress={() => setSelectedGender('FEMALE')}
             activeOpacity={0.7}
           >
-            <Text style={styles.optionEmoji}>👩</Text>
+            <IconSymbol name="figure.stand.dress" size={48} color={selectedGender === 'FEMALE' ? BrandColors.primary : textSecondary} />
             <Text
               style={[
                 styles.optionText,
@@ -172,10 +172,6 @@ const styles = StyleSheet.create({
   optionCardActive: {
     borderColor: BrandColors.primary,
     backgroundColor: BrandColors.primary + '10',
-  },
-  optionEmoji: {
-    fontSize: 48,
-    marginBottom: Spacing.md,
   },
   optionText: {
     fontSize: FontSizes.lg,
