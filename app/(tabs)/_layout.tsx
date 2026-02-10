@@ -29,14 +29,12 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarLabelStyle: {
           fontSize: 11,
+          marginBottom: 4,
         },
         tabBarIconStyle: {
-          marginTop: 2,
+          marginTop: 4,
         },
         tabBarStyle: {
-          height: 64,
-          paddingBottom: 8,
-          paddingTop: 6,
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
