@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Platform, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
@@ -12,11 +13,26 @@ export default function OnboardingWelcome() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState<'kakao' | 'apple' | null>(null);
+  const [appleSignInAvailable, setAppleSignInAvailable] = useState(false);
   const { onboarding } = useUserStore();
 
+  useEffect(() => {
+    authService.isAppleSignInAvailable().then(setAppleSignInAvailable);
+  }, []);
+
+  const handleLoginSuccess = (token: any) => {
+    if (token) {
+      if (onboarding.completed) {
+        router.replace('/(tabs)');
+      } else {
+        router.push('/(onboarding)/gender');
+      }
+    }
+  };
+
   const handleKakaoLogin = async () => {
-    setIsLoading(true);
+    setLoadingProvider('kakao');
     try {
       const token = await authService.loginWithKakao();
 
@@ -24,11 +40,7 @@ export default function OnboardingWelcome() {
       if (Platform.OS === 'web') return;
 
       if (token) {
-        if (onboarding.completed) {
-          router.replace('/(tabs)');
-        } else {
-          router.push('/(onboarding)/gender');
-        }
+        handleLoginSuccess(token);
       } else {
         Alert.alert('로그인 실패', '카카오 로그인에 실패했습니다. 다시 시도해주세요.');
       }
@@ -36,7 +48,25 @@ export default function OnboardingWelcome() {
       console.error('Login error:', error);
       Alert.alert('로그인 오류', '로그인 중 문제가 발생했습니다.');
     } finally {
-      setIsLoading(false);
+      setLoadingProvider(null);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setLoadingProvider('apple');
+    try {
+      const token = await authService.loginWithApple();
+
+      if (token) {
+        handleLoginSuccess(token);
+      } else {
+        // null은 사용자 취소 포함 - 별도 알림 불필요
+      }
+    } catch (error) {
+      console.error('Apple login error:', error);
+      Alert.alert('로그인 오류', '로그인 중 문제가 발생했습니다.');
+    } finally {
+      setLoadingProvider(null);
     }
   };
 
@@ -61,15 +91,24 @@ export default function OnboardingWelcome() {
         </View>
       </View>
 
-      {/* Bottom Button */}
+      {/* Bottom Buttons */}
       <View style={styles.footer}>
+        {appleSignInAvailable && (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            cornerRadius={BorderRadius.lg}
+            style={styles.appleButton}
+            onPress={handleAppleLogin}
+          />
+        )}
         <TouchableOpacity
           onPress={handleKakaoLogin}
           activeOpacity={0.9}
-          disabled={isLoading}
+          disabled={loadingProvider !== null}
           style={styles.kakaoButton}
         >
-          {isLoading ? (
+          {loadingProvider === 'kakao' ? (
             <ActivityIndicator size="small" color="#3C1E1E" />
           ) : (
             <>
@@ -117,6 +156,10 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xxl,
+    gap: Spacing.sm,
+  },
+  appleButton: {
+    height: 50,
   },
   kakaoButton: {
     backgroundColor: '#FEE500',

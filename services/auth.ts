@@ -1,11 +1,13 @@
 import { Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuthStore } from '@/stores/auth-store';
 import type { AuthToken } from '@/types/auth';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.yegam.today';
 const KAKAO_LOGIN_PATH = '/api/auth/login/kakao';
+const APPLE_LOGIN_PATH = '/api/auth/login/apple';
 const NATIVE_CALLBACK_SCHEME = 'oyeapp://auth/callback';
 
 export const authService = {
@@ -94,6 +96,64 @@ export const authService = {
       };
     } catch (error) {
       console.error('Token parsing error:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Apple 로그인 가능 여부 확인 (iOS만 지원)
+   */
+  async isAppleSignInAvailable(): Promise<boolean> {
+    if (Platform.OS !== 'ios') return false;
+    return await AppleAuthentication.isAvailableAsync();
+  },
+
+  /**
+   * Apple 로그인
+   */
+  async loginWithApple(): Promise<AuthToken | null> {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        return null;
+      }
+
+      const fullName = [credential.fullName?.givenName, credential.fullName?.familyName]
+        .filter(Boolean)
+        .join(' ') || null;
+
+      const response = await fetch(`${API_BASE_URL}${APPLE_LOGIN_PATH}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identityToken: credential.identityToken,
+          fullName,
+        }),
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      const token: AuthToken = {
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        expiresAt: data.expiresAt,
+      };
+
+      useAuthStore.getState().setToken(token);
+      return token;
+    } catch (error: any) {
+      if (error.code === 'ERR_REQUEST_CANCELED') {
+        return null;
+      }
+      console.error('Apple login error:', error);
       return null;
     }
   },
