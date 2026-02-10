@@ -18,10 +18,18 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'chevron.left': 'chevron-left',
   'sparkles': 'auto-awesome',
   'square.and.arrow.up': 'share',
   'lightbulb.fill': 'lightbulb',
   'exclamationmark.circle': 'error-outline',
+  'calendar': 'calendar-today',
+  'bell.fill': 'notifications',
+  'moon.fill': 'dark-mode',
+  'gearshape.fill': 'settings',
+  'rectangle.portrait.and.arrow.right': 'logout',
+  'trash.fill': 'delete',
+  'clock': 'schedule',
 } as IconMapping;
 
 /**

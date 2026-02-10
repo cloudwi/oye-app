@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -112,7 +113,11 @@ export default function SettingsScreen() {
         await notificationService.scheduleDailyNotification(hour, minute);
         setNotificationEnabled(true);
       } else {
-        Alert.alert('알림 권한', '설정에서 알림 권한을 허용해주세요.');
+        if (Platform.OS === 'web') {
+          window.alert('설정에서 알림 권한을 허용해주세요.');
+        } else {
+          Alert.alert('알림 권한', '설정에서 알림 권한을 허용해주세요.');
+        }
       }
     } else {
       await notificationService.cancelAllScheduledNotifications();
@@ -135,44 +140,44 @@ export default function SettingsScreen() {
     }
   };
 
+  const performLogout = () => {
+    authLogout();
+    resetUser();
+    resetSettings();
+    resetFortune();
+    router.replace('/(onboarding)');
+  };
+
   const handleLogout = () => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('로그아웃 하시겠습니까?')) {
+        performLogout();
+      }
+      return;
+    }
     Alert.alert(
       '로그아웃',
       '로그아웃 하시겠습니까?',
       [
         { text: '취소', style: 'cancel' },
-        {
-          text: '로그아웃',
-          style: 'destructive',
-          onPress: () => {
-            authLogout();
-            resetUser();
-            resetSettings();
-            resetFortune();
-            router.replace('/(onboarding)');
-          },
-        },
+        { text: '로그아웃', style: 'destructive', onPress: performLogout },
       ]
     );
   };
 
   const handleResetData = () => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('모든 데이터가 삭제됩니다. 계속하시겠습니까?')) {
+        performLogout();
+      }
+      return;
+    }
     Alert.alert(
       '데이터 초기화',
       '모든 데이터가 삭제됩니다.\n계속하시겠습니까?',
       [
         { text: '취소', style: 'cancel' },
-        {
-          text: '초기화',
-          style: 'destructive',
-          onPress: () => {
-            authLogout();
-            resetUser();
-            resetSettings();
-            resetFortune();
-            router.replace('/(onboarding)');
-          },
-        },
+        { text: '초기화', style: 'destructive', onPress: performLogout },
       ]
     );
   };

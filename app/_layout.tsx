@@ -1,6 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Platform, View, StyleSheet } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -39,8 +40,9 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const bgColor = colorScheme === 'dark' ? Colors.dark.background : Colors.light.background;
 
-  return (
+  const content = (
     <ThemeProvider
       value={colorScheme === 'dark' ? FortuneDarkTheme : FortuneDefaultTheme}
     >
@@ -52,4 +54,30 @@ export default function RootLayout() {
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>
   );
+
+  if (Platform.OS === 'web') {
+    return (
+      <View style={[webStyles.outer, { backgroundColor: bgColor }]}>
+        <View style={[webStyles.inner, { backgroundColor: bgColor }]}>
+          {content}
+        </View>
+      </View>
+    );
+  }
+
+  return content;
 }
+
+const webStyles = StyleSheet.create({
+  outer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  inner: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 480,
+    // @ts-ignore - web only
+    boxShadow: '0 0 20px rgba(0, 0, 0, 0.1)',
+  },
+});
