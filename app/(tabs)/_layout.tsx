@@ -1,5 +1,6 @@
 import { Tabs, Redirect } from 'expo-router';
 import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -12,6 +13,7 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { isAuthenticated } = useAuthStore();
   const { onboarding } = useUserStore();
+  const insets = useSafeAreaInsets();
 
   if (!isAuthenticated) {
     return <Redirect href="/(onboarding)" />;
@@ -29,12 +31,10 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarLabelStyle: {
           fontSize: 11,
-          marginBottom: 4,
-        },
-        tabBarIconStyle: {
-          marginTop: 4,
         },
         tabBarStyle: {
+          height: 56 + insets.bottom,
+          paddingBottom: insets.bottom,
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
