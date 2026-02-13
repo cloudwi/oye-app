@@ -9,3 +9,18 @@ export interface Fortune {
 export interface FortuneHistory {
   fortunes: Fortune[];
 }
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T | null;
+  message: string | null;
+  code: string | null;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}

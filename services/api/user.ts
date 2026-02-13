@@ -11,4 +11,8 @@ export const userApi = {
     const response = await apiClient.put<User>('/api/users/me', data);
     return response.data;
   },
+
+  async deleteMe(): Promise<void> {
+    await apiClient.delete('/api/users/me');
+  },
 };

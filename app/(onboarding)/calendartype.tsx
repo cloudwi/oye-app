@@ -42,7 +42,7 @@ export default function OnboardingCalendarType() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="뒤로 가기">
           <IconSymbol name="chevron.left" size={24} color={textColor} />
         </TouchableOpacity>
       </View>
@@ -64,6 +64,8 @@ export default function OnboardingCalendarType() {
             ]}
             onPress={() => setSelectedType('SOLAR')}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`양력, 일반 달력 기준${selectedType === 'SOLAR' ? ', 선택됨' : ''}`}
           >
             <IconSymbol name="sun.max.fill" size={48} color={selectedType === 'SOLAR' ? BrandColors.primary : textSecondary} />
             <Text
@@ -89,6 +91,8 @@ export default function OnboardingCalendarType() {
             ]}
             onPress={() => setSelectedType('LUNAR')}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`음력, 음력 달력 기준${selectedType === 'LUNAR' ? ', 선택됨' : ''}`}
           >
             <IconSymbol name="moon.fill" size={48} color={selectedType === 'LUNAR' ? BrandColors.primary : textSecondary} />
             <Text
@@ -113,6 +117,8 @@ export default function OnboardingCalendarType() {
           onPress={handleNext}
           activeOpacity={0.9}
           disabled={!selectedType}
+          accessibilityRole="button"
+          accessibilityLabel="다음"
         >
           <LinearGradient
             colors={
@@ -128,7 +134,7 @@ export default function OnboardingCalendarType() {
           </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="건너뛰기">
           <Text style={[styles.skipText, { color: textSecondary }]}>건너뛰기</Text>
         </TouchableOpacity>
       </View>

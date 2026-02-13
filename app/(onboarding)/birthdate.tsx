@@ -23,16 +23,29 @@ export default function OnboardingBirthdate() {
   const { setBirthDate } = useUserStore();
 
   const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(1990);
-  const [selectedMonth, setSelectedMonth] = useState(1);
-  const [selectedDay, setSelectedDay] = useState(1);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
-  const years = Array.from({ length: 80 }, (_, i) => currentYear - 10 - i);
+  const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+  const daysInMonth =
+    selectedYear != null && selectedMonth != null
+      ? new Date(selectedYear, selectedMonth, 0).getDate()
+      : 31;
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+  // Adjust day if it exceeds the month's max
+  React.useEffect(() => {
+    if (selectedDay != null && selectedDay > daysInMonth) {
+      setSelectedDay(daysInMonth);
+    }
+  }, [daysInMonth]);
+
+  const isValid = selectedYear != null && selectedMonth != null && selectedDay != null;
+
   const handleNext = () => {
+    if (!isValid) return;
     const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
     setBirthDate(birthDate);
     router.push('/(onboarding)/calendartype');
@@ -44,7 +57,7 @@ export default function OnboardingBirthdate() {
 
   const renderPicker = (
     data: number[],
-    selected: number,
+    selected: number | null,
     onSelect: (value: number) => void,
     suffix: string = ''
   ) => (
@@ -86,7 +99,7 @@ export default function OnboardingBirthdate() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="뒤로 가기">
           <IconSymbol name="chevron.left" size={24} color={textColor} />
         </TouchableOpacity>
       </View>
@@ -100,8 +113,10 @@ export default function OnboardingBirthdate() {
 
         {/* Date Display */}
         <View style={[styles.dateDisplay, { backgroundColor: surfaceColor }, Shadows.md]}>
-          <Text style={[styles.dateText, { color: textColor }]}>
-            {selectedYear}년 {selectedMonth}월 {selectedDay}일
+          <Text style={[styles.dateText, { color: isValid ? textColor : textSecondary }]}>
+            {isValid
+              ? `${selectedYear}년 ${selectedMonth}월 ${selectedDay}일`
+              : '생년월일을 선택해주세요'}
           </Text>
         </View>
 
@@ -126,9 +141,24 @@ export default function OnboardingBirthdate() {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity onPress={handleNext} activeOpacity={0.9}>
+        {!isValid && (
+          <Text style={[styles.validationText, { color: BrandColors.error }]}>
+            연도, 월, 일을 모두 선택해주세요
+          </Text>
+        )}
+        <TouchableOpacity
+          onPress={handleNext}
+          activeOpacity={0.9}
+          disabled={!isValid}
+          accessibilityRole="button"
+          accessibilityLabel="다음"
+        >
           <LinearGradient
-            colors={[BrandColors.primary, BrandColors.secondary]}
+            colors={
+              isValid
+                ? [BrandColors.primary, BrandColors.secondary]
+                : ['#9CA3AF', '#9CA3AF']
+            }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.button}
@@ -215,6 +245,11 @@ const styles = StyleSheet.create({
   },
   pickerTextSelected: {
     fontWeight: '700',
+  },
+  validationText: {
+    fontSize: FontSizes.sm,
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
   },
   footer: {
     paddingHorizontal: Spacing.lg,

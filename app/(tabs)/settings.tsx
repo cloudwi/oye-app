@@ -8,13 +8,16 @@ import {
   Switch,
   Alert,
   Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { useFortuneStore } from '@/stores/fortune-store';
+import { userApi } from '@/services/api/user';
 import { notificationService } from '@/services/notification';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { format } from 'date-fns';
@@ -62,6 +65,8 @@ function SettingRow({
       onPress={onPress}
       disabled={!onPress && !rightElement}
       activeOpacity={0.6}
+      accessibilityRole="button"
+      accessibilityLabel={`${title}${subtitle ? `, ${subtitle}` : ''}`}
     >
       <View style={[styles.iconContainer, { backgroundColor: (iconColor || BrandColors.primary) + '15' }]}>
         <IconSymbol name={icon as any} size={18} color={iconColor || BrandColors.primary} />
@@ -175,19 +180,32 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleResetData = () => {
-    if (Platform.OS === 'web') {
-      if (window.confirm('모든 데이터가 삭제됩니다. 계속하시겠습니까?')) {
+  const handleDeleteAccount = async () => {
+    const doDelete = async () => {
+      try {
+        await userApi.deleteMe();
         performLogout();
+      } catch (error) {
+        if (Platform.OS === 'web') {
+          window.alert('계정 삭제에 실패했습니다. 다시 시도해주세요.');
+        } else {
+          Alert.alert('오류', '계정 삭제에 실패했습니다. 다시 시도해주세요.');
+        }
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('계정을 탈퇴하시겠습니까?\n모든 데이터가 삭제되며 복구할 수 없습니다.')) {
+        await doDelete();
       }
       return;
     }
     Alert.alert(
-      '데이터 초기화',
-      '모든 데이터가 삭제됩니다.\n계속하시겠습니까?',
+      '계정 탈퇴',
+      '계정을 탈퇴하시겠습니까?\n모든 데이터가 삭제되며 복구할 수 없습니다.',
       [
         { text: '취소', style: 'cancel' },
-        { text: '초기화', style: 'destructive', onPress: performLogout },
+        { text: '탈퇴', style: 'destructive', onPress: doDelete },
       ]
     );
   };
@@ -278,9 +296,35 @@ export default function SettingsScreen() {
             <SettingRow
               icon="trash.fill"
               iconColor="#EF4444"
-              title="데이터 초기화"
-              onPress={handleResetData}
+              title="계정 탈퇴"
+              onPress={handleDeleteAccount}
               destructive
+              isLast
+            />
+          </View>
+        </View>
+
+        {/* Info Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: textSecondary }]}>정보</Text>
+          <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <SettingRow
+              icon="doc.text.fill"
+              iconColor="#3B82F6"
+              title="개인정보 처리방침"
+              onPress={() => Linking.openURL('https://oye-app.example.com/privacy')}
+            />
+            <SettingRow
+              icon="doc.plaintext"
+              iconColor="#3B82F6"
+              title="이용약관"
+              onPress={() => Linking.openURL('https://oye-app.example.com/terms')}
+            />
+            <SettingRow
+              icon="envelope.fill"
+              iconColor="#10B981"
+              title="문의하기"
+              onPress={() => Linking.openURL('mailto:support@oye-app.com')}
               isLast
             />
           </View>
@@ -289,7 +333,9 @@ export default function SettingsScreen() {
         {/* App Info */}
         <View style={styles.appInfo}>
           <Text style={[styles.appName, { color: textSecondary }]}>오늘의 예감</Text>
-          <Text style={[styles.appVersion, { color: textSecondary }]}>v1.0.0</Text>
+          <Text style={[styles.appVersion, { color: textSecondary }]}>
+            v{Constants.expoConfig?.version ?? '1.0.0'}
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>

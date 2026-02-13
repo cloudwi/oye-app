@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useFortuneStore } from '@/stores/fortune-store';
 import { fortuneApi } from '@/services/api/fortune';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { EmptyState } from '@/components/ui/empty-state';
+import { HistoryListSkeleton } from '@/components/ui/skeleton';
 import { format, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
@@ -24,26 +26,64 @@ import {
 } from '@/constants/theme';
 import type { Fortune } from '@/types/fortune';
 
+const PAGE_SIZE = 20;
+
 export default function HistoryScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
-  const { history, setHistory, isLoadingHistory, setLoadingHistory } = useFortuneStore();
+  const {
+    history,
+    setHistory,
+    appendHistory,
+    isLoadingHistory,
+    setLoadingHistory,
+    historyPage,
+    setHistoryPage,
+    hasMoreHistory,
+    setHasMoreHistory,
+    isLoadingMore,
+    setLoadingMore,
+    resetHistory,
+  } = useFortuneStore();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const [totalCount, setTotalCount] = useState(0);
 
   const fetchHistory = async () => {
     setLoadingHistory(true);
     try {
-      const fortunes = await fortuneApi.getHistory();
-      setHistory(fortunes);
+      const result = await fortuneApi.getHistory(0, PAGE_SIZE);
+      setHistory(result.content);
+      setHistoryPage(0);
+      setTotalCount(result.totalElements);
+      setHasMoreHistory(result.page < result.totalPages - 1);
     } catch (error) {
       console.error('Error fetching history:', error);
     }
     setLoadingHistory(false);
   };
+
+  const loadMore = useCallback(async () => {
+    if (isLoadingMore || !hasMoreHistory || isLoadingHistory) return;
+
+    setLoadingMore(true);
+    try {
+      const nextPage = historyPage + 1;
+      const result = await fortuneApi.getHistory(nextPage, PAGE_SIZE);
+      if (result.content.length > 0) {
+        appendHistory(result.content);
+        setHistoryPage(nextPage);
+      }
+      setHasMoreHistory(result.page < result.totalPages - 1);
+    } catch (error) {
+      console.error('Error loading more history:', error);
+    }
+    setLoadingMore(false);
+  }, [isLoadingMore, hasMoreHistory, isLoadingHistory, historyPage]);
 
   useEffect(() => {
     fetchHistory();
@@ -51,8 +91,18 @@ export default function HistoryScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchHistory();
+    resetHistory();
+    try {
+      const result = await fortuneApi.getHistory(0, PAGE_SIZE);
+      setHistory(result.content);
+      setHistoryPage(0);
+      setTotalCount(result.totalElements);
+      setHasMoreHistory(result.page < result.totalPages - 1);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+    }
     setRefreshing(false);
+    setLoadingHistory(false);
   };
 
   const renderItem = ({ item, index }: { item: Fortune; index: number }) => {
@@ -67,6 +117,8 @@ export default function HistoryScreen() {
         style={[styles.historyItem, { backgroundColor: surfaceColor }, Shadows.sm]}
         onPress={() => setSelectedId(selectedId === (item.id ?? index) ? null : (item.id ?? index))}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`${formattedDate} ${dayOfWeek} 운세 기록${isExpanded ? ', 펼쳐짐' : ', 접힘'}`}
       >
         <View style={styles.itemHeader}>
           <View style={styles.dateSection}>
@@ -91,18 +143,21 @@ export default function HistoryScreen() {
   };
 
   const renderEmpty = () => (
-    <View style={styles.emptyContainer}>
-      <View style={[styles.emptyIconBg, { backgroundColor: BrandColors.primary + '15' }]}>
-        <IconSymbol name="clock" size={32} color={BrandColors.primary} />
-      </View>
-      <Text style={[styles.emptyText, { color: textColor }]}>
-        아직 기록이 없어요
-      </Text>
-      <Text style={[styles.emptySubtext, { color: textSecondary }]}>
-        매일 예감을 확인하면 이곳에 기록됩니다
-      </Text>
-    </View>
+    <EmptyState
+      icon="clock"
+      title="아직 기록이 없어요"
+      message="매일 예감을 확인하면 이곳에 기록됩니다"
+    />
   );
+
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={BrandColors.primary} />
+      </View>
+    );
+  };
 
   if (isLoadingHistory && history.length === 0) {
     return (
@@ -110,8 +165,8 @@ export default function HistoryScreen() {
         <View style={styles.header}>
           <Text style={[styles.title, { color: textColor }]}>히스토리</Text>
         </View>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={BrandColors.primary} />
+        <View style={styles.skeletonContainer}>
+          <HistoryListSkeleton count={6} />
         </View>
       </SafeAreaView>
     );
@@ -121,9 +176,9 @@ export default function HistoryScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: textColor }]}>히스토리</Text>
-        {history.length > 0 && (
+        {totalCount > 0 && (
           <Text style={[styles.subtitle, { color: textSecondary }]}>
-            총 {history.length}개의 기록
+            총 {totalCount}개의 기록
           </Text>
         )}
       </View>
@@ -135,6 +190,9 @@ export default function HistoryScreen() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmpty}
+        ListFooterComponent={renderFooter}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -164,15 +222,17 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     marginTop: Spacing.xs,
   },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+  skeletonContainer: {
+    paddingHorizontal: Spacing.lg,
   },
   listContent: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xxl,
     gap: Spacing.sm,
+  },
+  footerLoader: {
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
   },
 
   // History Item
@@ -206,28 +266,5 @@ const styles = StyleSheet.create({
   contentText: {
     fontSize: FontSizes.md,
     lineHeight: 24,
-  },
-
-  // Empty State
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.xxxl,
-  },
-  emptyIconBg: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.lg,
-  },
-  emptyText: {
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
-    marginBottom: Spacing.xs,
-  },
-  emptySubtext: {
-    fontSize: FontSizes.md,
   },
 });

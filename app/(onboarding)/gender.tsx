@@ -42,7 +42,7 @@ export default function OnboardingGender() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="뒤로 가기">
           <IconSymbol name="chevron.left" size={24} color={textColor} />
         </TouchableOpacity>
       </View>
@@ -64,6 +64,8 @@ export default function OnboardingGender() {
             ]}
             onPress={() => setSelectedGender('MALE')}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`남성${selectedGender === 'MALE' ? ', 선택됨' : ''}`}
           >
             <IconSymbol name="figure.stand" size={48} color={selectedGender === 'MALE' ? BrandColors.primary : textSecondary} />
             <Text
@@ -86,6 +88,8 @@ export default function OnboardingGender() {
             ]}
             onPress={() => setSelectedGender('FEMALE')}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`여성${selectedGender === 'FEMALE' ? ', 선택됨' : ''}`}
           >
             <IconSymbol name="figure.stand.dress" size={48} color={selectedGender === 'FEMALE' ? BrandColors.primary : textSecondary} />
             <Text
@@ -107,6 +111,8 @@ export default function OnboardingGender() {
           onPress={handleNext}
           activeOpacity={0.9}
           disabled={!selectedGender}
+          accessibilityRole="button"
+          accessibilityLabel="다음"
         >
           <LinearGradient
             colors={
@@ -122,7 +128,7 @@ export default function OnboardingGender() {
           </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="건너뛰기">
           <Text style={[styles.skipText, { color: textSecondary }]}>건너뛰기</Text>
         </TouchableOpacity>
       </View>

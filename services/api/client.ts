@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import { Alert, Platform } from 'react-native';
 import { useAuthStore } from '@/stores/auth-store';
 import { authService } from '@/services/auth';
 
@@ -86,6 +87,17 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // User-facing error messages
+    const userMessage = getErrorMessage(error);
+    if (userMessage) {
+      if (Platform.OS === 'web') {
+        // On web, use window.alert as a simple fallback
+        if (typeof window !== 'undefined') window.alert(userMessage);
+      } else {
+        Alert.alert('오류', userMessage);
+      }
+    }
+
     if (error.response) {
       console.error('API Error:', error.response.status, error.response.data);
     } else if (error.request) {
@@ -94,3 +106,29 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+function getErrorMessage(error: AxiosError): string | null {
+  // Don't show alert for 401 (handled by token refresh / logout)
+  if (error.response?.status === 401) return null;
+  // Don't show alert for USER_NOT_FOUND (handled by logout)
+  if (
+    error.response?.status === 404 &&
+    (error.response?.data as any)?.code === 'USER_NOT_FOUND'
+  )
+    return null;
+
+  if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+    return '요청 시간이 초과되었습니다';
+  }
+
+  if (!error.response) {
+    return '인터넷 연결을 확인해주세요';
+  }
+
+  const status = error.response.status;
+  if (status >= 500) {
+    return '서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요';
+  }
+
+  return null;
+}

@@ -5,16 +5,17 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
-  ActivityIndicator,
   TouchableOpacity,
-  Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useFortuneStore } from '@/stores/fortune-store';
 import { fortuneApi } from '@/services/api/fortune';
+import { shareService } from '@/services/share';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { EmptyState } from '@/components/ui/empty-state';
+import { FortuneCardSkeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
@@ -59,13 +60,7 @@ export default function TodayFortuneScreen() {
 
   const handleShare = async () => {
     if (todayFortune) {
-      try {
-        await Share.share({
-          message: `[오늘의 예감 - ${format(new Date(todayFortune.date), 'M월 d일', { locale: ko })}]\n\n${todayFortune.content}\n\n- OYE 오늘의 예감`,
-        });
-      } catch (error) {
-        console.error('Share error:', error);
-      }
+      await shareService.shareFortune(todayFortune);
     }
   };
 
@@ -74,11 +69,12 @@ export default function TodayFortuneScreen() {
   if (isLoading && !todayFortune) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={BrandColors.primary} />
-          <Text style={[styles.loadingText, { color: textSecondary }]}>
-            예감을 불러오는 중...
-          </Text>
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={[styles.dateText, { color: textSecondary }]}>{today}</Text>
+            <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
+          </View>
+          <FortuneCardSkeleton />
         </View>
       </SafeAreaView>
     );
@@ -107,7 +103,10 @@ export default function TodayFortuneScreen() {
         {todayFortune ? (
           <>
             {/* Main Fortune Card */}
-            <View style={[styles.fortuneCard, { backgroundColor: surfaceColor }, Shadows.lg]}>
+            <View
+              style={[styles.fortuneCard, { backgroundColor: surfaceColor }, Shadows.lg]}
+              accessibilityLabel="오늘의 운세 카드"
+            >
               {/* Fortune Icon */}
               <View style={styles.iconContainer}>
                 <LinearGradient
@@ -121,7 +120,10 @@ export default function TodayFortuneScreen() {
               </View>
 
               {/* Fortune Content */}
-              <Text style={[styles.fortuneContent, { color: textColor }]}>
+              <Text
+                style={[styles.fortuneContent, { color: textColor }]}
+                accessibilityLabel={`오늘의 운세: ${todayFortune.content}`}
+              >
                 {todayFortune.content}
               </Text>
 
@@ -130,6 +132,8 @@ export default function TodayFortuneScreen() {
                 style={styles.shareButton}
                 onPress={handleShare}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="운세 공유하기"
               >
                 <LinearGradient
                   colors={[BrandColors.primary, BrandColors.secondary]}
@@ -157,15 +161,14 @@ export default function TodayFortuneScreen() {
             </View>
           </>
         ) : (
-          <View style={[styles.emptyCard, { backgroundColor: surfaceColor }, Shadows.md]}>
-            <IconSymbol name="exclamationmark.circle" size={48} color={textSecondary} />
-            <Text style={[styles.emptyTitle, { color: textColor }]}>
-              예감을 불러올 수 없어요
-            </Text>
-            <Text style={[styles.emptySubtitle, { color: textSecondary }]}>
-              아래로 당겨서 다시 시도해주세요
-            </Text>
-          </View>
+          <EmptyState
+            icon="exclamationmark.circle"
+            iconColor={BrandColors.error}
+            title="예감을 불러올 수 없어요"
+            message="아래로 당겨서 다시 시도해주세요"
+            actionLabel="다시 시도"
+            onAction={fetchTodayFortune}
+          />
         )}
       </ScrollView>
     </SafeAreaView>
@@ -183,16 +186,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xxl,
   },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.md,
-  },
-  loadingText: {
-    fontSize: FontSizes.md,
-  },
-
   // Header
   header: {
     alignItems: 'center',
@@ -278,18 +271,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Empty State
-  emptyCard: {
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.xxl,
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  emptyTitle: {
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
-  },
-  emptySubtitle: {
-    fontSize: FontSizes.md,
-  },
 });

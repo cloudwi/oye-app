@@ -1,11 +1,14 @@
+import { useEffect } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Platform, View, StyleSheet } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { notificationService } from '@/services/notification';
 
 // Custom themes for the fortune app
 const FortuneDefaultTheme = {
@@ -42,6 +45,15 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const bgColor = colorScheme === 'dark' ? Colors.dark.background : Colors.light.background;
 
+  useEffect(() => {
+    const subscription = notificationService.addNotificationResponseListener(() => {
+      router.navigate('/(tabs)' as any);
+    });
+    return () => {
+      subscription?.remove();
+    };
+  }, []);
+
   const content = (
     <ThemeProvider
       value={colorScheme === 'dark' ? FortuneDarkTheme : FortuneDefaultTheme}
@@ -61,15 +73,17 @@ export default function RootLayout() {
 
   if (Platform.OS === 'web') {
     return (
-      <View style={[webStyles.outer, { backgroundColor: bgColor }]}>
-        <View style={[webStyles.inner, { backgroundColor: bgColor }]}>
-          {content}
+      <ErrorBoundary>
+        <View style={[webStyles.outer, { backgroundColor: bgColor }]}>
+          <View style={[webStyles.inner, { backgroundColor: bgColor }]}>
+            {content}
+          </View>
         </View>
-      </View>
+      </ErrorBoundary>
     );
   }
 
-  return content;
+  return <ErrorBoundary>{content}</ErrorBoundary>;
 }
 
 const webStyles = StyleSheet.create({

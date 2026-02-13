@@ -73,7 +73,7 @@ export default function OnboardingNotification() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="뒤로 가기">
           <IconSymbol name="chevron.left" size={24} color={textColor} />
         </TouchableOpacity>
       </View>
@@ -118,6 +118,8 @@ export default function OnboardingNotification() {
           onPress={handleEnableNotification}
           activeOpacity={0.9}
           disabled={isLoading}
+          accessibilityRole="button"
+          accessibilityLabel="알림 받기"
         >
           <LinearGradient
             colors={[BrandColors.primary, BrandColors.secondary]}
@@ -133,7 +135,7 @@ export default function OnboardingNotification() {
           </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="나중에 설정할게요">
           <Text style={[styles.skipText, { color: textSecondary }]}>나중에 설정할게요</Text>
         </TouchableOpacity>
       </View>

@@ -79,6 +79,7 @@ export default function OnboardingWelcome() {
             source={require('@/assets/images/logo.png')}
             style={styles.logoImage}
             resizeMode="contain"
+            accessibilityLabel="오늘의 예감 앱 로고"
           />
         </View>
 
@@ -107,6 +108,8 @@ export default function OnboardingWelcome() {
           activeOpacity={0.9}
           disabled={loadingProvider !== null}
           style={styles.kakaoButton}
+          accessibilityRole="button"
+          accessibilityLabel="카카오로 시작하기"
         >
           {loadingProvider === 'kakao' ? (
             <ActivityIndicator size="small" color="#3C1E1E" />

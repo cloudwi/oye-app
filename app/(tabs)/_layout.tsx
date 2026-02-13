@@ -45,6 +45,7 @@ export default function TabLayout() {
         options={{
           title: '오늘의 예감',
           tabBarIcon: ({ color }) => <IconSymbol size={22} name="sparkles" color={color} />,
+          tabBarAccessibilityLabel: '오늘의 예감 탭',
         }}
       />
       <Tabs.Screen
@@ -52,6 +53,7 @@ export default function TabLayout() {
         options={{
           title: '히스토리',
           tabBarIcon: ({ color }) => <IconSymbol size={22} name="calendar" color={color} />,
+          tabBarAccessibilityLabel: '히스토리 탭',
         }}
       />
       <Tabs.Screen
@@ -59,6 +61,7 @@ export default function TabLayout() {
         options={{
           title: '설정',
           tabBarIcon: ({ color }) => <IconSymbol size={22} name="gearshape.fill" color={color} />,
+          tabBarAccessibilityLabel: '설정 탭',
         }}
       />
     </Tabs>
