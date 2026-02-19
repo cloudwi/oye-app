@@ -50,7 +50,9 @@
           "color": "#6366F1",
           "defaultChannel": "fortune"
         }
-      ]
+      ],
+      "expo-secure-store",
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true,

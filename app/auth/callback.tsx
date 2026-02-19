@@ -12,8 +12,14 @@ export default function AuthCallback() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // hash + search 모두 포함된 전체 URL로 토큰 파싱
     const url = window.location.href;
     const token = authService.parseTokenFromUrl(url);
+
+    // 보안: URL에서 토큰 정보 제거
+    if (window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
 
     if (token) {
       setToken(token);

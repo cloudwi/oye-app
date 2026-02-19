@@ -8,7 +8,11 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { OfflineBanner } from '@/components/offline-banner';
 import { notificationService } from '@/services/notification';
+import { initSentry } from '@/services/sentry';
+
+initSentry();
 
 // Custom themes for the fortune app
 const FortuneDefaultTheme = {
@@ -58,6 +62,7 @@ export default function RootLayout() {
     <ThemeProvider
       value={colorScheme === 'dark' ? FortuneDarkTheme : FortuneDefaultTheme}
     >
+      <OfflineBanner />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />

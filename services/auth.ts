@@ -74,15 +74,28 @@ export const authService = {
 
       if (Platform.OS === 'web' && typeof URL !== 'undefined') {
         const parsed = new URL(url);
-        token = parsed.searchParams.get('token');
-        refreshToken = parsed.searchParams.get('refresh_token');
-        expiresAt = parsed.searchParams.get('expires_at');
+        // fragment(#) 우선, query(?) 폴백 (보안: fragment는 서버로 전송되지 않음)
+        const hashParams = new URLSearchParams(parsed.hash.replace('#', ''));
+        token = hashParams.get('token') || parsed.searchParams.get('token');
+        refreshToken = hashParams.get('refresh_token') || parsed.searchParams.get('refresh_token');
+        expiresAt = hashParams.get('expires_at') || parsed.searchParams.get('expires_at');
       } else {
-        const parsed = Linking.parse(url);
-        const params = parsed.queryParams;
-        token = (params?.token as string) || null;
-        refreshToken = (params?.refresh_token as string) || null;
-        expiresAt = (params?.expires_at as string) || null;
+        // 네이티브: expo-linking은 fragment를 queryParams로 파싱하지 않으므로 직접 처리
+        const fragmentIndex = url.indexOf('#');
+        if (fragmentIndex !== -1) {
+          const fragment = url.substring(fragmentIndex + 1);
+          const params = new URLSearchParams(fragment);
+          token = params.get('token');
+          refreshToken = params.get('refresh_token');
+          expiresAt = params.get('expires_at');
+        }
+        if (!token) {
+          const parsed = Linking.parse(url);
+          const params = parsed.queryParams;
+          token = (params?.token as string) || null;
+          refreshToken = (params?.refresh_token as string) || null;
+          expiresAt = (params?.expires_at as string) || null;
+        }
       }
 
       if (!token) {

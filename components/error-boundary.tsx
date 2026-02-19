@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { BrandColors, Spacing, BorderRadius, FontSizes } from '@/constants/theme';
+import { Sentry } from '@/services/sentry';
 
 interface Props {
   children: ReactNode;
@@ -27,6 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
   }
 
   handleRetry = () => {
