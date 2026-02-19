@@ -9,13 +9,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { notificationService } from '@/services/notification';
 import { userApi } from '@/services/api/user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
 export default function OnboardingNotification() {
   const textColor = useThemeColor({}, 'text');
@@ -41,6 +43,7 @@ export default function OnboardingNotification() {
   };
 
   const handleEnableNotification = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsLoading(true);
     try {
       const granted = await notificationService.requestPermissions();
@@ -54,6 +57,7 @@ export default function OnboardingNotification() {
     }
     await sendUserProfile();
     setIsLoading(false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     completeOnboarding();
     router.replace('/(tabs)');
   };
@@ -80,23 +84,31 @@ export default function OnboardingNotification() {
 
       {/* Content */}
       <View style={styles.content}>
-        {/* Icon */}
-        <View style={styles.iconArea}>
+        {/* Icon with entrance animation */}
+        <Animated.View
+          entering={FadeInDown.duration(500).delay(100)}
+          style={styles.iconArea}
+        >
           <View style={[styles.iconOuter, { backgroundColor: '#F59E0B' + '20' }]}>
             <View style={[styles.iconInner, { backgroundColor: '#F59E0B' + '30' }]}>
               <IconSymbol name="bell.fill" size={48} color="#F59E0B" />
             </View>
           </View>
-        </View>
+        </Animated.View>
 
-        {/* Text */}
-        <Text style={[styles.title, { color: textColor }]}>알림 설정</Text>
-        <Text style={[styles.subtitle, { color: textSecondary }]}>
-          매일 아침 8시에{'\n'}오늘의 예감를 알려드릴게요
-        </Text>
+        {/* Text with entrance animation */}
+        <Animated.View entering={FadeInDown.duration(500).delay(200)}>
+          <Text style={[styles.title, { color: textColor }]}>알림 설정</Text>
+          <Text style={[styles.subtitle, { color: textSecondary }]}>
+            매일 아침 8시에{'\n'}오늘의 예감을 알려드릴게요
+          </Text>
+        </Animated.View>
 
-        {/* Preview Card */}
-        <View style={[styles.previewCard, { backgroundColor: surfaceColor }, Shadows.md]}>
+        {/* Preview Card with slide-up animation */}
+        <Animated.View
+          entering={FadeInUp.duration(600).delay(400)}
+          style={[styles.previewCard, { backgroundColor: surfaceColor }, Shadows.md]}
+        >
           <View style={styles.previewHeader}>
             <View style={[styles.previewIcon, { backgroundColor: BrandColors.primary + '15' }]}>
               <Text style={styles.previewIconText}>OYE</Text>
@@ -109,7 +121,7 @@ export default function OnboardingNotification() {
           <Text style={[styles.previewMessage, { color: textColor }]}>
             좋은 아침이에요! 오늘의 예감이 도착했어요
           </Text>
-        </View>
+        </Animated.View>
       </View>
 
       {/* Footer */}
@@ -122,10 +134,10 @@ export default function OnboardingNotification() {
           accessibilityLabel="알림 받기"
         >
           <LinearGradient
-            colors={[BrandColors.primary, BrandColors.secondary]}
+            colors={Gradients.accent}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.button}
+            style={[styles.button, isLoading && styles.buttonLoading]}
           >
             {isLoading ? (
               <ActivityIndicator color="#FFF" />
@@ -135,7 +147,7 @@ export default function OnboardingNotification() {
           </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="나중에 설정할게요">
+        <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7} disabled={isLoading} accessibilityRole="button" accessibilityLabel="나중에 설정할게요">
           <Text style={[styles.skipText, { color: textSecondary }]}>나중에 설정할게요</Text>
         </TouchableOpacity>
       </View>
@@ -184,6 +196,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.xxl,
     fontWeight: '700',
     marginBottom: Spacing.sm,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: FontSizes.md,
@@ -239,6 +252,9 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md + 2,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
+  },
+  buttonLoading: {
+    opacity: 0.7,
   },
   buttonText: {
     color: '#FFF',

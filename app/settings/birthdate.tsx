@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,20 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { userApi } from '@/services/api/user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 import type { CalendarType } from '@/types/user';
 
 export default function BirthDateEditScreen() {
@@ -38,7 +46,52 @@ export default function BirthDateEditScreen() {
   const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+  const originalBirthDate = user?.birthDate || null;
+  const originalCalendarType = user?.calendarType || null;
+  const currentBirthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+  const hasChanged = currentBirthDate !== originalBirthDate || selectedCalendarType !== originalCalendarType;
+
+  const buttonOpacity = useSharedValue(hasChanged ? 1 : 0.4);
+  const buttonScale = useSharedValue(1);
+
+  useEffect(() => {
+    if (hasChanged) {
+      buttonOpacity.value = withTiming(1, { duration: 300 });
+      buttonScale.value = withSpring(1.02, {}, () => {
+        buttonScale.value = withSpring(1);
+      });
+    } else {
+      buttonOpacity.value = withTiming(0.4, { duration: 200 });
+    }
+  }, [hasChanged]);
+
+  const animatedButtonStyle = useAnimatedStyle(() => ({
+    opacity: buttonOpacity.value,
+    transform: [{ scale: buttonScale.value }],
+  }));
+
+  const handleSelectYear = useCallback((value: number) => {
+    setSelectedYear(value);
+    Haptics.selectionAsync();
+  }, []);
+
+  const handleSelectMonth = useCallback((value: number) => {
+    setSelectedMonth(value);
+    Haptics.selectionAsync();
+  }, []);
+
+  const handleSelectDay = useCallback((value: number) => {
+    setSelectedDay(value);
+    Haptics.selectionAsync();
+  }, []);
+
+  const handleSelectCalendarType = (type: CalendarType) => {
+    setSelectedCalendarType(selectedCalendarType === type ? null : type);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
   const handleSave = async () => {
+    if (!hasChanged) return;
     setIsSaving(true);
     const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
 
@@ -54,6 +107,7 @@ export default function BirthDateEditScreen() {
         gender: user?.gender || undefined,
         calendarType: selectedCalendarType || undefined,
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       console.error('Error updating birthdate:', error);
     }
@@ -123,15 +177,15 @@ export default function BirthDateEditScreen() {
           <View style={styles.pickerContainer}>
             <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
               <Text style={[styles.pickerLabel, { color: textSecondary }]}>년</Text>
-              {renderPicker(years, selectedYear, setSelectedYear)}
+              {renderPicker(years, selectedYear, handleSelectYear)}
             </View>
             <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
               <Text style={[styles.pickerLabel, { color: textSecondary }]}>월</Text>
-              {renderPicker(months, selectedMonth, setSelectedMonth)}
+              {renderPicker(months, selectedMonth, handleSelectMonth)}
             </View>
             <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
               <Text style={[styles.pickerLabel, { color: textSecondary }]}>일</Text>
-              {renderPicker(days, selectedDay, setSelectedDay)}
+              {renderPicker(days, selectedDay, handleSelectDay)}
             </View>
           </View>
         </View>
@@ -147,7 +201,7 @@ export default function BirthDateEditScreen() {
                 Shadows.sm,
                 selectedCalendarType === 'SOLAR' && styles.optionButtonActive,
               ]}
-              onPress={() => setSelectedCalendarType(selectedCalendarType === 'SOLAR' ? null : 'SOLAR')}
+              onPress={() => handleSelectCalendarType('SOLAR')}
               activeOpacity={0.7}
             >
               <IconSymbol name="sun.max.fill" size={28} color={selectedCalendarType === 'SOLAR' ? BrandColors.primary : textSecondary} />
@@ -168,7 +222,7 @@ export default function BirthDateEditScreen() {
                 Shadows.sm,
                 selectedCalendarType === 'LUNAR' && styles.optionButtonActive,
               ]}
-              onPress={() => setSelectedCalendarType(selectedCalendarType === 'LUNAR' ? null : 'LUNAR')}
+              onPress={() => handleSelectCalendarType('LUNAR')}
               activeOpacity={0.7}
             >
               <IconSymbol name="moon.fill" size={28} color={selectedCalendarType === 'LUNAR' ? BrandColors.primary : textSecondary} />
@@ -188,18 +242,26 @@ export default function BirthDateEditScreen() {
 
       {/* Save Button */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          onPress={handleSave}
-          activeOpacity={0.9}
-          disabled={isSaving}
-          style={[styles.saveButton, { backgroundColor: BrandColors.primary }]}
-        >
-          {isSaving ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <Text style={styles.saveButtonText}>저장</Text>
-          )}
-        </TouchableOpacity>
+        <Animated.View style={animatedButtonStyle}>
+          <TouchableOpacity
+            onPress={handleSave}
+            activeOpacity={0.9}
+            disabled={isSaving || !hasChanged}
+          >
+            <LinearGradient
+              colors={hasChanged ? Gradients.accent : ['#9CA3AF', '#9CA3AF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.saveButton}
+            >
+              {isSaving ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.saveButtonText}>저장</Text>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
     </SafeAreaView>
   );

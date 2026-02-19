@@ -1,50 +1,48 @@
 /**
  * Theme constants for the OYE (오늘의 예감) App
- * Minimal & Modern Design System
+ * Refined Design System — Deep Navy + Vivid Purple
  */
 
 import { Platform } from 'react-native';
 
-// Brand colors - Soft & Calming palette
+// ─── Brand Colors ───────────────────────────────────────────────
 export const BrandColors = {
-  primary: '#6366F1', // Indigo - 신비로운 느낌
-  secondary: '#8B5CF6', // Violet
-  tertiary: '#EC4899', // Pink
-  accent: '#F59E0B', // Amber - 포인트
-  success: '#10B981', // Emerald
+  primary: '#1A1A2E',   // Deep Navy — 주요 텍스트
+  accent: '#7C3AED',    // Vivid Purple — CTA 버튼, 핵심 액션
+  accentLight: '#A78BFA', // 보조 강조
+  success: '#10B981',
   warning: '#F59E0B',
   error: '#EF4444',
-  info: '#3B82F6',
 };
 
-// Gradient presets
+// ─── Gradients ──────────────────────────────────────────────────
 export const Gradients = {
-  primary: ['#6366F1', '#8B5CF6'],
-  fortune: ['#6366F1', '#EC4899'],
-  warm: ['#F59E0B', '#EF4444'],
-  cool: ['#06B6D4', '#3B82F6'],
-  calm: ['#8B5CF6', '#6366F1'],
+  fortune: {
+    light: ['#F5F3FF', '#EDE9FE'] as const,
+    dark: ['#1E1B4B', '#312E81'] as const,
+  },
+  accent: ['#7C3AED', '#6D28D9'] as const,
 };
 
-// Score colors - More vibrant
+// ─── Score Colors ───────────────────────────────────────────────
 export const ScoreColors = {
-  excellent: '#10B981', // 80-100 Emerald
-  good: '#22C55E', // 60-79 Green
-  average: '#F59E0B', // 40-59 Amber
-  belowAverage: '#F97316', // 20-39 Orange
-  poor: '#EF4444', // 0-19 Red
+  excellent: '#10B981',
+  good: '#22C55E',
+  average: '#F59E0B',
+  belowAverage: '#F97316',
+  poor: '#EF4444',
 };
 
-// Category colors - Harmonious palette
+// ─── Category Colors ────────────────────────────────────────────
 export const CategoryColors = {
-  love: '#EC4899', // Pink
-  money: '#10B981', // Emerald
-  health: '#22C55E', // Green
-  work: '#6366F1', // Indigo
-  study: '#F59E0B', // Amber
+  love: '#EC4899',
+  money: '#10B981',
+  health: '#22C55E',
+  work: '#7C3AED',
+  study: '#F59E0B',
 };
 
-// Category icons (SF Symbols)
+// ─── Category Icons ─────────────────────────────────────────────
 export const CategoryIcons = {
   love: 'heart.fill',
   money: 'won.circle.fill',
@@ -53,46 +51,57 @@ export const CategoryIcons = {
   study: 'book.fill',
 };
 
-const tintColorLight = '#6366F1';
-const tintColorDark = '#818CF8';
-
+// ─── Light / Dark Theme ─────────────────────────────────────────
 export const Colors = {
   light: {
-    text: '#1F2937',
+    text: '#1A1A2E',
     textSecondary: '#6B7280',
+    textMuted: '#9CA3AF',
     textTertiary: '#9CA3AF',
-    background: '#FAFAFA',
-    surface: '#FFFFFF',
+    background: '#FFFFFF',
+    surface: '#FAFAFA',
     surfaceSecondary: '#F3F4F6',
-    tint: tintColorLight,
+    tint: '#7C3AED',
     icon: '#6B7280',
     tabIconDefault: '#9CA3AF',
-    tabIconSelected: tintColorLight,
+    tabIconSelected: '#7C3AED',
     card: '#FFFFFF',
     cardBorder: '#E5E7EB',
     inputBackground: '#F3F4F6',
     placeholder: '#9CA3AF',
     divider: '#E5E7EB',
+    accent: '#7C3AED',
+    accentLight: '#A78BFA',
+    fortuneCardBg: '#F5F3FF',
+    fortuneCardGradientStart: '#F5F3FF',
+    fortuneCardGradientEnd: '#EDE9FE',
   },
   dark: {
     text: '#F9FAFB',
     textSecondary: '#D1D5DB',
+    textMuted: '#9CA3AF',
     textTertiary: '#9CA3AF',
-    background: '#0F0F0F',
-    surface: '#1A1A1A',
-    surfaceSecondary: '#262626',
-    tint: tintColorDark,
+    background: '#0A0A1B',
+    surface: '#0F0F23',
+    surfaceSecondary: '#1F2937',
+    tint: '#A78BFA',
     icon: '#9CA3AF',
     tabIconDefault: '#6B7280',
-    tabIconSelected: tintColorDark,
-    card: '#1A1A1A',
-    cardBorder: '#374151',
-    inputBackground: '#262626',
+    tabIconSelected: '#A78BFA',
+    card: '#161632',
+    cardBorder: '#1F2937',
+    inputBackground: '#161632',
     placeholder: '#6B7280',
-    divider: '#374151',
+    divider: '#1F2937',
+    accent: '#A78BFA',
+    accentLight: '#7C3AED',
+    fortuneCardBg: '#1E1B4B',
+    fortuneCardGradientStart: '#1E1B4B',
+    fortuneCardGradientEnd: '#312E81',
   },
 };
 
+// ─── Fonts ──────────────────────────────────────────────────────
 export const Fonts = Platform.select({
   ios: {
     regular: 'System',
@@ -108,6 +117,36 @@ export const Fonts = Platform.select({
   },
 });
 
+// ─── Typography Presets ─────────────────────────────────────────
+export const Typography = {
+  display: {
+    fontSize: 28,
+    fontWeight: '300' as const,
+    lineHeight: 44.8,
+  },
+  heading: {
+    fontSize: 22,
+    fontWeight: '600' as const,
+    lineHeight: 30.8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    lineHeight: 25.2,
+  },
+  body: {
+    fontSize: 16,
+    fontWeight: '400' as const,
+    lineHeight: 24,
+  },
+  caption: {
+    fontSize: 13,
+    fontWeight: '400' as const,
+    lineHeight: 18.2,
+  },
+};
+
+// ─── Spacing ────────────────────────────────────────────────────
 export const Spacing = {
   xs: 4,
   sm: 8,
@@ -118,34 +157,53 @@ export const Spacing = {
   xxxl: 64,
 };
 
+// ─── Border Radius ──────────────────────────────────────────────
 export const BorderRadius = {
   sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  md: 14,    // Button
+  lg: 16,    // ListItem
+  xl: 20,    // Card
   xxl: 32,
   full: 9999,
 };
 
+// ─── Font Sizes (kept for backward compatibility) ───────────────
 export const FontSizes = {
   xs: 11,
   sm: 13,
-  md: 15,
-  lg: 17,
-  xl: 20,
+  md: 16,
+  lg: 18,
+  xl: 22,
   xxl: 28,
   xxxl: 36,
-  display: 48,
+  display: 28,
 };
 
+// ─── Font Weights ───────────────────────────────────────────────
 export const FontWeights = {
+  light: '300' as const,
   regular: '400' as const,
   medium: '500' as const,
   semibold: '600' as const,
   bold: '700' as const,
 };
 
+// ─── Layout Constants ───────────────────────────────────────────
+export const Layout = {
+  horizontalPadding: 24,
+  sectionGap: 32,
+  buttonHeight: 52,
+};
+
+// ─── Shadows ────────────────────────────────────────────────────
 export const Shadows = {
+  card: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
   sm: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -155,16 +213,16 @@ export const Shadows = {
   },
   md: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 2,
   },
   lg: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
     shadowRadius: 16,
-    elevation: 5,
+    elevation: 4,
   },
 };

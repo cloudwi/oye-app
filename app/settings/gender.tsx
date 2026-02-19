@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,20 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { userApi } from '@/services/api/user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 import type { Gender } from '@/types/user';
 
 export default function GenderEditScreen() {
@@ -25,7 +33,35 @@ export default function GenderEditScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [selectedGender, setSelectedGender] = useState<Gender | null>(user?.gender || null);
 
+  const originalGender = user?.gender || null;
+  const hasChanged = selectedGender !== originalGender;
+
+  const buttonOpacity = useSharedValue(hasChanged ? 1 : 0.4);
+  const buttonScale = useSharedValue(1);
+
+  useEffect(() => {
+    if (hasChanged) {
+      buttonOpacity.value = withTiming(1, { duration: 300 });
+      buttonScale.value = withSpring(1.02, {}, () => {
+        buttonScale.value = withSpring(1);
+      });
+    } else {
+      buttonOpacity.value = withTiming(0.4, { duration: 200 });
+    }
+  }, [hasChanged]);
+
+  const animatedButtonStyle = useAnimatedStyle(() => ({
+    opacity: buttonOpacity.value,
+    transform: [{ scale: buttonScale.value }],
+  }));
+
+  const handleSelectGender = (gender: Gender) => {
+    setSelectedGender(selectedGender === gender ? null : gender);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
   const handleSave = async () => {
+    if (!hasChanged) return;
     setIsSaving(true);
     setGender(selectedGender!);
 
@@ -36,6 +72,7 @@ export default function GenderEditScreen() {
         gender: selectedGender || undefined,
         calendarType: user?.calendarType || undefined,
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error) {
       console.error('Error updating gender:', error);
     }
@@ -63,7 +100,7 @@ export default function GenderEditScreen() {
               Shadows.sm,
               selectedGender === 'MALE' && styles.optionButtonActive,
             ]}
-            onPress={() => setSelectedGender(selectedGender === 'MALE' ? null : 'MALE')}
+            onPress={() => handleSelectGender('MALE')}
             activeOpacity={0.7}
           >
             <IconSymbol name="figure.stand" size={28} color={selectedGender === 'MALE' ? BrandColors.primary : textSecondary} />
@@ -84,7 +121,7 @@ export default function GenderEditScreen() {
               Shadows.sm,
               selectedGender === 'FEMALE' && styles.optionButtonActive,
             ]}
-            onPress={() => setSelectedGender(selectedGender === 'FEMALE' ? null : 'FEMALE')}
+            onPress={() => handleSelectGender('FEMALE')}
             activeOpacity={0.7}
           >
             <IconSymbol name="figure.stand.dress" size={28} color={selectedGender === 'FEMALE' ? BrandColors.primary : textSecondary} />
@@ -103,18 +140,26 @@ export default function GenderEditScreen() {
 
       {/* Save Button */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          onPress={handleSave}
-          activeOpacity={0.9}
-          disabled={isSaving}
-          style={[styles.saveButton, { backgroundColor: BrandColors.primary }]}
-        >
-          {isSaving ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <Text style={styles.saveButtonText}>저장</Text>
-          )}
-        </TouchableOpacity>
+        <Animated.View style={animatedButtonStyle}>
+          <TouchableOpacity
+            onPress={handleSave}
+            activeOpacity={0.9}
+            disabled={isSaving || !hasChanged}
+          >
+            <LinearGradient
+              colors={hasChanged ? Gradients.accent : ['#9CA3AF', '#9CA3AF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.saveButton}
+            >
+              {isSaving ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.saveButtonText}>저장</Text>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
     </SafeAreaView>
   );

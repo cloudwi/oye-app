@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,17 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 import type { CalendarType } from '@/types/user';
 
 export default function OnboardingCalendarType() {
@@ -22,6 +29,30 @@ export default function OnboardingCalendarType() {
 
   const { setCalendarType } = useUserStore();
   const [selectedType, setSelectedType] = useState<CalendarType | null>(null);
+
+  const buttonOpacity = useSharedValue(0.4);
+  const buttonScale = useSharedValue(1);
+
+  useEffect(() => {
+    if (selectedType) {
+      buttonOpacity.value = withTiming(1, { duration: 300 });
+      buttonScale.value = withSpring(1.02, {}, () => {
+        buttonScale.value = withSpring(1);
+      });
+    } else {
+      buttonOpacity.value = withTiming(0.4, { duration: 200 });
+    }
+  }, [selectedType]);
+
+  const animatedButtonStyle = useAnimatedStyle(() => ({
+    opacity: buttonOpacity.value,
+    transform: [{ scale: buttonScale.value }],
+  }));
+
+  const handleSelectType = (type: CalendarType) => {
+    setSelectedType(type);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
 
   const handleNext = () => {
     if (selectedType) {
@@ -62,7 +93,7 @@ export default function OnboardingCalendarType() {
               Shadows.md,
               selectedType === 'SOLAR' && styles.optionCardActive,
             ]}
-            onPress={() => setSelectedType('SOLAR')}
+            onPress={() => handleSelectType('SOLAR')}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel={`양력, 일반 달력 기준${selectedType === 'SOLAR' ? ', 선택됨' : ''}`}
@@ -89,7 +120,7 @@ export default function OnboardingCalendarType() {
               Shadows.md,
               selectedType === 'LUNAR' && styles.optionCardActive,
             ]}
-            onPress={() => setSelectedType('LUNAR')}
+            onPress={() => handleSelectType('LUNAR')}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel={`음력, 음력 달력 기준${selectedType === 'LUNAR' ? ', 선택됨' : ''}`}
@@ -120,18 +151,16 @@ export default function OnboardingCalendarType() {
           accessibilityRole="button"
           accessibilityLabel="다음"
         >
-          <LinearGradient
-            colors={
-              selectedType
-                ? [BrandColors.primary, BrandColors.secondary]
-                : ['#D1D5DB', '#D1D5DB']
-            }
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>다음</Text>
-          </LinearGradient>
+          <Animated.View style={animatedButtonStyle}>
+            <LinearGradient
+              colors={Gradients.accent}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>다음</Text>
+            </LinearGradient>
+          </Animated.View>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="건너뛰기">

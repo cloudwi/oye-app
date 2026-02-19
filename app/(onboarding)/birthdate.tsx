@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,25 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  FadeIn,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+
+const ITEM_HEIGHT = 44;
+
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 export default function OnboardingBirthdate() {
   const textColor = useThemeColor({}, 'text');
@@ -26,6 +38,10 @@ export default function OnboardingBirthdate() {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+
+  const yearScrollRef = useRef<ScrollView>(null);
+  const monthScrollRef = useRef<ScrollView>(null);
+  const dayScrollRef = useRef<ScrollView>(null);
 
   const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -44,8 +60,31 @@ export default function OnboardingBirthdate() {
 
   const isValid = selectedYear != null && selectedMonth != null && selectedDay != null;
 
+  // Button opacity animation
+  const buttonOpacity = useSharedValue(0.4);
+  const buttonScale = useSharedValue(1);
+
+  React.useEffect(() => {
+    if (isValid) {
+      buttonOpacity.value = withTiming(1, { duration: 300 });
+      buttonScale.value = withSpring(1.02, { damping: 15, stiffness: 150 });
+      // Reset scale back
+      setTimeout(() => {
+        buttonScale.value = withSpring(1, { damping: 15, stiffness: 150 });
+      }, 200);
+    } else {
+      buttonOpacity.value = withTiming(0.4, { duration: 300 });
+    }
+  }, [isValid]);
+
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: buttonOpacity.value,
+    transform: [{ scale: buttonScale.value }],
+  }));
+
   const handleNext = () => {
     if (!isValid) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
     setBirthDate(birthDate);
     router.push('/(onboarding)/calendartype');
@@ -55,35 +94,48 @@ export default function OnboardingBirthdate() {
     router.back();
   };
 
+  const scrollToItem = useCallback((scrollRef: React.RefObject<ScrollView>, index: number) => {
+    scrollRef.current?.scrollTo({
+      y: index * ITEM_HEIGHT,
+      animated: true,
+    });
+  }, []);
+
   const renderPicker = (
     data: number[],
     selected: number | null,
     onSelect: (value: number) => void,
-    suffix: string = ''
+    suffix: string = '',
+    scrollRef: React.RefObject<ScrollView>
   ) => (
     <ScrollView
+      ref={scrollRef}
       style={styles.picker}
       contentContainerStyle={styles.pickerContent}
       showsVerticalScrollIndicator={false}
-      snapToInterval={44}
+      snapToInterval={ITEM_HEIGHT}
       decelerationRate="fast"
     >
-      {data.map((item) => {
+      {data.map((item, index) => {
         const isSelected = selected === item;
         return (
           <TouchableOpacity
             key={item}
             style={[
               styles.pickerItem,
-              isSelected && { backgroundColor: BrandColors.primary + '15' },
+              isSelected && { backgroundColor: BrandColors.accent + '20' },
             ]}
-            onPress={() => onSelect(item)}
+            onPress={() => {
+              Haptics.selectionAsync();
+              onSelect(item);
+              scrollToItem(scrollRef, index);
+            }}
             activeOpacity={0.7}
           >
             <Text
               style={[
                 styles.pickerText,
-                { color: isSelected ? BrandColors.primary : textSecondary },
+                { color: isSelected ? BrandColors.accent : textSecondary },
                 isSelected && styles.pickerTextSelected,
               ]}
             >
@@ -94,6 +146,9 @@ export default function OnboardingBirthdate() {
       })}
     </ScrollView>
   );
+
+  // Date display text with key for fade-in animation
+  const dateDisplayKey = `${selectedYear}-${selectedMonth}-${selectedDay}`;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -113,39 +168,38 @@ export default function OnboardingBirthdate() {
 
         {/* Date Display */}
         <View style={[styles.dateDisplay, { backgroundColor: surfaceColor }, Shadows.md]}>
-          <Text style={[styles.dateText, { color: isValid ? textColor : textSecondary }]}>
+          <Animated.Text
+            key={dateDisplayKey}
+            entering={FadeIn.duration(300)}
+            style={[styles.dateText, { color: isValid ? textColor : textSecondary }]}
+          >
             {isValid
               ? `${selectedYear}년 ${selectedMonth}월 ${selectedDay}일`
               : '생년월일을 선택해주세요'}
-          </Text>
+          </Animated.Text>
         </View>
 
         {/* Pickers */}
         <View style={styles.pickerContainer}>
           <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <Text style={[styles.pickerLabel, { color: textSecondary }]}>년</Text>
-            {renderPicker(years, selectedYear, setSelectedYear)}
+            {renderPicker(years, selectedYear, setSelectedYear, '', yearScrollRef)}
           </View>
 
           <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <Text style={[styles.pickerLabel, { color: textSecondary }]}>월</Text>
-            {renderPicker(months, selectedMonth, setSelectedMonth)}
+            {renderPicker(months, selectedMonth, setSelectedMonth, '', monthScrollRef)}
           </View>
 
           <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <Text style={[styles.pickerLabel, { color: textSecondary }]}>일</Text>
-            {renderPicker(days, selectedDay, setSelectedDay)}
+            {renderPicker(days, selectedDay, setSelectedDay, '', dayScrollRef)}
           </View>
         </View>
       </View>
 
       {/* Footer */}
       <View style={styles.footer}>
-        {!isValid && (
-          <Text style={[styles.validationText, { color: BrandColors.error }]}>
-            연도, 월, 일을 모두 선택해주세요
-          </Text>
-        )}
         <TouchableOpacity
           onPress={handleNext}
           activeOpacity={0.9}
@@ -153,18 +207,14 @@ export default function OnboardingBirthdate() {
           accessibilityRole="button"
           accessibilityLabel="다음"
         >
-          <LinearGradient
-            colors={
-              isValid
-                ? [BrandColors.primary, BrandColors.secondary]
-                : ['#9CA3AF', '#9CA3AF']
-            }
+          <AnimatedLinearGradient
+            colors={Gradients.accent}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.button}
+            style={[styles.button, buttonAnimatedStyle]}
           >
             <Text style={styles.buttonText}>다음</Text>
-          </LinearGradient>
+          </AnimatedLinearGradient>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -234,7 +284,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
   },
   pickerItem: {
-    height: 44,
+    height: ITEM_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: Spacing.xs,
@@ -245,11 +295,6 @@ const styles = StyleSheet.create({
   },
   pickerTextSelected: {
     fontWeight: '700',
-  },
-  validationText: {
-    fontSize: FontSizes.sm,
-    textAlign: 'center',
-    marginBottom: Spacing.sm,
   },
   footer: {
     paddingHorizontal: Spacing.lg,
