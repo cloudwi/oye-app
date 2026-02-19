@@ -57,6 +57,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ffe93a8a-1201-4948-a656-919106e6adcb"
+      }
+    },
+    "owner": "cloudwi"
   }
 }

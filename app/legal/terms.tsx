@@ -1,0 +1,165 @@
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Spacing, FontSizes } from '@/constants/theme';
+
+const EFFECTIVE_DATE = '2025년 2월 19일';
+
+const SECTIONS = [
+  {
+    title: '제1조 (목적)',
+    content: `본 약관은 "오늘의 예감"(이하 "앱")이 제공하는 모든 서비스의 이용 조건 및 절차, 이용자와 앱 운영자의 권리·의무 및 책임 사항을 규정함을 목적으로 합니다.`,
+  },
+  {
+    title: '제2조 (정의)',
+    content: `• "서비스"란 앱을 통해 제공되는 AI 기반 운세 콘텐츠 생성 및 관련 기능을 말합니다.
+• "이용자"란 본 약관에 따라 앱이 제공하는 서비스를 이용하는 자를 말합니다.
+• "계정"이란 이용자의 식별 및 서비스 이용을 위해 소셜 로그인으로 생성된 회원 정보를 말합니다.`,
+  },
+  {
+    title: '제3조 (약관의 효력 및 변경)',
+    content: `① 본 약관은 앱 내에 게시하거나 기타 적절한 방법으로 이용자에게 공지함으로써 효력을 발생합니다.
+② 앱 운영자는 관련 법령을 위배하지 않는 범위에서 본 약관을 변경할 수 있으며, 변경 시 적용일 7일 전부터 앱 내 공지를 통해 안내합니다.
+③ 변경된 약관에 동의하지 않는 이용자는 서비스 이용을 중단하고 회원 탈퇴를 할 수 있습니다.`,
+  },
+  {
+    title: '제4조 (서비스의 내용)',
+    content: `앱은 다음의 서비스를 제공합니다.
+
+• AI 기반 일일 운세 콘텐츠 생성
+• 운세 히스토리 조회
+• 푸시 알림을 통한 일일 운세 알림
+• 기타 앱 운영자가 추가 개발하여 제공하는 서비스`,
+  },
+  {
+    title: '제5조 (회원가입 및 계정)',
+    content: `① 이용자는 카카오 또는 Apple 소셜 로그인을 통해 회원가입을 할 수 있습니다.
+② 회원가입 시 이름, 성별, 생년월일 등의 정보를 입력하며, 이는 맞춤형 운세 콘텐츠 생성에 활용됩니다.
+③ 이용자는 정확한 정보를 제공해야 하며, 허위 정보 입력으로 인한 불이익은 이용자에게 귀속됩니다.`,
+  },
+  {
+    title: '제6조 (서비스 이용)',
+    content: `① 서비스는 연중무휴 24시간 제공을 원칙으로 합니다. 다만, 시스템 점검 등의 사유로 서비스가 일시 중단될 수 있습니다.
+② 앱에서 제공하는 운세 콘텐츠는 AI가 생성한 오락 목적의 콘텐츠이며, 실제 미래를 예측하거나 보장하지 않습니다.
+③ 이용자는 운세 콘텐츠를 중요한 의사결정의 근거로 사용해서는 안 됩니다.`,
+  },
+  {
+    title: '제7조 (이용자의 의무)',
+    content: `이용자는 다음 행위를 해서는 안 됩니다.
+
+• 타인의 개인정보를 도용하는 행위
+• 서비스의 운영을 방해하는 행위
+• 앱을 통해 얻은 정보를 상업적으로 이용하는 행위
+• 기타 관련 법령에 위반되는 행위`,
+  },
+  {
+    title: '제8조 (서비스의 변경 및 중단)',
+    content: `① 앱 운영자는 운영상 또는 기술상의 필요에 따라 서비스를 변경할 수 있습니다.
+② 천재지변, 시스템 장애 등 불가피한 사유로 서비스 제공이 어려운 경우 일시적으로 서비스를 중단할 수 있습니다.
+③ 서비스 중단 시 사전에 앱 내 공지를 통해 안내합니다. 다만, 긴급한 경우 사후에 안내할 수 있습니다.`,
+  },
+  {
+    title: '제9조 (회원 탈퇴 및 자격 상실)',
+    content: `① 이용자는 앱 내 설정에서 언제든지 회원 탈퇴를 요청할 수 있으며, 앱 운영자는 즉시 처리합니다.
+② 회원 탈퇴 시 이용자의 모든 데이터는 즉시 삭제되며 복구할 수 없습니다.`,
+  },
+  {
+    title: '제10조 (면책 조항)',
+    content: `① 앱에서 제공하는 운세 콘텐츠는 오락 목적으로만 제공되며, 그 정확성이나 신뢰성을 보장하지 않습니다.
+② 이용자가 운세 콘텐츠를 근거로 한 판단이나 행동으로 인해 발생한 손해에 대해 앱 운영자는 책임을 지지 않습니다.
+③ 천재지변 또는 이에 준하는 불가항력으로 인해 서비스를 제공할 수 없는 경우 책임이 면제됩니다.`,
+  },
+  {
+    title: '제11조 (분쟁 해결)',
+    content: `① 앱 운영자와 이용자 간 발생한 분쟁에 대해 양측은 원만한 해결을 위해 성실히 협의합니다.
+② 협의가 이루어지지 않는 경우 관련 법령에 따른 절차를 따릅니다.`,
+  },
+  {
+    title: '부칙',
+    content: `본 약관은 ${EFFECTIVE_DATE}부터 시행합니다.`,
+  },
+];
+
+export default function TermsScreen() {
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <IconSymbol name="chevron.left" size={20} color={textColor} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: textColor }]}>이용약관</Text>
+        <View style={styles.backButton} />
+      </View>
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <Text style={[styles.effectiveDate, { color: textSecondary }]}>
+          시행일: {EFFECTIVE_DATE}
+        </Text>
+
+        {SECTIONS.map((section, index) => (
+          <View key={index} style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>{section.title}</Text>
+            <Text style={[styles.sectionContent, { color: textSecondary }]}>
+              {section.content}
+            </Text>
+          </View>
+        ))}
+
+        <View style={styles.bottomPadding} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: Spacing.lg,
+  },
+  effectiveDate: {
+    fontSize: FontSizes.sm,
+    marginBottom: Spacing.lg,
+  },
+  section: {
+    marginBottom: Spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+  },
+  sectionContent: {
+    fontSize: FontSizes.sm,
+    lineHeight: 22,
+  },
+  bottomPadding: {
+    height: Spacing.xxl,
+  },
+});

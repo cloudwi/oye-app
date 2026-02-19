@@ -1,8 +1,11 @@
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import type { StateStorage } from 'zustand/middleware';
 
 const MIGRATION_KEY = 'auth-storage-migrated';
+
+const isNative = Platform.OS !== 'web';
 
 /**
  * SecureStore 기반 zustand persist storage.
@@ -12,11 +15,9 @@ const MIGRATION_KEY = 'auth-storage-migrated';
  */
 export const secureStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    if (Platform.OS === 'web') {
+    if (!isNative) {
       return AsyncStorage.getItem(name);
     }
-
-    const SecureStore = await import('expo-secure-store');
 
     // 최초 실행 시 마이그레이션 처리
     const migrated = await AsyncStorage.getItem(MIGRATION_KEY);
@@ -33,20 +34,18 @@ export const secureStorage: StateStorage = {
   },
 
   setItem: async (name: string, value: string): Promise<void> => {
-    if (Platform.OS === 'web') {
+    if (!isNative) {
       await AsyncStorage.setItem(name, value);
       return;
     }
-    const SecureStore = await import('expo-secure-store');
     await SecureStore.setItemAsync(name, value);
   },
 
   removeItem: async (name: string): Promise<void> => {
-    if (Platform.OS === 'web') {
+    if (!isNative) {
       await AsyncStorage.removeItem(name);
       return;
     }
-    const SecureStore = await import('expo-secure-store');
     await SecureStore.deleteItemAsync(name);
   },
 };
