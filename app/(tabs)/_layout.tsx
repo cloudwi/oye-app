@@ -20,7 +20,7 @@ export default function TabLayout() {
   }
 
   if (!onboarding.completed) {
-    return <Redirect href="/(onboarding)/birthdate" />;
+    return <Redirect href="/(onboarding)/name" />;
   }
 
   return (

@@ -8,13 +8,14 @@ import { Spacing } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 const ONBOARDING_STEPS: Record<string, number> = {
-  gender: 1,
-  birthdate: 2,
-  calendartype: 3,
-  notification: 4,
+  name: 1,
+  gender: 2,
+  birthdate: 3,
+  calendartype: 4,
+  notification: 5,
 };
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 export default function OnboardingLayout() {
   const { isAuthenticated } = useAuthStore();
@@ -47,6 +48,7 @@ export default function OnboardingLayout() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="name" />
         <Stack.Screen name="gender" />
         <Stack.Screen name="birthdate" />
         <Stack.Screen name="calendartype" />

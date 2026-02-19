@@ -26,7 +26,7 @@ export default function OnboardingWelcome() {
       if (onboarding.completed) {
         router.replace('/(tabs)');
       } else {
-        router.push('/(onboarding)/gender');
+        router.push('/(onboarding)/name');
       }
     }
   };
