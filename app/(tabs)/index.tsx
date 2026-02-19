@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,20 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+  withSequence,
+  FadeIn,
+} from 'react-native-reanimated';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useFortuneStore } from '@/stores/fortune-store';
 import { fortuneApi } from '@/services/api/fortune';
 import { shareService } from '@/services/share';
@@ -24,9 +34,24 @@ import {
   BorderRadius,
   FontSizes,
   Shadows,
+  TimeTheme,
 } from '@/constants/theme';
 
+type TimePeriod = 'morning' | 'afternoon' | 'evening' | 'night';
+
+function getTimePeriod(): TimePeriod {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 11) return 'morning';
+  if (hour >= 11 && hour < 17) return 'afternoon';
+  if (hour >= 17 && hour < 21) return 'evening';
+  return 'night';
+}
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 export default function TodayFortuneScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
@@ -34,8 +59,24 @@ export default function TodayFortuneScreen() {
 
   const { todayFortune, setTodayFortune, isLoading, setLoading, setError } = useFortuneStore();
   const [refreshing, setRefreshing] = useState(false);
+  const isFetching = useRef(false);
+
+  const timePeriod = useMemo(() => getTimePeriod(), []);
+  const timeConfig = TimeTheme[timePeriod];
+  const gradientColors = isDark ? timeConfig.gradient.dark : timeConfig.gradient.light;
+
+  // Card entrance animation
+  const cardOpacity = useSharedValue(0);
+  const cardScale = useSharedValue(0.95);
+
+  const cardAnimStyle = useAnimatedStyle(() => ({
+    opacity: cardOpacity.value,
+    transform: [{ scale: cardScale.value }],
+  }));
 
   const fetchTodayFortune = async () => {
+    if (isFetching.current) return;
+    isFetching.current = true;
     setLoading(true);
     setError(null);
     try {
@@ -46,11 +87,25 @@ export default function TodayFortuneScreen() {
       setError(error.message || '예감을 불러오는데 실패했습니다.');
     }
     setLoading(false);
+    isFetching.current = false;
   };
 
   useEffect(() => {
     fetchTodayFortune();
   }, []);
+
+  useEffect(() => {
+    if (todayFortune) {
+      cardOpacity.value = withSequence(
+        withTiming(0, { duration: 0 }),
+        withDelay(200, withTiming(1, { duration: 400 })),
+      );
+      cardScale.value = withSequence(
+        withTiming(0.95, { duration: 0 }),
+        withDelay(200, withTiming(1, { duration: 400 })),
+      );
+    }
+  }, [todayFortune]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -66,118 +121,139 @@ export default function TodayFortuneScreen() {
 
   const today = format(new Date(), 'M월 d일 EEEE', { locale: ko });
 
+  const backgroundGradient = (
+    <LinearGradient
+      colors={[gradientColors[0], gradientColors[1]]}
+      style={styles.backgroundGradient}
+    />
+  );
+
   if (isLoading && !todayFortune) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={[styles.dateText, { color: textSecondary }]}>{today}</Text>
-            <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
+      <View style={[styles.container, { backgroundColor }]}>
+        {backgroundGradient}
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Text style={[styles.greetingText, { color: textSecondary }]}>
+                {timeConfig.greeting} {timeConfig.emoji}
+              </Text>
+              <Text style={[styles.dateText, { color: textSecondary }]}>{today}</Text>
+              <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
+            </View>
+            <FortuneCardSkeleton />
           </View>
-          <FortuneCardSkeleton />
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={BrandColors.primary}
-          />
-        }
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={[styles.dateText, { color: textSecondary }]}>{today}</Text>
-          <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
-        </View>
+    <View style={[styles.container, { backgroundColor }]}>
+      {backgroundGradient}
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={BrandColors.accent}
+            />
+          }
+        >
+          {/* Header */}
+          <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
+            <Text style={[styles.greetingText, { color: textSecondary }]}>
+              {timeConfig.greeting} {timeConfig.emoji}
+            </Text>
+            <Text style={[styles.dateText, { color: textSecondary }]}>{today}</Text>
+            <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
+          </Animated.View>
 
-        {todayFortune ? (
-          <>
-            {/* Main Fortune Card */}
-            <View
-              style={[styles.fortuneCard, { backgroundColor: surfaceColor }, Shadows.lg]}
-              accessibilityLabel="오늘의 운세 카드"
-            >
-              {/* Fortune Icon */}
-              <View style={styles.iconContainer}>
-                <LinearGradient
-                  colors={[BrandColors.primary, BrandColors.secondary]}
-                  style={styles.iconGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <IconSymbol name="sparkles" size={32} color="#FFF" />
-                </LinearGradient>
-              </View>
-
-              {/* Fortune Content */}
-              <Text
-                style={[styles.fortuneContent, { color: textColor }]}
-                accessibilityLabel={`오늘의 운세: ${todayFortune.content}`}
+          {todayFortune ? (
+            <>
+              {/* Fortune Card */}
+              <Animated.View
+                style={[
+                  styles.fortuneCard,
+                  { backgroundColor: surfaceColor },
+                  Shadows.lg,
+                  cardAnimStyle,
+                ]}
+                accessibilityLabel="오늘의 운세 카드"
               >
-                {todayFortune.content}
-              </Text>
+                <View style={styles.iconContainer}>
+                  <LinearGradient
+                    colors={[timeConfig.iconGradient[0], timeConfig.iconGradient[1]]}
+                    style={styles.iconGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <IconSymbol name="sparkles" size={32} color="#FFF" />
+                  </LinearGradient>
+                </View>
+
+                <Text
+                  style={[styles.fortuneContent, { color: textColor }]}
+                  accessibilityLabel={`오늘의 운세: ${todayFortune.content}`}
+                >
+                  {todayFortune.content}
+                </Text>
+              </Animated.View>
 
               {/* Share Button */}
-              <TouchableOpacity
-                style={styles.shareButton}
-                onPress={handleShare}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="운세 공유하기"
-              >
-                <LinearGradient
-                  colors={[BrandColors.primary, BrandColors.secondary]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.shareGradient}
+              <Animated.View style={cardAnimStyle}>
+                <TouchableOpacity
+                  style={styles.shareButton}
+                  onPress={handleShare}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="운세 공유하기"
                 >
-                  <IconSymbol name="square.and.arrow.up" size={18} color="#FFF" />
-                  <Text style={styles.shareText}>공유하기</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-
-            {/* Tips Section */}
-            <View style={styles.tipsSection}>
-              <Text style={[styles.tipsTitle, { color: textColor }]}>오늘의 팁</Text>
-              <View style={[styles.tipCard, { backgroundColor: surfaceColor }, Shadows.sm]}>
-                <View style={[styles.tipIconBg, { backgroundColor: '#F59E0B' + '15' }]}>
-                  <IconSymbol name="lightbulb.fill" size={20} color="#F59E0B" />
-                </View>
-                <Text style={[styles.tipText, { color: textSecondary }]}>
-                  예감은 참고용입니다. 긍정적인 마음으로 하루를 시작하세요!
-                </Text>
-              </View>
-            </View>
-          </>
-        ) : (
-          <EmptyState
-            icon="exclamationmark.circle"
-            iconColor={BrandColors.error}
-            title="예감을 불러올 수 없어요"
-            message="아래로 당겨서 다시 시도해주세요"
-            actionLabel="다시 시도"
-            onAction={fetchTodayFortune}
-          />
-        )}
-      </ScrollView>
-    </SafeAreaView>
+                  <LinearGradient
+                    colors={[timeConfig.iconGradient[0], timeConfig.iconGradient[1]]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.shareGradient}
+                  >
+                    <IconSymbol name="square.and.arrow.up" size={18} color="#FFF" />
+                    <Text style={styles.shareText}>공유하기</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </Animated.View>
+            </>
+          ) : (
+            <EmptyState
+              icon="exclamationmark.circle"
+              iconColor={BrandColors.error}
+              title="예감을 불러올 수 없어요"
+              message="아래로 당겨서 다시 시도해주세요"
+              actionLabel="다시 시도"
+              onAction={fetchTodayFortune}
+            />
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  backgroundGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: SCREEN_HEIGHT * 0.45,
   },
   scrollView: {
     flex: 1,
@@ -186,11 +262,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xxl,
   },
+
   // Header
   header: {
     alignItems: 'center',
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.lg,
+  },
+  greetingText: {
+    fontSize: FontSizes.md,
+    fontWeight: '500',
+    marginBottom: Spacing.sm,
   },
   dateText: {
     fontSize: FontSizes.sm,
@@ -218,15 +300,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fortuneContent: {
-    fontSize: FontSizes.lg,
-    lineHeight: 28,
+    fontSize: 20,
+    lineHeight: 32,
     textAlign: 'center',
-    marginBottom: Spacing.xl,
   },
 
   // Share Button
   shareButton: {
-    width: '100%',
+    marginTop: Spacing.md,
   },
   shareGradient: {
     flexDirection: 'row',
@@ -241,34 +322,4 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     fontWeight: '600',
   },
-
-  // Tips Section
-  tipsSection: {
-    marginTop: Spacing.xl,
-  },
-  tipsTitle: {
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
-    marginBottom: Spacing.md,
-  },
-  tipCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    gap: Spacing.md,
-  },
-  tipIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tipText: {
-    flex: 1,
-    fontSize: FontSizes.sm,
-    lineHeight: 20,
-  },
-
 });

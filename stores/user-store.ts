@@ -48,7 +48,7 @@ export const useUserStore = create<UserState>()(
             ? { ...state.user, birthDate }
             : {
                 id: 0,
-                kakaoId: '',
+                provider: null,
                 name: '',
                 birthDate,
                 gender: null,
@@ -63,7 +63,7 @@ export const useUserStore = create<UserState>()(
             ? { ...state.user, gender }
             : {
                 id: 0,
-                kakaoId: '',
+                provider: null,
                 name: '',
                 birthDate: null,
                 gender,
@@ -78,7 +78,7 @@ export const useUserStore = create<UserState>()(
             ? { ...state.user, calendarType }
             : {
                 id: 0,
-                kakaoId: '',
+                provider: null,
                 name: '',
                 birthDate: null,
                 gender: null,

@@ -1,10 +1,11 @@
 export type Gender = 'MALE' | 'FEMALE';
 export type CalendarType = 'SOLAR' | 'LUNAR';
+export type SocialProvider = 'KAKAO' | 'APPLE';
 
 // API 응답에 맞는 User 타입
 export interface User {
   id: number;
-  kakaoId: string;
+  provider: SocialProvider | null;
   name: string;
   birthDate: string | null; // YYYY-MM-DD
   gender: Gender | null;

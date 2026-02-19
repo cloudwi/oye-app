@@ -195,6 +195,46 @@ export const Layout = {
   buttonHeight: 52,
 };
 
+// ─── Time-based Theme ──────────────────────────────────────────
+export const TimeTheme = {
+  morning: {
+    greeting: '좋은 아침이에요',
+    emoji: '☀️',
+    gradient: {
+      light: ['#FFF7ED', '#FFFFFF'] as const,
+      dark: ['#1C1308', '#0A0A1B'] as const,
+    },
+    iconGradient: ['#F59E0B', '#F97316'] as const,
+  },
+  afternoon: {
+    greeting: '활기찬 오후예요',
+    emoji: '🌤️',
+    gradient: {
+      light: ['#EFF6FF', '#FFFFFF'] as const,
+      dark: ['#0F1A33', '#0A0A1B'] as const,
+    },
+    iconGradient: ['#3B82F6', '#7C3AED'] as const,
+  },
+  evening: {
+    greeting: '수고한 하루예요',
+    emoji: '🌅',
+    gradient: {
+      light: ['#FFF1F2', '#FFFFFF'] as const,
+      dark: ['#1C0A12', '#0A0A1B'] as const,
+    },
+    iconGradient: ['#EC4899', '#7C3AED'] as const,
+  },
+  night: {
+    greeting: '고요한 밤이에요',
+    emoji: '🌙',
+    gradient: {
+      light: ['#EEF2FF', '#FFFFFF'] as const,
+      dark: ['#12104B', '#0A0A1B'] as const,
+    },
+    iconGradient: ['#6366F1', '#4F46E5'] as const,
+  },
+};
+
 // ─── Shadows ────────────────────────────────────────────────────
 export const Shadows = {
   card: {
