@@ -8,7 +8,6 @@ import {
   Switch,
   Alert,
   Platform,
-  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
@@ -312,19 +311,19 @@ export default function SettingsScreen() {
               icon="doc.text.fill"
               iconColor="#3B82F6"
               title="개인정보 처리방침"
-              onPress={() => Linking.openURL('https://oye-app.example.com/privacy')}
+              onPress={() => router.push('/legal/privacy')}
             />
             <SettingRow
               icon="doc.plaintext"
               iconColor="#3B82F6"
               title="이용약관"
-              onPress={() => Linking.openURL('https://oye-app.example.com/terms')}
+              onPress={() => router.push('/legal/terms')}
             />
             <SettingRow
               icon="envelope.fill"
               iconColor="#10B981"
               title="문의하기"
-              onPress={() => Linking.openURL('mailto:support@oye-app.com')}
+              onPress={() => router.push('/inquiry')}
               isLast
             />
           </View>

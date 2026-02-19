@@ -71,6 +71,14 @@ export default function RootLayout() {
           name="settings"
           options={{ animation: 'slide_from_right' }}
         />
+        <Stack.Screen
+          name="legal"
+          options={{ animation: 'slide_from_right' }}
+        />
+        <Stack.Screen
+          name="inquiry"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>
