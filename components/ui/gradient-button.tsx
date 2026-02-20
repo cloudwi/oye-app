@@ -18,8 +18,6 @@ interface GradientButtonProps {
   isEnabled?: boolean;
 }
 
-const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
-
 export function GradientButton({
   label,
   onPress,
@@ -37,18 +35,20 @@ export function GradientButton({
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      <AnimatedLinearGradient
-        colors={Gradients.accent}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={[styles.button, animatedStyle]}
-      >
-        {loading ? (
-          <ActivityIndicator color="#FFF" />
-        ) : (
-          <Text style={styles.buttonText}>{label}</Text>
-        )}
-      </AnimatedLinearGradient>
+      <Animated.View style={animatedStyle}>
+        <LinearGradient
+          colors={Gradients.accent}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.button}
+        >
+          {loading ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.buttonText}>{label}</Text>
+          )}
+        </LinearGradient>
+      </Animated.View>
     </TouchableOpacity>
   );
 }

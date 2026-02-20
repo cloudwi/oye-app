@@ -27,15 +27,17 @@ export default function AuthCallback() {
       if (token) {
         setToken(token);
 
-        // 기존 회원이면 서버에서 유저 데이터 복원 후 온보딩 스킵
-        if (token.isNewUser === false) {
-          try {
-            const user = await userApi.getMe();
-            setUser(user);
+        try {
+          const user = await userApi.getMe();
+          setUser(user);
+
+          if (token.isNewUser === false) {
+            // 기존 회원: 온보딩 스킵
             completeOnboarding();
-          } catch {
-            // getMe 실패 시 온보딩 진행
           }
+          // 신규 회원: user 정보(이름 등)를 store에 저장 → 온보딩에서 활용
+        } catch {
+          // getMe 실패 시 온보딩 진행
         }
       }
 

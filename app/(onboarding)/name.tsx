@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -54,6 +54,13 @@ export default function OnboardingName() {
 
   const { user, updateUser } = useUserStore();
   const [name, setName] = useState(user?.name ?? '');
+
+  // 카카오 로그인 등으로 이미 이름이 있으면 자동으로 다음 단계로
+  useEffect(() => {
+    if (user?.name && user.name.trim().length > 0) {
+      router.replace('/(onboarding)/gender');
+    }
+  }, []);
 
   const trimmed = name.trim();
 

@@ -127,16 +127,14 @@ export default function InquiryListScreen() {
       </View>
 
       <View style={styles.countContainer}>
-        {totalCount > 0 && (
-          <Text style={[styles.countText, { color: textSecondary }]}>
-            총 {totalCount}건
-          </Text>
-        )}
         {Platform.OS === 'web' && (
           <TouchableOpacity onPress={handleRefresh} style={styles.refreshButton}>
             <IconSymbol name="arrow.clockwise" size={16} color={tintColor} />
           </TouchableOpacity>
         )}
+        <Text style={[styles.countText, { color: textSecondary }]}>
+          총 {totalCount}건
+        </Text>
       </View>
 
       {isLoading ? (
@@ -202,9 +200,9 @@ const styles = StyleSheet.create({
   countContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.sm,
+    gap: Spacing.sm,
   },
   refreshButton: {
     width: 32,
