@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Platform, View, StyleSheet } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -51,6 +52,8 @@ const FortuneDarkTheme = {
   },
 };
 
+SplashScreen.preventAutoHideAsync();
+
 export const unstable_settings = {
   anchor: '(tabs)',
 };
@@ -58,6 +61,7 @@ export const unstable_settings = {
 export default Sentry.wrap(function RootLayout() {
   const colorScheme = useColorScheme();
   const bgColor = Colors[colorScheme ?? 'light'].background;
+  const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
     const subscription = notificationService.addNotificationResponseListener(() => {
@@ -67,6 +71,20 @@ export default Sentry.wrap(function RootLayout() {
       subscription?.remove();
     };
   }, []);
+
+  useEffect(() => {
+    // 앱 초기화 완료 후 스플래시 숨기기
+    const timer = setTimeout(() => {
+      setAppReady(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (appReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [appReady]);
 
   const content = (
     <ThemeProvider
