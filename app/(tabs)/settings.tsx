@@ -19,8 +19,6 @@ import { userApi } from '@/services/api/user';
 import { queryClient } from '@/services/query-client';
 import { notificationService } from '@/services/notification';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
 import { router } from 'expo-router';
 import {
   BrandColors,
@@ -106,14 +104,7 @@ export default function SettingsScreen() {
     setNotificationEnabled,
     reset: resetSettings,
   } = useSettingsStore();
-  const formattedBirthDate = user?.birthDate
-    ? format(new Date(user.birthDate), 'yyyy.MM.dd', { locale: ko })
-    : '미설정';
-  const formattedBirthTime = user?.birthTime || null;
-
-  const genderLabel = user?.gender === 'MALE' ? '남성' : user?.gender === 'FEMALE' ? '여성' : '미설정';
-  const calendarLabel = user?.calendarType === 'SOLAR' ? '양력' : user?.calendarType === 'LUNAR' ? '음력' : '미설정';
-  const bloodTypeLabel = user?.bloodType ? `${user.bloodType}형` : '미설정';
+  const profileSummary = [user?.gender === 'MALE' ? '남성' : user?.gender === 'FEMALE' ? '여성' : null, user?.mbti, user?.occupation].filter(Boolean).join(' · ') || '프로필을 설정해보세요';
 
   const formatNotificationTime = (time: string) => {
     const [h, m] = time.split(':').map(Number);
@@ -223,58 +214,24 @@ export default function SettingsScreen() {
         {/* Profile Section */}
         <View style={styles.section}>
           <Text style={[styles.sectionLabel, { color: textSecondary }]}>프로필</Text>
-          <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
-            <SettingRow
-              icon="pencil"
-              iconColor={tintColor}
-              title="이름"
-              subtitle={user?.name || '미설정'}
-              onPress={() => router.push('/settings/name')}
-            />
-            <SettingRow
-              icon="person.fill"
-              iconColor={tintColor}
-              title="성별"
-              subtitle={genderLabel}
-              onPress={() => router.push('/settings/gender')}
-            />
-            <SettingRow
-              icon="calendar"
-              iconColor={tintColor}
-              title="생년월일"
-              subtitle={`${formattedBirthDate} (${calendarLabel})${formattedBirthTime ? ` ${formattedBirthTime}` : ''}`}
-              onPress={() => router.push('/settings/birthdate')}
-            />
-            <SettingRow
-              icon="briefcase.fill"
-              iconColor={tintColor}
-              title="직업"
-              subtitle={user?.occupation || '미설정'}
-              onPress={() => router.push('/settings/occupation')}
-            />
-            <SettingRow
-              icon="brain"
-              iconColor={tintColor}
-              title="MBTI"
-              subtitle={user?.mbti || '미설정'}
-              onPress={() => router.push('/settings/mbti')}
-            />
-            <SettingRow
-              icon="drop.fill"
-              iconColor={tintColor}
-              title="혈액형"
-              subtitle={bloodTypeLabel}
-              onPress={() => router.push('/settings/bloodtype')}
-            />
-            <SettingRow
-              icon="star.fill"
-              iconColor={tintColor}
-              title="관심사"
-              subtitle={user?.interests || '미설정'}
-              onPress={() => router.push('/settings/interests')}
-              isLast
-            />
-          </View>
+          <TouchableOpacity
+            style={[styles.profileCard, { backgroundColor: surfaceColor }, Shadows.sm]}
+            onPress={() => router.push('/settings/profile')}
+            activeOpacity={0.6}
+          >
+            <View style={[styles.profileAvatar, { backgroundColor: tintColor + '15' }]}>
+              <IconSymbol name="person.fill" size={28} color={tintColor} />
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={[styles.profileName, { color: textColor }]}>
+                {user?.name || '이름 미설정'}
+              </Text>
+              <Text style={[styles.profileSummary, { color: textSecondary }]}>
+                {profileSummary}
+              </Text>
+            </View>
+            <IconSymbol name="chevron.right" size={14} color={textSecondary} />
+          </TouchableOpacity>
         </View>
 
         {/* Notification Section */}
@@ -411,6 +368,31 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: BorderRadius.lg,
     overflow: 'hidden',
+  },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.md,
+  },
+  profileAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+  },
+  profileSummary: {
+    fontSize: FontSizes.sm,
+    marginTop: 2,
   },
   settingRow: {
     flexDirection: 'row',
