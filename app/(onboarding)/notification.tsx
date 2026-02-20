@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -43,7 +44,9 @@ export default function OnboardingNotification() {
   };
 
   const handleEnableNotification = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     setIsLoading(true);
     try {
       const granted = await notificationService.requestPermissions();
@@ -57,7 +60,9 @@ export default function OnboardingNotification() {
     }
     await sendUserProfile();
     setIsLoading(false);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
     completeOnboarding();
     router.replace('/(tabs)');
   };

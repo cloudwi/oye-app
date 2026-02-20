@@ -7,6 +7,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -165,13 +166,18 @@ export default function InquiryListScreen() {
         </TouchableOpacity>
       </View>
 
-      {totalCount > 0 && (
-        <View style={styles.countContainer}>
+      <View style={styles.countContainer}>
+        {totalCount > 0 && (
           <Text style={[styles.countText, { color: textSecondary }]}>
             총 {totalCount}건
           </Text>
-        </View>
-      )}
+        )}
+        {Platform.OS === 'web' && (
+          <TouchableOpacity onPress={handleRefresh} style={styles.refreshButton}>
+            <IconSymbol name="arrow.clockwise" size={16} color={BrandColors.accent} />
+          </TouchableOpacity>
+        )}
+      </View>
 
       {isLoading && inquiries.length === 0 ? (
         <View style={styles.loadingContainer}>
@@ -189,11 +195,13 @@ export default function InquiryListScreen() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor={BrandColors.primary}
-            />
+            Platform.OS !== 'web' ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={BrandColors.primary}
+              />
+            ) : undefined
           }
         />
       )}
@@ -232,8 +240,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   countContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.sm,
+  },
+  refreshButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   countText: {
     fontSize: FontSizes.sm,

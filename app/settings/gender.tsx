@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -57,7 +58,9 @@ export default function GenderEditScreen() {
 
   const handleSelectGender = (gender: Gender) => {
     setSelectedGender(selectedGender === gender ? null : gender);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
   };
 
   const handleSave = async () => {
@@ -72,7 +75,9 @@ export default function GenderEditScreen() {
         gender: selectedGender || undefined,
         calendarType: user?.calendarType || undefined,
       });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
     } catch (error) {
       console.error('Error updating gender:', error);
     }

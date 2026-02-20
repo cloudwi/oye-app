@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -72,22 +73,30 @@ export default function BirthDateEditScreen() {
 
   const handleSelectYear = useCallback((value: number) => {
     setSelectedYear(value);
-    Haptics.selectionAsync();
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
   }, []);
 
   const handleSelectMonth = useCallback((value: number) => {
     setSelectedMonth(value);
-    Haptics.selectionAsync();
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
   }, []);
 
   const handleSelectDay = useCallback((value: number) => {
     setSelectedDay(value);
-    Haptics.selectionAsync();
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
   }, []);
 
   const handleSelectCalendarType = (type: CalendarType) => {
     setSelectedCalendarType(selectedCalendarType === type ? null : type);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
   };
 
   const handleSave = async () => {
@@ -107,7 +116,9 @@ export default function BirthDateEditScreen() {
         gender: user?.gender || undefined,
         calendarType: selectedCalendarType || undefined,
       });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
     } catch (error) {
       console.error('Error updating birthdate:', error);
     }

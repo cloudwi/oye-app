@@ -23,6 +23,9 @@ import {
   FontSizes,
 } from '@/constants/theme';
 
+const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
+const wrapperProps = Platform.OS === 'ios' ? { behavior: 'padding' as const } : {};
+
 export default function InquiryWriteScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -57,9 +60,9 @@ export default function InquiryWriteScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <KeyboardAvoidingView
+      <Wrapper
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        {...wrapperProps}
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -131,7 +134,7 @@ export default function InquiryWriteScreen() {
             )}
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
+      </Wrapper>
     </SafeAreaView>
   );
 }

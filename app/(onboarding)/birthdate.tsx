@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -84,7 +85,9 @@ export default function OnboardingBirthdate() {
 
   const handleNext = () => {
     if (!isValid) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
     setBirthDate(birthDate);
     router.push('/(onboarding)/calendartype');
@@ -126,7 +129,9 @@ export default function OnboardingBirthdate() {
               isSelected && { backgroundColor: BrandColors.accent + '20' },
             ]}
             onPress={() => {
-              Haptics.selectionAsync();
+              if (Platform.OS !== 'web') {
+                Haptics.selectionAsync();
+              }
               onSelect(item);
               scrollToItem(scrollRef, index);
             }}

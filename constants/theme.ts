@@ -243,6 +243,8 @@ export const Shadows = {
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+    // @ts-ignore - web only
+    boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)',
   },
   sm: {
     shadowColor: '#000',
@@ -250,6 +252,8 @@ export const Shadows = {
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
+    // @ts-ignore - web only
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
   },
   md: {
     shadowColor: '#000',
@@ -257,6 +261,8 @@ export const Shadows = {
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+    // @ts-ignore - web only
+    boxShadow: '0 1px 8px rgba(0, 0, 0, 0.05)',
   },
   lg: {
     shadowColor: '#000',
@@ -264,5 +270,7 @@ export const Shadows = {
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 4,
+    // @ts-ignore - web only
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
   },
 };

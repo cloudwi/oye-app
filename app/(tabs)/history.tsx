@@ -7,6 +7,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -175,7 +176,14 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: textColor }]}>히스토리</Text>
+        <View style={styles.headerRow}>
+          <Text style={[styles.title, { color: textColor }]}>히스토리</Text>
+          {Platform.OS === 'web' && (
+            <TouchableOpacity onPress={handleRefresh} style={styles.refreshButton}>
+              <IconSymbol name="arrow.clockwise" size={18} color={BrandColors.accent} />
+            </TouchableOpacity>
+          )}
+        </View>
         {totalCount > 0 && (
           <Text style={[styles.subtitle, { color: textSecondary }]}>
             총 {totalCount}개의 기록
@@ -194,11 +202,13 @@ export default function HistoryScreen() {
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={BrandColors.primary}
-          />
+          Platform.OS !== 'web' ? (
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={BrandColors.primary}
+            />
+          ) : undefined
         }
       />
     </SafeAreaView>
@@ -214,9 +224,20 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.md,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   title: {
     fontSize: FontSizes.xxl,
     fontWeight: '700',
+  },
+  refreshButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   subtitle: {
     fontSize: FontSizes.sm,

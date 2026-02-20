@@ -94,7 +94,7 @@ export default function OnboardingWelcome() {
 
       {/* Bottom Buttons */}
       <View style={styles.footer}>
-        {appleSignInAvailable && (
+        {appleSignInAvailable && Platform.OS !== 'web' && (
           <AppleAuthentication.AppleAuthenticationButton
             buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
             buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
