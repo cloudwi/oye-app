@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { inquiryApi } from '@/services/api/inquiry';
+import { useInquiryDetail } from '@/hooks/queries/use-inquiry-detail';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { format, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -21,7 +21,6 @@ import {
   FontSizes,
   Shadows,
 } from '@/constants/theme';
-import type { Inquiry } from '@/types/inquiry';
 
 export default function InquiryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,21 +30,7 @@ export default function InquiryDetailScreen() {
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
   const dividerColor = useThemeColor({ light: '#E5E7EB', dark: '#374151' }, 'divider');
 
-  const [inquiry, setInquiry] = useState<Inquiry | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchDetail = async () => {
-      try {
-        const data = await inquiryApi.getDetail(Number(id));
-        setInquiry(data);
-      } catch (error) {
-        console.error('Error fetching inquiry detail:', error);
-      }
-      setIsLoading(false);
-    };
-    fetchDetail();
-  }, [id]);
+  const { data: inquiry, isLoading } = useInquiryDetail(Number(id));
 
   const getStatusLabel = (status: string) => {
     return status === 'ANSWERED' ? '답변 완료' : '답변 대기';

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Platform, View, StyleSheet } from 'react-native';
@@ -11,6 +12,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { OfflineBanner } from '@/components/offline-banner';
 import { notificationService } from '@/services/notification';
 import { initSentry } from '@/services/sentry';
+import { queryClient } from '@/services/query-client';
 
 initSentry();
 
@@ -86,17 +88,23 @@ export default function RootLayout() {
 
   if (Platform.OS === 'web') {
     return (
-      <ErrorBoundary>
-        <View style={[webStyles.outer, { backgroundColor: bgColor }]}>
-          <View style={[webStyles.inner, { backgroundColor: bgColor }]}>
-            {content}
+      <QueryClientProvider client={queryClient}>
+        <ErrorBoundary>
+          <View style={[webStyles.outer, { backgroundColor: bgColor }]}>
+            <View style={[webStyles.inner, { backgroundColor: bgColor }]}>
+              {content}
+            </View>
           </View>
-        </View>
-      </ErrorBoundary>
+        </ErrorBoundary>
+      </QueryClientProvider>
     );
   }
 
-  return <ErrorBoundary>{content}</ErrorBoundary>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>{content}</ErrorBoundary>
+    </QueryClientProvider>
+  );
 }
 
 const webStyles = StyleSheet.create({

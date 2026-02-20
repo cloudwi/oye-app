@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { inquiryApi } from '@/services/api/inquiry';
+import { useInquiryList } from '@/hooks/queries/use-inquiry-list';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { format, parseISO } from 'date-fns';
@@ -26,8 +26,6 @@ import {
 } from '@/constants/theme';
 import type { Inquiry } from '@/types/inquiry';
 
-const PAGE_SIZE = 20;
-
 export default function InquiryListScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
@@ -35,63 +33,24 @@ export default function InquiryListScreen() {
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
-  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useInquiryList();
+
   const [refreshing, setRefreshing] = useState(false);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [totalCount, setTotalCount] = useState(0);
 
-  const fetchInquiries = async () => {
-    setIsLoading(true);
-    try {
-      const result = await inquiryApi.getList(0, PAGE_SIZE);
-      setInquiries(result.content);
-      setPage(0);
-      setTotalCount(result.totalElements);
-      setHasMore(result.page < result.totalPages - 1);
-    } catch (error) {
-      console.error('Error fetching inquiries:', error);
-    }
-    setIsLoading(false);
-  };
-
-  const loadMore = useCallback(async () => {
-    if (isLoadingMore || !hasMore || isLoading) return;
-
-    setIsLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const result = await inquiryApi.getList(nextPage, PAGE_SIZE);
-      if (result.content.length > 0) {
-        setInquiries((prev) => [...prev, ...result.content]);
-        setPage(nextPage);
-      }
-      setHasMore(result.page < result.totalPages - 1);
-    } catch (error) {
-      console.error('Error loading more inquiries:', error);
-    }
-    setIsLoadingMore(false);
-  }, [isLoadingMore, hasMore, isLoading, page]);
-
-  useEffect(() => {
-    fetchInquiries();
-  }, []);
+  const inquiries = data?.pages.flatMap(page => page.content) ?? [];
+  const totalCount = data?.pages[0]?.totalElements ?? 0;
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    try {
-      const result = await inquiryApi.getList(0, PAGE_SIZE);
-      setInquiries(result.content);
-      setPage(0);
-      setTotalCount(result.totalElements);
-      setHasMore(result.page < result.totalPages - 1);
-    } catch (error) {
-      console.error('Error fetching inquiries:', error);
-    }
+    await refetch();
     setRefreshing(false);
-    setIsLoading(false);
   };
 
   const getStatusLabel = (status: string) => {
@@ -144,7 +103,7 @@ export default function InquiryListScreen() {
   );
 
   const renderFooter = () => {
-    if (!isLoadingMore) return null;
+    if (!isFetchingNextPage) return null;
     return (
       <View style={styles.footerLoader}>
         <ActivityIndicator size="small" color={tintColor} />
@@ -180,7 +139,7 @@ export default function InquiryListScreen() {
         )}
       </View>
 
-      {isLoading && inquiries.length === 0 ? (
+      {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={tintColor} />
         </View>
@@ -193,7 +152,7 @@ export default function InquiryListScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={renderEmpty}
           ListFooterComponent={renderFooter}
-          onEndReached={loadMore}
+          onEndReached={() => { if (hasNextPage) fetchNextPage(); }}
           onEndReachedThreshold={0.5}
           refreshControl={
             Platform.OS !== 'web' ? (

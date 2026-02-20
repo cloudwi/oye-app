@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -20,8 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useFortuneStore } from '@/stores/fortune-store';
-import { fortuneApi } from '@/services/api/fortune';
+import { useTodayFortune } from '@/hooks/queries/use-today-fortune';
 import { shareService } from '@/services/share';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -57,9 +56,8 @@ export default function TodayFortuneScreen() {
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
-  const { todayFortune, setTodayFortune, isLoading, setLoading, setError } = useFortuneStore();
+  const { data: todayFortune, isLoading, refetch } = useTodayFortune();
   const [refreshing, setRefreshing] = useState(false);
-  const isFetching = useRef(false);
 
   const timePeriod = useMemo(() => getTimePeriod(), []);
   const timeConfig = TimeTheme[timePeriod];
@@ -73,26 +71,6 @@ export default function TodayFortuneScreen() {
     opacity: cardOpacity.value,
     transform: [{ scale: cardScale.value }],
   }));
-
-  const fetchTodayFortune = async () => {
-    if (isFetching.current) return;
-    isFetching.current = true;
-    setLoading(true);
-    setError(null);
-    try {
-      const fortune = await fortuneApi.getToday();
-      setTodayFortune(fortune);
-    } catch (error: any) {
-      console.error('Error fetching fortune:', error);
-      setError(error.message || '예감을 불러오는데 실패했습니다.');
-    }
-    setLoading(false);
-    isFetching.current = false;
-  };
-
-  useEffect(() => {
-    fetchTodayFortune();
-  }, []);
 
   useEffect(() => {
     if (todayFortune) {
@@ -109,7 +87,7 @@ export default function TodayFortuneScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchTodayFortune();
+    await refetch();
     setRefreshing(false);
   };
 
@@ -232,7 +210,7 @@ export default function TodayFortuneScreen() {
               title="예감을 불러올 수 없어요"
               message="아래로 당겨서 다시 시도해주세요"
               actionLabel="다시 시도"
-              onAction={fetchTodayFortune}
+              onAction={() => refetch()}
             />
           )}
         </ScrollView>

@@ -15,8 +15,8 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useSettingsStore } from '@/stores/settings-store';
-import { useFortuneStore } from '@/stores/fortune-store';
 import { userApi } from '@/services/api/user';
+import { queryClient } from '@/services/query-client';
 import { notificationService } from '@/services/notification';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { format } from 'date-fns';
@@ -105,8 +105,6 @@ export default function SettingsScreen() {
     setNotificationEnabled,
     reset: resetSettings,
   } = useSettingsStore();
-  const { reset: resetFortune } = useFortuneStore();
-
   const formattedBirthDate = user?.birthDate
     ? format(new Date(user.birthDate), 'yyyy.MM.dd', { locale: ko })
     : '미설정';
@@ -161,7 +159,7 @@ export default function SettingsScreen() {
     authLogout();
     resetUser();
     resetSettings();
-    resetFortune();
+    queryClient.clear();
     router.replace('/(onboarding)');
   };
 

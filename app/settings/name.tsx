@@ -20,7 +20,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
-import { userApi } from '@/services/api/user';
+import { useUpdateUser } from '@/hooks/queries/use-update-user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
@@ -31,8 +31,8 @@ export default function NameEditScreen() {
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
-  const { user, updateUser } = useUserStore();
-  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useUserStore();
+  const updateUserMutation = useUpdateUser();
   const [name, setName] = useState(user?.name || '');
 
   const originalName = user?.name || '';
@@ -58,26 +58,24 @@ export default function NameEditScreen() {
     transform: [{ scale: buttonScale.value }],
   }));
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!hasChanged) return;
-    setIsSaving(true);
-    updateUser({ name: trimmedName });
-
-    try {
-      await userApi.updateMe({
+    updateUserMutation.mutate(
+      {
         name: trimmedName,
         birthDate: user?.birthDate || undefined,
         gender: user?.gender || undefined,
         calendarType: user?.calendarType || undefined,
-      });
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      },
+      {
+        onSuccess: () => {
+          if (Platform.OS !== 'web') {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          }
+          router.back();
+        },
       }
-    } catch (error) {
-      console.error('Error updating name:', error);
-    }
-    setIsSaving(false);
-    router.back();
+    );
   };
 
   return (
@@ -115,7 +113,7 @@ export default function NameEditScreen() {
           <TouchableOpacity
             onPress={handleSave}
             activeOpacity={0.9}
-            disabled={isSaving || !hasChanged}
+            disabled={updateUserMutation.isPending || !hasChanged}
           >
             <LinearGradient
               colors={hasChanged ? Gradients.accent : ['#9CA3AF', '#9CA3AF']}
@@ -123,7 +121,7 @@ export default function NameEditScreen() {
               end={{ x: 1, y: 0 }}
               style={styles.saveButton}
             >
-              {isSaving ? (
+              {updateUserMutation.isPending ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
                 <Text style={styles.saveButtonText}>저장</Text>

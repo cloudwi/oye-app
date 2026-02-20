@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { useFortuneStore } from '@/stores/fortune-store';
-import { fortuneApi } from '@/services/api/fortune';
+import { useFortuneHistory } from '@/hooks/queries/use-fortune-history';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { HistoryListSkeleton } from '@/components/ui/skeleton';
@@ -26,8 +25,6 @@ import {
 } from '@/constants/theme';
 import type { Fortune } from '@/types/fortune';
 
-const PAGE_SIZE = 20;
-
 export default function HistoryScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
@@ -36,74 +33,24 @@ export default function HistoryScreen() {
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
   const {
-    history,
-    setHistory,
-    appendHistory,
-    isLoadingHistory,
-    setLoadingHistory,
-    historyPage,
-    setHistoryPage,
-    hasMoreHistory,
-    setHasMoreHistory,
-    isLoadingMore,
-    setLoadingMore,
-    resetHistory,
-  } = useFortuneStore();
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+  } = useFortuneHistory();
+
   const [refreshing, setRefreshing] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const [totalCount, setTotalCount] = useState(0);
-
-  const fetchHistory = async () => {
-    setLoadingHistory(true);
-    try {
-      const result = await fortuneApi.getHistory(0, PAGE_SIZE);
-      setHistory(result.content);
-      setHistoryPage(0);
-      setTotalCount(result.totalElements);
-      setHasMoreHistory(result.page < result.totalPages - 1);
-    } catch (error) {
-      console.error('Error fetching history:', error);
-    }
-    setLoadingHistory(false);
-  };
-
-  const loadMore = useCallback(async () => {
-    if (isLoadingMore || !hasMoreHistory || isLoadingHistory) return;
-
-    setLoadingMore(true);
-    try {
-      const nextPage = historyPage + 1;
-      const result = await fortuneApi.getHistory(nextPage, PAGE_SIZE);
-      if (result.content.length > 0) {
-        appendHistory(result.content);
-        setHistoryPage(nextPage);
-      }
-      setHasMoreHistory(result.page < result.totalPages - 1);
-    } catch (error) {
-      console.error('Error loading more history:', error);
-    }
-    setLoadingMore(false);
-  }, [isLoadingMore, hasMoreHistory, isLoadingHistory, historyPage]);
-
-  useEffect(() => {
-    fetchHistory();
-  }, []);
+  const history = data?.pages.flatMap(page => page.content) ?? [];
+  const totalCount = data?.pages[0]?.totalElements ?? 0;
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    resetHistory();
-    try {
-      const result = await fortuneApi.getHistory(0, PAGE_SIZE);
-      setHistory(result.content);
-      setHistoryPage(0);
-      setTotalCount(result.totalElements);
-      setHasMoreHistory(result.page < result.totalPages - 1);
-    } catch (error) {
-      console.error('Error fetching history:', error);
-    }
+    await refetch();
     setRefreshing(false);
-    setLoadingHistory(false);
   };
 
   const renderItem = ({ item, index }: { item: Fortune; index: number }) => {
@@ -152,7 +99,7 @@ export default function HistoryScreen() {
   );
 
   const renderFooter = () => {
-    if (!isLoadingMore) return null;
+    if (!isFetchingNextPage) return null;
     return (
       <View style={styles.footerLoader}>
         <ActivityIndicator size="small" color={tintColor} />
@@ -160,7 +107,7 @@ export default function HistoryScreen() {
     );
   };
 
-  if (isLoadingHistory && history.length === 0) {
+  if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
         <View style={styles.header}>
@@ -199,7 +146,7 @@ export default function HistoryScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
-        onEndReached={loadMore}
+        onEndReached={() => { if (hasNextPage) fetchNextPage(); }}
         onEndReachedThreshold={0.5}
         refreshControl={
           Platform.OS !== 'web' ? (

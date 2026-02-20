@@ -20,7 +20,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
-import { userApi } from '@/services/api/user';
+import { useUpdateUser } from '@/hooks/queries/use-update-user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 import type { CalendarType } from '@/types/user';
@@ -32,8 +32,8 @@ export default function BirthDateEditScreen() {
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
-  const { user, setBirthDate, setCalendarType } = useUserStore();
-  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useUserStore();
+  const updateUserMutation = useUpdateUser();
 
   const [selectedCalendarType, setSelectedCalendarType] = useState<CalendarType | null>(user?.calendarType || null);
 
@@ -100,31 +100,26 @@ export default function BirthDateEditScreen() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!hasChanged) return;
-    setIsSaving(true);
     const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
 
-    setBirthDate(birthDate);
-    if (selectedCalendarType) {
-      setCalendarType(selectedCalendarType);
-    }
-
-    try {
-      await userApi.updateMe({
+    updateUserMutation.mutate(
+      {
         name: user?.name || '사용자',
         birthDate,
         gender: user?.gender || undefined,
         calendarType: selectedCalendarType || undefined,
-      });
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      },
+      {
+        onSuccess: () => {
+          if (Platform.OS !== 'web') {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          }
+          router.back();
+        },
       }
-    } catch (error) {
-      console.error('Error updating birthdate:', error);
-    }
-    setIsSaving(false);
-    router.back();
+    );
   };
 
   const renderPicker = (
@@ -258,7 +253,7 @@ export default function BirthDateEditScreen() {
           <TouchableOpacity
             onPress={handleSave}
             activeOpacity={0.9}
-            disabled={isSaving || !hasChanged}
+            disabled={updateUserMutation.isPending || !hasChanged}
           >
             <LinearGradient
               colors={hasChanged ? Gradients.accent : ['#9CA3AF', '#9CA3AF']}
@@ -266,7 +261,7 @@ export default function BirthDateEditScreen() {
               end={{ x: 1, y: 0 }}
               style={styles.saveButton}
             >
-              {isSaving ? (
+              {updateUserMutation.isPending ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
                 <Text style={styles.saveButtonText}>저장</Text>

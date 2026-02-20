@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { inquiryApi } from '@/services/api/inquiry';
+import { useCreateInquiry } from '@/hooks/queries/use-create-inquiry';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { router } from 'expo-router';
 import {
@@ -35,27 +35,26 @@ export default function InquiryWriteScreen() {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createInquiry = useCreateInquiry();
 
   const isValid = title.trim().length > 0 && content.trim().length > 0;
 
-  const handleSubmit = async () => {
-    if (!isValid || isSubmitting) return;
+  const handleSubmit = () => {
+    if (!isValid || createInquiry.isPending) return;
 
-    setIsSubmitting(true);
-    try {
-      await inquiryApi.create({ title: title.trim(), content: content.trim() });
-      if (Platform.OS === 'web') {
-        window.alert('문의가 등록되었습니다.');
-      } else {
-        Alert.alert('완료', '문의가 등록되었습니다.');
+    createInquiry.mutate(
+      { title: title.trim(), content: content.trim() },
+      {
+        onSuccess: () => {
+          if (Platform.OS === 'web') {
+            window.alert('문의가 등록되었습니다.');
+          } else {
+            Alert.alert('완료', '문의가 등록되었습니다.');
+          }
+          router.back();
+        },
       }
-      router.back();
-    } catch (error) {
-      console.error('Error creating inquiry:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
 
   return (
@@ -124,10 +123,10 @@ export default function InquiryWriteScreen() {
               { backgroundColor: isValid ? tintColor : tintColor + '40' },
             ]}
             onPress={handleSubmit}
-            disabled={!isValid || isSubmitting}
+            disabled={!isValid || createInquiry.isPending}
             activeOpacity={0.7}
           >
-            {isSubmitting ? (
+            {createInquiry.isPending ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <Text style={styles.submitButtonText}>등록하기</Text>
