@@ -1,5 +1,4 @@
-import * as Sentry from '@sentry/react-native';
-import { Platform } from 'react-native';
+import * as SentryNative from '@sentry/react-native';
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
 
@@ -11,17 +10,23 @@ export function initSentry() {
     return;
   }
 
-  Sentry.init({
+  SentryNative.init({
     dsn: SENTRY_DSN,
     enabled: !__DEV__,
     environment: __DEV__ ? 'development' : 'production',
     tracesSampleRate: 0.2,
     beforeSend(event) {
-      // 개발 환경에서는 전송하지 않음
       if (__DEV__) return null;
       return event;
     },
   });
 }
 
-export { Sentry };
+export const Sentry = {
+  captureException(error: unknown, context?: any) {
+    SentryNative.captureException(error, context);
+  },
+  captureMessage(message: string) {
+    SentryNative.captureMessage(message);
+  },
+};
