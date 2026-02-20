@@ -27,8 +27,12 @@ export const authService = {
    */
   async loginWithKakaoNative(): Promise<AuthToken | null> {
     try {
-      const { login: kakaoLogin } = require('@react-native-seoul/kakao-login');
-      const result = await kakaoLogin();
+      const kakaoModule = require('@react-native-seoul/kakao-login');
+      if (!kakaoModule?.login) {
+        // 네이티브 모듈 없음 (Expo Go 등) → 브라우저 OAuth 폴백
+        return this.loginWithKakaoBrowser();
+      }
+      const result = await kakaoModule.login();
 
       const response = await fetch(`${API_BASE_URL}${KAKAO_NATIVE_LOGIN_PATH}`, {
         method: 'POST',
@@ -51,7 +55,32 @@ export const authService = {
       useAuthStore.getState().setToken(token);
       return token;
     } catch (error) {
-      console.error('Kakao native login error:', error);
+      console.error('Kakao native login error, falling back to browser:', error);
+      return this.loginWithKakaoBrowser();
+    }
+  },
+
+  /**
+   * 네이티브 폴백: 브라우저로 OAuth 수행
+   */
+  async loginWithKakaoBrowser(): Promise<AuthToken | null> {
+    try {
+      const redirectUri = NATIVE_CALLBACK_SCHEME;
+      const loginUrl = `${API_BASE_URL}${KAKAO_LOGIN_PATH}?redirect_uri=${encodeURIComponent(redirectUri)}&platform=native`;
+
+      const result = await WebBrowser.openAuthSessionAsync(loginUrl, redirectUri);
+
+      if (result.type === 'success' && result.url) {
+        const token = this.parseTokenFromUrl(result.url);
+        if (token) {
+          useAuthStore.getState().setToken(token);
+          return token;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Kakao browser login error:', error);
       return null;
     }
   },
