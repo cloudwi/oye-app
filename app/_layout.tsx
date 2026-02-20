@@ -11,10 +11,18 @@ import { Colors } from '@/constants/theme';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { OfflineBanner } from '@/components/offline-banner';
 import { notificationService } from '@/services/notification';
-import { initSentry } from '@/services/sentry';
 import { queryClient } from '@/services/query-client';
+import * as Sentry from '@sentry/react-native';
 
-initSentry();
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  enabled: !__DEV__,
+  sendDefaultPii: true,
+  tracesSampleRate: 0.2,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1,
+  integrations: [Sentry.mobileReplayIntegration()],
+});
 
 // Custom themes for the fortune app
 const FortuneDefaultTheme = {
@@ -47,7 +55,7 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
-export default function RootLayout() {
+export default Sentry.wrap(function RootLayout() {
   const colorScheme = useColorScheme();
   const bgColor = Colors[colorScheme ?? 'light'].background;
 
@@ -105,7 +113,7 @@ export default function RootLayout() {
       <ErrorBoundary>{content}</ErrorBoundary>
     </QueryClientProvider>
   );
-}
+});
 
 const webStyles = StyleSheet.create({
   outer: {

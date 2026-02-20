@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { BrandColors, Spacing, BorderRadius, FontSizes } from '@/constants/theme';
-import { Sentry } from '@/services/sentry';
+import * as Sentry from '@sentry/react-native';
 
 interface Props {
   children: ReactNode;
