@@ -15,7 +15,8 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.yegam.today",
-        "EXPO_PUBLIC_PROJECT_ID": "ffe93a8a-1201-4948-a656-919106e6adcb"
+        "EXPO_PUBLIC_PROJECT_ID": "ffe93a8a-1201-4948-a656-919106e6adcb",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }
   },
