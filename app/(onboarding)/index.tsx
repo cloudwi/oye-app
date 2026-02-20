@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { authService } from '@/services/auth';
+import { userApi } from '@/services/api/user';
 import { Spacing, BorderRadius, FontSizes } from '@/constants/theme';
 import { KakaoSymbol } from '@/components/ui/kakao-symbol';
 
@@ -15,20 +16,29 @@ export default function OnboardingWelcome() {
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const [loadingProvider, setLoadingProvider] = useState<'kakao' | 'apple' | null>(null);
   const [appleSignInAvailable, setAppleSignInAvailable] = useState(false);
-  const { onboarding } = useUserStore();
+  const { setUser, completeOnboarding } = useUserStore();
 
   useEffect(() => {
     authService.isAppleSignInAvailable().then(setAppleSignInAvailable);
   }, []);
 
-  const handleLoginSuccess = (token: any) => {
-    if (token) {
-      if (onboarding.completed) {
+  const handleLoginSuccess = async (token: any) => {
+    if (!token) return;
+
+    // 기존 회원: 서버에서 유저 데이터 복원 후 메인으로 이동
+    if (token.isNewUser === false) {
+      try {
+        const userData = await userApi.getMe();
+        setUser(userData);
+        completeOnboarding();
         router.replace('/(tabs)');
-      } else {
-        router.push('/(onboarding)/name');
+        return;
+      } catch {
+        // getMe 실패 시 온보딩 진행
       }
     }
+
+    router.push('/(onboarding)/name');
   };
 
   const handleKakaoLogin = async () => {
@@ -40,7 +50,7 @@ export default function OnboardingWelcome() {
       if (Platform.OS === 'web') return;
 
       if (token) {
-        handleLoginSuccess(token);
+        await handleLoginSuccess(token);
       } else {
         Alert.alert('로그인 실패', '카카오 로그인에 실패했습니다. 다시 시도해주세요.');
       }
@@ -58,7 +68,7 @@ export default function OnboardingWelcome() {
       const token = await authService.loginWithApple();
 
       if (token) {
-        handleLoginSuccess(token);
+        await handleLoginSuccess(token);
       } else {
         // null은 사용자 취소 포함 - 별도 알림 불필요
       }

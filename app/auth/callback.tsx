@@ -2,30 +2,47 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useAuthStore } from '@/stores/auth-store';
+import { useUserStore } from '@/stores/user-store';
 import { authService } from '@/services/auth';
+import { userApi } from '@/services/api/user';
 import { BrandColors } from '@/constants/theme';
 
 export default function AuthCallback() {
   const { setToken } = useAuthStore();
+  const { setUser, completeOnboarding } = useUserStore();
   const [done, setDone] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // hash + search 모두 포함된 전체 URL로 토큰 파싱
-    const url = window.location.href;
-    const token = authService.parseTokenFromUrl(url);
+    const handleAuth = async () => {
+      const url = window.location.href;
+      const token = authService.parseTokenFromUrl(url);
 
-    // 보안: URL에서 토큰 정보 제거
-    if (window.location.hash) {
-      window.history.replaceState(null, '', window.location.pathname);
-    }
+      // 보안: URL에서 토큰 정보 제거
+      if (window.location.hash) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
 
-    if (token) {
-      setToken(token);
-    }
+      if (token) {
+        setToken(token);
 
-    setDone(true);
+        // 기존 회원이면 서버에서 유저 데이터 복원 후 온보딩 스킵
+        if (token.isNewUser === false) {
+          try {
+            const user = await userApi.getMe();
+            setUser(user);
+            completeOnboarding();
+          } catch {
+            // getMe 실패 시 온보딩 진행
+          }
+        }
+      }
+
+      setDone(true);
+    };
+
+    handleAuth();
   }, []);
 
   if (done) {

@@ -71,6 +71,7 @@ export const authService = {
       let token: string | null = null;
       let refreshToken: string | null = null;
       let expiresAt: string | null = null;
+      let isNewUser: string | null = null;
 
       if (Platform.OS === 'web' && typeof URL !== 'undefined') {
         const parsed = new URL(url);
@@ -79,6 +80,7 @@ export const authService = {
         token = hashParams.get('token') || parsed.searchParams.get('token');
         refreshToken = hashParams.get('refresh_token') || parsed.searchParams.get('refresh_token');
         expiresAt = hashParams.get('expires_at') || parsed.searchParams.get('expires_at');
+        isNewUser = hashParams.get('is_new_user') || parsed.searchParams.get('is_new_user');
       } else {
         // 네이티브: expo-linking은 fragment를 queryParams로 파싱하지 않으므로 직접 처리
         const fragmentIndex = url.indexOf('#');
@@ -88,6 +90,7 @@ export const authService = {
           token = params.get('token');
           refreshToken = params.get('refresh_token');
           expiresAt = params.get('expires_at');
+          isNewUser = params.get('is_new_user');
         }
         if (!token) {
           const parsed = Linking.parse(url);
@@ -95,6 +98,7 @@ export const authService = {
           token = (params?.token as string) || null;
           refreshToken = (params?.refresh_token as string) || null;
           expiresAt = (params?.expires_at as string) || null;
+          isNewUser = (params?.is_new_user as string) || null;
         }
       }
 
@@ -106,6 +110,7 @@ export const authService = {
         accessToken: token,
         refreshToken: refreshToken || undefined,
         expiresAt: expiresAt ? Number(expiresAt) : undefined,
+        isNewUser: isNewUser === 'true',
       };
     } catch (error) {
       console.error('Token parsing error:', error);
@@ -158,6 +163,7 @@ export const authService = {
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
         expiresAt: data.expiresAt,
+        isNewUser: data.isNewUser,
       };
 
       useAuthStore.getState().setToken(token);
