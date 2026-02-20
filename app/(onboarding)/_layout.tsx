@@ -12,10 +12,14 @@ const ONBOARDING_STEPS: Record<string, number> = {
   gender: 2,
   birthdate: 3,
   calendartype: 4,
-  notification: 5,
+  occupation: 5,
+  mbti: 6,
+  bloodtype: 7,
+  interests: 8,
+  notification: 9,
 };
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 9;
 
 export default function OnboardingLayout() {
   const { isAuthenticated } = useAuthStore();
@@ -52,6 +56,10 @@ export default function OnboardingLayout() {
         <Stack.Screen name="gender" />
         <Stack.Screen name="birthdate" />
         <Stack.Screen name="calendartype" />
+        <Stack.Screen name="occupation" />
+        <Stack.Screen name="mbti" />
+        <Stack.Screen name="bloodtype" />
+        <Stack.Screen name="interests" />
         <Stack.Screen name="notification" />
       </Stack>
     </View>

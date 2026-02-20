@@ -11,6 +11,10 @@ export default function SettingsLayout() {
       <Stack.Screen name="name" />
       <Stack.Screen name="gender" />
       <Stack.Screen name="birthdate" />
+      <Stack.Screen name="occupation" />
+      <Stack.Screen name="mbti" />
+      <Stack.Screen name="bloodtype" />
+      <Stack.Screen name="interests" />
       <Stack.Screen name="notification-time" />
     </Stack>
   );

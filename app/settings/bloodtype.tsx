@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import {
   View,
+  Text,
   StyleSheet,
-  TextInput,
+  TouchableOpacity,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,8 +15,11 @@ import { useUpdateUser } from '@/hooks/queries/use-update-user';
 import { SettingsHeader } from '@/components/ui/settings-header';
 import { SaveButton } from '@/components/ui/save-button';
 import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import type { BloodType } from '@/types/user';
 
-export default function NameEditScreen() {
+const BLOOD_TYPES: BloodType[] = ['A', 'B', 'O', 'AB'];
+
+export default function BloodTypeEditScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
@@ -24,24 +28,30 @@ export default function NameEditScreen() {
 
   const { user } = useUserStore();
   const updateUserMutation = useUpdateUser();
-  const [name, setName] = useState(user?.name || '');
+  const [selected, setSelected] = useState<BloodType | null>(user?.bloodType || null);
 
-  const originalName = user?.name || '';
-  const trimmedName = name.trim();
-  const hasChanged = trimmedName !== originalName && trimmedName.length > 0;
+  const original = user?.bloodType || null;
+  const hasChanged = selected !== original;
+
+  const handleSelect = (type: BloodType) => {
+    setSelected(selected === type ? null : type);
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
 
   const handleSave = () => {
     if (!hasChanged) return;
     updateUserMutation.mutate(
       {
-        name: trimmedName,
+        name: user?.name || '사용자',
         birthDate: user?.birthDate || undefined,
         birthTime: user?.birthTime || undefined,
         gender: user?.gender || undefined,
         calendarType: user?.calendarType || undefined,
         occupation: user?.occupation || undefined,
         mbti: user?.mbti || undefined,
-        bloodType: user?.bloodType || undefined,
+        bloodType: selected || undefined,
         interests: user?.interests || undefined,
       },
       {
@@ -57,24 +67,38 @@ export default function NameEditScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <SettingsHeader title="이름 수정" />
+      <SettingsHeader title="혈액형 수정" />
 
       <View style={styles.content}>
-        <TextInput
-          style={[
-            styles.input,
-            { color: textColor, backgroundColor: surfaceColor, borderColor: tintColor },
-            Shadows.sm,
-          ]}
-          value={name}
-          onChangeText={setName}
-          placeholder="이름을 입력해주세요"
-          placeholderTextColor={textSecondary}
-          autoFocus
-          maxLength={20}
-          returnKeyType="done"
-          onSubmitEditing={handleSave}
-        />
+        <View style={styles.optionRow}>
+          {BLOOD_TYPES.map((type) => {
+            const isSelected = selected === type;
+            return (
+              <TouchableOpacity
+                key={type}
+                style={[
+                  styles.optionButton,
+                  { backgroundColor: surfaceColor },
+                  Shadows.sm,
+                  isSelected && { borderColor: tintColor, backgroundColor: tintColor + '10' },
+                ]}
+                onPress={() => handleSelect(type)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.typeLabel,
+                    { color: textColor },
+                    isSelected && { color: tintColor },
+                  ]}
+                >
+                  {type}
+                </Text>
+                <Text style={[styles.typeText, { color: textSecondary }]}>형</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
 
       <View style={styles.footer}>
@@ -97,13 +121,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
   },
-  input: {
-    fontSize: FontSizes.md,
-    fontWeight: '500',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
+  optionRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  optionButton: {
+    flex: 1,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
     borderWidth: 2,
+    borderColor: 'transparent',
+    gap: Spacing.xs,
+  },
+  typeLabel: {
+    fontSize: FontSizes.xl,
+    fontWeight: '700',
+  },
+  typeText: {
+    fontSize: FontSizes.sm,
   },
   footer: {
     paddingHorizontal: Spacing.lg,

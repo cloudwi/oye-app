@@ -34,19 +34,28 @@ export default function BirthDateEditScreen() {
 
   const currentYear = new Date().getFullYear();
   const parsedDate = user?.birthDate ? user.birthDate.split('-').map(Number) : [1990, 1, 1];
+  const parsedTime = user?.birthTime ? user.birthTime.split(':').map(Number) : [null, null];
   const [selectedYear, setSelectedYear] = useState(parsedDate[0]);
   const [selectedMonth, setSelectedMonth] = useState(parsedDate[1]);
   const [selectedDay, setSelectedDay] = useState(parsedDate[2]);
+  const [selectedHour, setSelectedHour] = useState<number | null>(parsedTime[0]);
+  const [selectedMinute, setSelectedMinute] = useState<number | null>(parsedTime[1]);
 
   const years = Array.from({ length: 80 }, (_, i) => currentYear - 10 - i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
   const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const minutes = Array.from({ length: 60 }, (_, i) => i);
 
   const originalBirthDate = user?.birthDate || null;
+  const originalBirthTime = user?.birthTime || null;
   const originalCalendarType = user?.calendarType || null;
   const currentBirthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
-  const hasChanged = currentBirthDate !== originalBirthDate || selectedCalendarType !== originalCalendarType;
+  const currentBirthTime = selectedHour != null && selectedMinute != null
+    ? `${String(selectedHour).padStart(2, '0')}:${String(selectedMinute).padStart(2, '0')}`
+    : null;
+  const hasChanged = currentBirthDate !== originalBirthDate || selectedCalendarType !== originalCalendarType || currentBirthTime !== originalBirthTime;
 
   const handleSelectYear = useCallback((value: number) => {
     setSelectedYear(value);
@@ -76,6 +85,20 @@ export default function BirthDateEditScreen() {
     }
   };
 
+  const handleSelectHour = useCallback((value: number) => {
+    setSelectedHour(value);
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
+  }, []);
+
+  const handleSelectMinute = useCallback((value: number) => {
+    setSelectedMinute(value);
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
+  }, []);
+
   const handleSave = () => {
     if (!hasChanged) return;
     const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
@@ -84,8 +107,13 @@ export default function BirthDateEditScreen() {
       {
         name: user?.name || '사용자',
         birthDate,
+        birthTime: currentBirthTime || undefined,
         gender: user?.gender || undefined,
         calendarType: selectedCalendarType || undefined,
+        occupation: user?.occupation || undefined,
+        mbti: user?.mbti || undefined,
+        bloodType: user?.bloodType || undefined,
+        interests: user?.interests || undefined,
       },
       {
         onSuccess: () => {
@@ -115,6 +143,22 @@ export default function BirthDateEditScreen() {
             <ScrollPicker data={years} selected={selectedYear} onSelect={handleSelectYear} label="년" maxHeight={200} />
             <ScrollPicker data={months} selected={selectedMonth} onSelect={handleSelectMonth} label="월" maxHeight={200} />
             <ScrollPicker data={days} selected={selectedDay} onSelect={handleSelectDay} label="일" maxHeight={200} />
+          </View>
+        </View>
+
+        {/* Birth Time Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: textSecondary }]}>태어난 시각 (선택)</Text>
+          <View style={[styles.dateDisplay, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <Text style={[styles.dateText, { color: currentBirthTime ? textColor : textSecondary }]}>
+              {currentBirthTime
+                ? `${selectedHour}시 ${selectedMinute}분`
+                : '시각을 선택해주세요'}
+            </Text>
+          </View>
+          <View style={styles.pickerContainer}>
+            <ScrollPicker data={hours} selected={selectedHour} onSelect={handleSelectHour} label="시" maxHeight={200} formatter={(v) => `${v}시`} />
+            <ScrollPicker data={minutes} selected={selectedMinute} onSelect={handleSelectMinute} label="분" maxHeight={200} formatter={(v) => `${v}분`} />
           </View>
         </View>
 

@@ -15,7 +15,7 @@ import { SettingsHeader } from '@/components/ui/settings-header';
 import { SaveButton } from '@/components/ui/save-button';
 import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
-export default function NameEditScreen() {
+export default function InterestsEditScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
@@ -24,17 +24,17 @@ export default function NameEditScreen() {
 
   const { user } = useUserStore();
   const updateUserMutation = useUpdateUser();
-  const [name, setName] = useState(user?.name || '');
+  const [interests, setInterests] = useState(user?.interests || '');
 
-  const originalName = user?.name || '';
-  const trimmedName = name.trim();
-  const hasChanged = trimmedName !== originalName && trimmedName.length > 0;
+  const original = user?.interests || '';
+  const trimmed = interests.trim();
+  const hasChanged = trimmed !== original;
 
   const handleSave = () => {
     if (!hasChanged) return;
     updateUserMutation.mutate(
       {
-        name: trimmedName,
+        name: user?.name || '사용자',
         birthDate: user?.birthDate || undefined,
         birthTime: user?.birthTime || undefined,
         gender: user?.gender || undefined,
@@ -42,7 +42,7 @@ export default function NameEditScreen() {
         occupation: user?.occupation || undefined,
         mbti: user?.mbti || undefined,
         bloodType: user?.bloodType || undefined,
-        interests: user?.interests || undefined,
+        interests: trimmed || undefined,
       },
       {
         onSuccess: () => {
@@ -57,7 +57,7 @@ export default function NameEditScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <SettingsHeader title="이름 수정" />
+      <SettingsHeader title="관심사 수정" />
 
       <View style={styles.content}>
         <TextInput
@@ -66,12 +66,12 @@ export default function NameEditScreen() {
             { color: textColor, backgroundColor: surfaceColor, borderColor: tintColor },
             Shadows.sm,
           ]}
-          value={name}
-          onChangeText={setName}
-          placeholder="이름을 입력해주세요"
+          value={interests}
+          onChangeText={setInterests}
+          placeholder="예: 독서, 요리, 운동, 여행"
           placeholderTextColor={textSecondary}
           autoFocus
-          maxLength={20}
+          maxLength={100}
           returnKeyType="done"
           onSubmitEditing={handleSave}
         />

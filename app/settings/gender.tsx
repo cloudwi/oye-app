@@ -50,8 +50,13 @@ export default function GenderEditScreen() {
       {
         name: user?.name || '사용자',
         birthDate: user?.birthDate || undefined,
+        birthTime: user?.birthTime || undefined,
         gender: selectedGender || undefined,
         calendarType: user?.calendarType || undefined,
+        occupation: user?.occupation || undefined,
+        mbti: user?.mbti || undefined,
+        bloodType: user?.bloodType || undefined,
+        interests: user?.interests || undefined,
       },
       {
         onSuccess: () => {

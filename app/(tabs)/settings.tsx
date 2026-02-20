@@ -109,9 +109,11 @@ export default function SettingsScreen() {
   const formattedBirthDate = user?.birthDate
     ? format(new Date(user.birthDate), 'yyyy.MM.dd', { locale: ko })
     : '미설정';
+  const formattedBirthTime = user?.birthTime || null;
 
   const genderLabel = user?.gender === 'MALE' ? '남성' : user?.gender === 'FEMALE' ? '여성' : '미설정';
   const calendarLabel = user?.calendarType === 'SOLAR' ? '양력' : user?.calendarType === 'LUNAR' ? '음력' : '미설정';
+  const bloodTypeLabel = user?.bloodType ? `${user.bloodType}형` : '미설정';
 
   const formatNotificationTime = (time: string) => {
     const [h, m] = time.split(':').map(Number);
@@ -240,8 +242,36 @@ export default function SettingsScreen() {
               icon="calendar"
               iconColor={tintColor}
               title="생년월일"
-              subtitle={`${formattedBirthDate} (${calendarLabel})`}
+              subtitle={`${formattedBirthDate} (${calendarLabel})${formattedBirthTime ? ` ${formattedBirthTime}` : ''}`}
               onPress={() => router.push('/settings/birthdate')}
+            />
+            <SettingRow
+              icon="briefcase.fill"
+              iconColor={tintColor}
+              title="직업"
+              subtitle={user?.occupation || '미설정'}
+              onPress={() => router.push('/settings/occupation')}
+            />
+            <SettingRow
+              icon="brain"
+              iconColor={tintColor}
+              title="MBTI"
+              subtitle={user?.mbti || '미설정'}
+              onPress={() => router.push('/settings/mbti')}
+            />
+            <SettingRow
+              icon="drop.fill"
+              iconColor={tintColor}
+              title="혈액형"
+              subtitle={bloodTypeLabel}
+              onPress={() => router.push('/settings/bloodtype')}
+            />
+            <SettingRow
+              icon="star.fill"
+              iconColor={tintColor}
+              title="관심사"
+              subtitle={user?.interests || '미설정'}
+              onPress={() => router.push('/settings/interests')}
               isLast
             />
           </View>

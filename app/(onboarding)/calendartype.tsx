@@ -38,11 +38,11 @@ export default function OnboardingCalendarType() {
     if (selectedType) {
       updateUser({ calendarType: selectedType });
     }
-    router.push('/(onboarding)/notification');
+    router.push('/(onboarding)/occupation');
   };
 
   const handleSkip = () => {
-    router.push('/(onboarding)/notification');
+    router.push('/(onboarding)/occupation');
   };
 
   return (

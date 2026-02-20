@@ -25,8 +25,13 @@ const defaultUser: User = {
   provider: null,
   name: '',
   birthDate: null,
+  birthTime: null,
   gender: null,
   calendarType: null,
+  occupation: null,
+  mbti: null,
+  bloodType: null,
+  interests: null,
   createdAt: new Date().toISOString(),
 };
 

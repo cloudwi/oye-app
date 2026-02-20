@@ -28,6 +28,8 @@ export default function OnboardingBirthdate() {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [selectedHour, setSelectedHour] = useState<number | null>(null);
+  const [selectedMinute, setSelectedMinute] = useState<number | null>(null);
 
   const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -36,6 +38,8 @@ export default function OnboardingBirthdate() {
       ? new Date(selectedYear, selectedMonth, 0).getDate()
       : 31;
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  const minutes = Array.from({ length: 60 }, (_, i) => i);
 
   useEffect(() => {
     if (selectedDay != null && selectedDay > daysInMonth) {
@@ -43,7 +47,8 @@ export default function OnboardingBirthdate() {
     }
   }, [daysInMonth]);
 
-  const isValid = selectedYear != null && selectedMonth != null && selectedDay != null;
+  const isDateValid = selectedYear != null && selectedMonth != null && selectedDay != null;
+  const isValid = isDateValid;
 
   const handleNext = () => {
     if (!isValid) return;
@@ -51,11 +56,14 @@ export default function OnboardingBirthdate() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
-    updateUser({ birthDate });
+    const birthTime = selectedHour != null && selectedMinute != null
+      ? `${String(selectedHour).padStart(2, '0')}:${String(selectedMinute).padStart(2, '0')}`
+      : null;
+    updateUser({ birthDate, birthTime });
     router.push('/(onboarding)/calendartype');
   };
 
-  const dateDisplayKey = `${selectedYear}-${selectedMonth}-${selectedDay}`;
+  const dateDisplayKey = `${selectedYear}-${selectedMonth}-${selectedDay}-${selectedHour}-${selectedMinute}`;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -71,10 +79,10 @@ export default function OnboardingBirthdate() {
           <Animated.Text
             key={dateDisplayKey}
             entering={FadeIn.duration(300)}
-            style={[styles.dateText, { color: isValid ? textColor : textSecondary }]}
+            style={[styles.dateText, { color: isDateValid ? textColor : textSecondary }]}
           >
-            {isValid
-              ? `${selectedYear}년 ${selectedMonth}월 ${selectedDay}일`
+            {isDateValid
+              ? `${selectedYear}년 ${selectedMonth}월 ${selectedDay}일${selectedHour != null && selectedMinute != null ? ` ${selectedHour}시 ${selectedMinute}분` : ''}`
               : '생년월일을 선택해주세요'}
           </Animated.Text>
         </View>
@@ -83,6 +91,14 @@ export default function OnboardingBirthdate() {
           <ScrollPicker data={years} selected={selectedYear} onSelect={setSelectedYear} label="년" />
           <ScrollPicker data={months} selected={selectedMonth} onSelect={setSelectedMonth} label="월" />
           <ScrollPicker data={days} selected={selectedDay} onSelect={setSelectedDay} label="일" />
+        </View>
+
+        <Text style={[styles.timeLabel, { color: textSecondary }]}>
+          태어난 시각 (선택)
+        </Text>
+        <View style={styles.pickerContainer}>
+          <ScrollPicker data={hours} selected={selectedHour} onSelect={setSelectedHour} label="시" formatter={(v) => `${v}시`} />
+          <ScrollPicker data={minutes} selected={selectedMinute} onSelect={setSelectedMinute} label="분" formatter={(v) => `${v}분`} />
         </View>
       </View>
 
@@ -123,6 +139,11 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: FontSizes.xl,
     fontWeight: '600',
+  },
+  timeLabel: {
+    fontSize: FontSizes.sm,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   pickerContainer: {
     flexDirection: 'row',

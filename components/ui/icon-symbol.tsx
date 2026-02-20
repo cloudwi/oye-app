@@ -44,6 +44,10 @@ const MAPPING = {
   'doc.text.fill': 'description',
   'doc.plaintext': 'article',
   'envelope.fill': 'email',
+  'briefcase.fill': 'work',
+  'brain': 'psychology',
+  'drop.fill': 'water-drop',
+  'star.fill': 'star',
 } as IconMapping;
 
 /**
