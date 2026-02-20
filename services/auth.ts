@@ -27,12 +27,15 @@ export const authService = {
    */
   async loginWithKakaoNative(): Promise<AuthToken | null> {
     try {
-      const kakaoModule = require('@react-native-seoul/kakao-login');
-      if (!kakaoModule?.login) {
-        // 네이티브 모듈 없음 (Expo Go 등) → 브라우저 OAuth 폴백
+      let kakaoLogin: (() => Promise<any>) | null = null;
+      try {
+        const kakaoModule = require('@react-native-seoul/kakao-login');
+        kakaoLogin = kakaoModule?.login ?? kakaoModule?.default?.login ?? null;
+      } catch {}
+      if (!kakaoLogin) {
         return this.loginWithKakaoBrowser();
       }
-      const result = await kakaoModule.login();
+      const result = await kakaoLogin();
 
       const response = await fetch(`${API_BASE_URL}${KAKAO_NATIVE_LOGIN_PATH}`, {
         method: 'POST',
