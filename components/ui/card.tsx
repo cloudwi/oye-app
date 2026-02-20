@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { BorderRadius, Spacing } from '@/constants/theme';
 
 interface CardProps {
   children: React.ReactNode;
@@ -12,7 +13,7 @@ export function Card({ children, style, variant = 'default' }: CardProps) {
   const backgroundColor = useThemeColor({}, 'background');
   const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#333' }, 'icon');
 
-  const getCardStyle = (): ViewStyle => {
+  const cardStyle = useMemo((): ViewStyle => {
     const baseStyle: ViewStyle = {
       ...styles.card,
       backgroundColor,
@@ -20,28 +21,21 @@ export function Card({ children, style, variant = 'default' }: CardProps) {
 
     switch (variant) {
       case 'elevated':
-        return {
-          ...baseStyle,
-          ...styles.elevated,
-        };
+        return { ...baseStyle, ...styles.elevated };
       case 'outlined':
-        return {
-          ...baseStyle,
-          borderWidth: 1,
-          borderColor,
-        };
+        return { ...baseStyle, borderWidth: 1, borderColor };
       default:
         return baseStyle;
     }
-  };
+  }, [variant, backgroundColor, borderColor]);
 
-  return <View style={[getCardStyle(), style]}>{children}</View>;
+  return <View style={[cardStyle, style]}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
   },
   elevated: {
     shadowColor: '#000',

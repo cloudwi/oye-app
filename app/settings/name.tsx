@@ -1,28 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
   TextInput,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { useUpdateUser } from '@/hooks/queries/use-update-user';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { SettingsHeader } from '@/components/ui/settings-header';
+import { SaveButton } from '@/components/ui/save-button';
+import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
 export default function NameEditScreen() {
   const tintColor = useThemeColor({}, 'tint');
@@ -38,25 +29,6 @@ export default function NameEditScreen() {
   const originalName = user?.name || '';
   const trimmedName = name.trim();
   const hasChanged = trimmedName !== originalName && trimmedName.length > 0;
-
-  const buttonOpacity = useSharedValue(hasChanged ? 1 : 0.4);
-  const buttonScale = useSharedValue(1);
-
-  useEffect(() => {
-    if (hasChanged) {
-      buttonOpacity.value = withTiming(1, { duration: 300 });
-      buttonScale.value = withSpring(1.02, {}, () => {
-        buttonScale.value = withSpring(1);
-      });
-    } else {
-      buttonOpacity.value = withTiming(0.4, { duration: 200 });
-    }
-  }, [hasChanged]);
-
-  const animatedButtonStyle = useAnimatedStyle(() => ({
-    opacity: buttonOpacity.value,
-    transform: [{ scale: buttonScale.value }],
-  }));
 
   const handleSave = () => {
     if (!hasChanged) return;
@@ -80,14 +52,7 @@ export default function NameEditScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} activeOpacity={0.7}>
-          <IconSymbol name="chevron.left" size={24} color={textColor} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>이름 수정</Text>
-        <View style={styles.backButton} />
-      </View>
+      <SettingsHeader title="이름 수정" />
 
       <View style={styles.content}>
         <TextInput
@@ -107,28 +72,12 @@ export default function NameEditScreen() {
         />
       </View>
 
-      {/* Save Button */}
       <View style={styles.footer}>
-        <Animated.View style={animatedButtonStyle}>
-          <TouchableOpacity
-            onPress={handleSave}
-            activeOpacity={0.9}
-            disabled={updateUserMutation.isPending || !hasChanged}
-          >
-            <LinearGradient
-              colors={hasChanged ? Gradients.accent : ['#9CA3AF', '#9CA3AF']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.saveButton}
-            >
-              {updateUserMutation.isPending ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text style={styles.saveButtonText}>저장</Text>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
+        <SaveButton
+          onPress={handleSave}
+          hasChanged={hasChanged}
+          isPending={updateUserMutation.isPending}
+        />
       </View>
     </SafeAreaView>
   );
@@ -137,23 +86,6 @@ export default function NameEditScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
   },
   content: {
     flex: 1,
@@ -172,15 +104,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
     paddingTop: Spacing.sm,
-  },
-  saveButton: {
-    paddingVertical: Spacing.md + 2,
-    borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#FFF',
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
   },
 });

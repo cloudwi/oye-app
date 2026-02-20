@@ -23,6 +23,7 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { router } from 'expo-router';
 import {
+  BrandColors,
   Spacing,
   BorderRadius,
   FontSizes,
@@ -40,7 +41,7 @@ interface SettingRowProps {
   destructive?: boolean;
 }
 
-function SettingRow({
+const SettingRow = React.memo(function SettingRow({
   icon,
   iconColor,
   title,
@@ -72,7 +73,7 @@ function SettingRow({
         <IconSymbol name={icon as any} size={18} color={effectiveIconColor} />
       </View>
       <View style={styles.settingContent}>
-        <Text style={[styles.settingTitle, { color: destructive ? '#EF4444' : textColor }]}>
+        <Text style={[styles.settingTitle, { color: destructive ? BrandColors.error : textColor }]}>
           {title}
         </Text>
         {subtitle && (
@@ -85,7 +86,7 @@ function SettingRow({
       )}
     </TouchableOpacity>
   );
-}
+});
 
 export default function SettingsScreen() {
   const tintColor = useThemeColor({}, 'tint');

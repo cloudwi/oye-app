@@ -49,7 +49,7 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const bgColor = colorScheme === 'dark' ? Colors.dark.background : Colors.light.background;
+  const bgColor = Colors[colorScheme ?? 'light'].background;
 
   useEffect(() => {
     const subscription = notificationService.addNotificationResponseListener(() => {

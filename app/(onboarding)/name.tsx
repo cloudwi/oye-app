@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,18 +7,12 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from 'react-native-reanimated';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes } from '@/constants/theme';
+import { BackHeader } from '@/components/ui/back-header';
+import { GradientButton } from '@/components/ui/gradient-button';
+import { BrandColors, Spacing, BorderRadius, FontSizes } from '@/constants/theme';
 
 // 25 x 22 x 25 = 13,750 조합
 const MOODS = [
@@ -61,27 +55,9 @@ export default function OnboardingName() {
   const { user, updateUser } = useUserStore();
   const [name, setName] = useState(user?.name ?? '');
 
-  const buttonOpacity = useSharedValue(name.trim() ? 1 : 0.4);
-  const buttonScale = useSharedValue(1);
-
-  useEffect(() => {
-    if (name.trim()) {
-      buttonOpacity.value = withTiming(1, { duration: 300 });
-      buttonScale.value = withSpring(1.02, {}, () => {
-        buttonScale.value = withSpring(1);
-      });
-    } else {
-      buttonOpacity.value = withTiming(0.4, { duration: 200 });
-    }
-  }, [name]);
-
-  const animatedButtonStyle = useAnimatedStyle(() => ({
-    opacity: buttonOpacity.value,
-    transform: [{ scale: buttonScale.value }],
-  }));
+  const trimmed = name.trim();
 
   const handleNext = () => {
-    const trimmed = name.trim();
     if (trimmed) {
       updateUser({ name: trimmed });
       router.push('/(onboarding)/gender');
@@ -93,20 +69,10 @@ export default function OnboardingName() {
     router.push('/(onboarding)/gender');
   };
 
-  const handleBack = () => {
-    router.back();
-  };
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="뒤로 가기">
-          <IconSymbol name="chevron.left" size={24} color={textColor} />
-        </TouchableOpacity>
-      </View>
+      <BackHeader />
 
-      {/* Content */}
       <View style={styles.content}>
         <Text style={[styles.title, { color: textColor }]}>이름</Text>
         <Text style={[styles.subtitle, { color: textSecondary }]}>
@@ -119,7 +85,7 @@ export default function OnboardingName() {
             {
               color: textColor,
               backgroundColor: surfaceColor,
-              borderColor: name.trim() ? BrandColors.primary : 'transparent',
+              borderColor: trimmed ? BrandColors.primary : 'transparent',
             },
           ]}
           value={name}
@@ -133,26 +99,12 @@ export default function OnboardingName() {
         />
       </View>
 
-      {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity
+        <GradientButton
+          label="다음"
           onPress={handleNext}
-          activeOpacity={0.9}
-          disabled={!name.trim()}
-          accessibilityRole="button"
-          accessibilityLabel="다음"
-        >
-          <Animated.View style={animatedButtonStyle}>
-            <LinearGradient
-              colors={Gradients.accent}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.button}
-            >
-              <Text style={styles.buttonText}>다음</Text>
-            </LinearGradient>
-          </Animated.View>
-        </TouchableOpacity>
+          isEnabled={!!trimmed}
+        />
 
         <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="건너뛰기">
           <Text style={[styles.skipText, { color: textSecondary }]}>건너뛰기</Text>
@@ -165,16 +117,6 @@ export default function OnboardingName() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   content: {
     flex: 1,
@@ -199,16 +141,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
-  },
-  button: {
-    paddingVertical: Spacing.md + 2,
-    borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
   },
   skipButton: {
     alignItems: 'center',

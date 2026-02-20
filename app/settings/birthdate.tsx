@@ -1,28 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { useUpdateUser } from '@/hooks/queries/use-update-user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { SettingsHeader } from '@/components/ui/settings-header';
+import { SaveButton } from '@/components/ui/save-button';
+import { ScrollPicker } from '@/components/ui/scroll-picker';
+import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 import type { CalendarType } from '@/types/user';
 
 export default function BirthDateEditScreen() {
@@ -52,25 +47,6 @@ export default function BirthDateEditScreen() {
   const originalCalendarType = user?.calendarType || null;
   const currentBirthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
   const hasChanged = currentBirthDate !== originalBirthDate || selectedCalendarType !== originalCalendarType;
-
-  const buttonOpacity = useSharedValue(hasChanged ? 1 : 0.4);
-  const buttonScale = useSharedValue(1);
-
-  useEffect(() => {
-    if (hasChanged) {
-      buttonOpacity.value = withTiming(1, { duration: 300 });
-      buttonScale.value = withSpring(1.02, {}, () => {
-        buttonScale.value = withSpring(1);
-      });
-    } else {
-      buttonOpacity.value = withTiming(0.4, { duration: 200 });
-    }
-  }, [hasChanged]);
-
-  const animatedButtonStyle = useAnimatedStyle(() => ({
-    opacity: buttonOpacity.value,
-    transform: [{ scale: buttonScale.value }],
-  }));
 
   const handleSelectYear = useCallback((value: number) => {
     setSelectedYear(value);
@@ -122,55 +98,9 @@ export default function BirthDateEditScreen() {
     );
   };
 
-  const renderPicker = (
-    data: number[],
-    selected: number,
-    onSelect: (value: number) => void,
-  ) => (
-    <ScrollView
-      style={styles.picker}
-      contentContainerStyle={styles.pickerContent}
-      showsVerticalScrollIndicator={false}
-      snapToInterval={44}
-      decelerationRate="fast"
-    >
-      {data.map((item) => {
-        const isSelected = selected === item;
-        return (
-          <TouchableOpacity
-            key={item}
-            style={[
-              styles.pickerItem,
-              isSelected && { backgroundColor: tintColor + '15' },
-            ]}
-            onPress={() => onSelect(item)}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[
-                styles.pickerText,
-                { color: isSelected ? tintColor : textSecondary },
-                isSelected && styles.pickerTextSelected,
-              ]}
-            >
-              {item}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
-  );
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} activeOpacity={0.7}>
-          <IconSymbol name="chevron.left" size={24} color={textColor} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>생년월일 수정</Text>
-        <View style={styles.backButton} />
-      </View>
+      <SettingsHeader title="생년월일 수정" />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Birth Date Section */}
@@ -182,18 +112,9 @@ export default function BirthDateEditScreen() {
             </Text>
           </View>
           <View style={styles.pickerContainer}>
-            <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
-              <Text style={[styles.pickerLabel, { color: textSecondary }]}>년</Text>
-              {renderPicker(years, selectedYear, handleSelectYear)}
-            </View>
-            <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
-              <Text style={[styles.pickerLabel, { color: textSecondary }]}>월</Text>
-              {renderPicker(months, selectedMonth, handleSelectMonth)}
-            </View>
-            <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm]}>
-              <Text style={[styles.pickerLabel, { color: textSecondary }]}>일</Text>
-              {renderPicker(days, selectedDay, handleSelectDay)}
-            </View>
+            <ScrollPicker data={years} selected={selectedYear} onSelect={handleSelectYear} label="년" maxHeight={200} />
+            <ScrollPicker data={months} selected={selectedMonth} onSelect={handleSelectMonth} label="월" maxHeight={200} />
+            <ScrollPicker data={days} selected={selectedDay} onSelect={handleSelectDay} label="일" maxHeight={200} />
           </View>
         </View>
 
@@ -247,28 +168,12 @@ export default function BirthDateEditScreen() {
         </View>
       </ScrollView>
 
-      {/* Save Button */}
       <View style={styles.footer}>
-        <Animated.View style={animatedButtonStyle}>
-          <TouchableOpacity
-            onPress={handleSave}
-            activeOpacity={0.9}
-            disabled={updateUserMutation.isPending || !hasChanged}
-          >
-            <LinearGradient
-              colors={hasChanged ? Gradients.accent : ['#9CA3AF', '#9CA3AF']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.saveButton}
-            >
-              {updateUserMutation.isPending ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text style={styles.saveButtonText}>저장</Text>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
+        <SaveButton
+          onPress={handleSave}
+          hasChanged={hasChanged}
+          isPending={updateUserMutation.isPending}
+        />
       </View>
     </SafeAreaView>
   );
@@ -277,23 +182,6 @@ export default function BirthDateEditScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
@@ -341,52 +229,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.sm,
   },
-  pickerWrapper: {
-    flex: 1,
-    borderRadius: BorderRadius.lg,
-    overflow: 'hidden',
-    maxHeight: 200,
-  },
-  pickerLabel: {
-    fontSize: FontSizes.xs,
-    fontWeight: '600',
-    textAlign: 'center',
-    paddingVertical: Spacing.sm,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  picker: {
-    flex: 1,
-  },
-  pickerContent: {
-    paddingVertical: Spacing.xs,
-  },
-  pickerItem: {
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: Spacing.xs,
-    borderRadius: BorderRadius.sm,
-  },
-  pickerText: {
-    fontSize: FontSizes.md,
-  },
-  pickerTextSelected: {
-    fontWeight: '700',
-  },
   footer: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
     paddingTop: Spacing.sm,
-  },
-  saveButton: {
-    paddingVertical: Spacing.md + 2,
-    borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#FFF',
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
   },
 });

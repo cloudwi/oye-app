@@ -1,24 +1,17 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { User, OnboardingState, Gender, CalendarType } from '@/types/user';
+import type { User, OnboardingState } from '@/types/user';
 
 interface UserState {
   user: User | null;
   onboarding: OnboardingState;
-  isLoading: boolean;
-  error: string | null;
 
   // Actions
   setUser: (user: User | null) => void;
   updateUser: (updates: Partial<User>) => void;
-  setBirthDate: (birthDate: string) => void;
-  setGender: (gender: Gender) => void;
-  setCalendarType: (calendarType: CalendarType) => void;
   setOnboardingStep: (step: OnboardingState['currentStep']) => void;
   completeOnboarding: () => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
   reset: () => void;
 }
 
@@ -27,64 +20,33 @@ const initialOnboarding: OnboardingState = {
   currentStep: 'welcome',
 };
 
+const defaultUser: User = {
+  id: 0,
+  provider: null,
+  name: '',
+  birthDate: null,
+  gender: null,
+  calendarType: null,
+  createdAt: new Date().toISOString(),
+};
+
+const initialState = {
+  user: null as User | null,
+  onboarding: initialOnboarding,
+};
+
 export const useUserStore = create<UserState>()(
   persist(
     (set) => ({
-      user: null,
-      onboarding: initialOnboarding,
-      isLoading: false,
-      error: null,
+      ...initialState,
 
       setUser: (user) => set({ user }),
 
       updateUser: (updates) =>
         set((state) => ({
-          user: state.user ? { ...state.user, ...updates } : null,
-        })),
-
-      setBirthDate: (birthDate) =>
-        set((state) => ({
           user: state.user
-            ? { ...state.user, birthDate }
-            : {
-                id: 0,
-                provider: null,
-                name: '',
-                birthDate,
-                gender: null,
-                calendarType: null,
-                createdAt: new Date().toISOString(),
-              },
-        })),
-
-      setGender: (gender) =>
-        set((state) => ({
-          user: state.user
-            ? { ...state.user, gender }
-            : {
-                id: 0,
-                provider: null,
-                name: '',
-                birthDate: null,
-                gender,
-                calendarType: null,
-                createdAt: new Date().toISOString(),
-              },
-        })),
-
-      setCalendarType: (calendarType) =>
-        set((state) => ({
-          user: state.user
-            ? { ...state.user, calendarType }
-            : {
-                id: 0,
-                provider: null,
-                name: '',
-                birthDate: null,
-                gender: null,
-                calendarType,
-                createdAt: new Date().toISOString(),
-              },
+            ? { ...state.user, ...updates }
+            : { ...defaultUser, ...updates },
         })),
 
       setOnboardingStep: (step) =>
@@ -97,16 +59,7 @@ export const useUserStore = create<UserState>()(
           onboarding: { completed: true, currentStep: 'done' },
         }),
 
-      setLoading: (isLoading) => set({ isLoading }),
-      setError: (error) => set({ error }),
-
-      reset: () =>
-        set({
-          user: null,
-          onboarding: initialOnboarding,
-          isLoading: false,
-          error: null,
-        }),
+      reset: () => set(initialState),
     }),
     {
       name: 'user-storage',

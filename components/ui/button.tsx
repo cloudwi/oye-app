@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   TouchableOpacity,
   Text,
@@ -8,6 +8,7 @@ import {
   TextStyle,
 } from 'react-native';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { BorderRadius } from '@/constants/theme';
 
 interface ButtonProps {
   title: string;
@@ -31,12 +32,10 @@ export function Button({
   textStyle,
 }: ButtonProps) {
   const primaryColor = useThemeColor({}, 'tint');
-  const textColor = useThemeColor({}, 'text');
-  const backgroundColor = useThemeColor({}, 'background');
   const disabledBg = useThemeColor({ light: '#D1D5DB', dark: '#374151' }, 'surfaceSecondary');
   const disabledText = useThemeColor({ light: '#9CA3AF', dark: '#6B7280' }, 'textMuted');
 
-  const getButtonStyle = (): ViewStyle => {
+  const buttonStyle = useMemo((): ViewStyle => {
     const baseStyle: ViewStyle = {
       ...styles.button,
       ...sizeStyles[size],
@@ -44,33 +43,19 @@ export function Button({
 
     switch (variant) {
       case 'primary':
-        return {
-          ...baseStyle,
-          backgroundColor: disabled ? disabledBg : primaryColor,
-        };
+        return { ...baseStyle, backgroundColor: disabled ? disabledBg : primaryColor };
       case 'secondary':
-        return {
-          ...baseStyle,
-          backgroundColor: disabled ? disabledBg : '#FF6B6B',
-        };
+        return { ...baseStyle, backgroundColor: disabled ? disabledBg : '#FF6B6B' };
       case 'outline':
-        return {
-          ...baseStyle,
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          borderColor: disabled ? disabledBg : primaryColor,
-        };
+        return { ...baseStyle, backgroundColor: 'transparent', borderWidth: 2, borderColor: disabled ? disabledBg : primaryColor };
       case 'ghost':
-        return {
-          ...baseStyle,
-          backgroundColor: 'transparent',
-        };
+        return { ...baseStyle, backgroundColor: 'transparent' };
       default:
         return baseStyle;
     }
-  };
+  }, [variant, size, disabled, disabledBg, primaryColor]);
 
-  const getTextStyle = (): TextStyle => {
+  const computedTextStyle = useMemo((): TextStyle => {
     switch (variant) {
       case 'primary':
       case 'secondary':
@@ -81,11 +66,11 @@ export function Button({
       default:
         return { color: '#fff' };
     }
-  };
+  }, [variant, disabled, disabledText, primaryColor]);
 
   return (
     <TouchableOpacity
-      style={[getButtonStyle(), style]}
+      style={[buttonStyle, style]}
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.7}
@@ -93,7 +78,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={variant === 'primary' ? '#fff' : primaryColor} />
       ) : (
-        <Text style={[styles.text, sizeTextStyles[size], getTextStyle(), textStyle]}>
+        <Text style={[styles.text, sizeTextStyles[size], computedTextStyle, textStyle]}>
           {title}
         </Text>
       )}
@@ -105,7 +90,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    borderRadius: BorderRadius.md,
   },
   text: {
     fontWeight: '600',

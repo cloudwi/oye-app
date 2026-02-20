@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -47,13 +47,17 @@ export default function HistoryScreen() {
   const history = data?.pages.flatMap(page => page.content) ?? [];
   const totalCount = data?.pages[0]?.totalElements ?? 0;
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
-  };
+  }, [refetch]);
 
-  const renderItem = ({ item, index }: { item: Fortune; index: number }) => {
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage) fetchNextPage();
+  }, [hasNextPage, fetchNextPage]);
+
+  const renderItem = useCallback(({ item, index }: { item: Fortune; index: number }) => {
     const dateStr = item.date || item.createdAt;
     const date = dateStr ? parseISO(dateStr) : new Date();
     const formattedDate = format(date, 'M월 d일', { locale: ko });
@@ -88,7 +92,7 @@ export default function HistoryScreen() {
         )}
       </TouchableOpacity>
     );
-  };
+  }, [selectedId, surfaceColor, textColor, textSecondary]);
 
   const renderEmpty = () => (
     <EmptyState
@@ -146,7 +150,7 @@ export default function HistoryScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
-        onEndReached={() => { if (hasNextPage) fetchNextPage(); }}
+        onEndReached={handleEndReached}
         onEndReachedThreshold={0.5}
         refreshControl={
           Platform.OS !== 'web' ? (

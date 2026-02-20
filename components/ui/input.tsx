@@ -8,6 +8,7 @@ import {
   TextInputProps,
 } from 'react-native';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { BrandColors, BorderRadius, Spacing, FontSizes } from '@/constants/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -37,7 +38,7 @@ export function Input({
           styles.input,
           {
             backgroundColor,
-            borderColor: error ? '#FF6B6B' : borderColor,
+            borderColor: error ? BrandColors.error : borderColor,
             color: textColor,
           },
           style,
@@ -52,23 +53,23 @@ export function Input({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: Spacing.md,
   },
   label: {
-    fontSize: 14,
+    fontSize: FontSizes.sm,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: BorderRadius.md,
     paddingVertical: 14,
-    paddingHorizontal: 16,
-    fontSize: 16,
+    paddingHorizontal: Spacing.md,
+    fontSize: FontSizes.md,
   },
   error: {
-    color: '#FF6B6B',
-    fontSize: 12,
-    marginTop: 4,
+    color: BrandColors.error,
+    fontSize: FontSizes.xs,
+    marginTop: Spacing.xs,
   },
 });

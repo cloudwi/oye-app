@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -85,17 +85,17 @@ export default function TodayFortuneScreen() {
     }
   }, [todayFortune]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
-  };
+  }, [refetch]);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     if (todayFortune) {
       await shareService.shareFortune(todayFortune);
     }
-  };
+  }, [todayFortune]);
 
   const today = format(new Date(), 'M월 d일 EEEE', { locale: ko });
 

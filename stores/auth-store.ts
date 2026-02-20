@@ -3,6 +3,12 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { secureStorage } from '@/services/secure-storage';
 import type { AuthToken } from '@/types/auth';
 
+const initialAuthState = {
+  token: null as AuthToken | null,
+  isAuthenticated: false,
+  isLoading: false,
+};
+
 interface AuthState {
   token: AuthToken | null;
   isAuthenticated: boolean;
@@ -10,7 +16,6 @@ interface AuthState {
 
   // Actions
   setToken: (token: AuthToken) => void;
-  clearToken: () => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
 }
@@ -18,18 +23,12 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      token: null,
-      isAuthenticated: false,
-      isLoading: false,
+      ...initialAuthState,
 
       setToken: (token) =>
         set({ token, isAuthenticated: true, isLoading: false }),
 
-      clearToken: () =>
-        set({ token: null, isAuthenticated: false, isLoading: false }),
-
-      logout: () =>
-        set({ token: null, isAuthenticated: false, isLoading: false }),
+      logout: () => set(initialAuthState),
 
       setLoading: (isLoading) => set({ isLoading }),
     }),

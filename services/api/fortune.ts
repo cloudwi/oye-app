@@ -1,12 +1,6 @@
 import { apiClient } from './client';
-import type { Fortune, ApiResponse, PageResponse } from '@/types/fortune';
-
-interface HistoryResult {
-  content: Fortune[];
-  totalElements: number;
-  totalPages: number;
-  page: number;
-}
+import type { Fortune } from '@/types/fortune';
+import type { ApiResponse, PageResponse, PaginatedResult } from '@/types/api';
 
 export const fortuneApi = {
   async getToday(): Promise<Fortune> {
@@ -14,7 +8,7 @@ export const fortuneApi = {
     return response.data;
   },
 
-  async getHistory(page: number = 0, size: number = 20): Promise<HistoryResult> {
+  async getHistory(page: number = 0, size: number = 20): Promise<PaginatedResult<Fortune>> {
     const response = await apiClient.get<ApiResponse<PageResponse<Fortune>>>('/api/fortune/history', {
       params: { page, size },
     });

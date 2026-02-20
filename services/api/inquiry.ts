@@ -1,13 +1,6 @@
 import { apiClient } from './client';
 import type { Inquiry, InquiryCreateRequest } from '@/types/inquiry';
-import type { ApiResponse, PageResponse } from '@/types/fortune';
-
-interface InquiryListResult {
-  content: Inquiry[];
-  totalElements: number;
-  totalPages: number;
-  page: number;
-}
+import type { ApiResponse, PageResponse, PaginatedResult } from '@/types/api';
 
 export const inquiryApi = {
   async create(data: InquiryCreateRequest): Promise<Inquiry> {
@@ -15,7 +8,7 @@ export const inquiryApi = {
     return response.data;
   },
 
-  async getList(page: number = 0, size: number = 20): Promise<InquiryListResult> {
+  async getList(page: number = 0, size: number = 20): Promise<PaginatedResult<Inquiry>> {
     const response = await apiClient.get<ApiResponse<PageResponse<Inquiry>>>('/api/inquiries', {
       params: { page, size },
     });

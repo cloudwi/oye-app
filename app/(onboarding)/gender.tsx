@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,19 +7,14 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { BackHeader } from '@/components/ui/back-header';
+import { GradientButton } from '@/components/ui/gradient-button';
+import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 import type { Gender } from '@/types/user';
 
 export default function OnboardingGender() {
@@ -29,27 +24,8 @@ export default function OnboardingGender() {
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
 
-  const { setGender } = useUserStore();
+  const { updateUser } = useUserStore();
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
-
-  const buttonOpacity = useSharedValue(0.4);
-  const buttonScale = useSharedValue(1);
-
-  useEffect(() => {
-    if (selectedGender) {
-      buttonOpacity.value = withTiming(1, { duration: 300 });
-      buttonScale.value = withSpring(1.02, {}, () => {
-        buttonScale.value = withSpring(1);
-      });
-    } else {
-      buttonOpacity.value = withTiming(0.4, { duration: 200 });
-    }
-  }, [selectedGender]);
-
-  const animatedButtonStyle = useAnimatedStyle(() => ({
-    opacity: buttonOpacity.value,
-    transform: [{ scale: buttonScale.value }],
-  }));
 
   const lastTapRef = useRef(0);
 
@@ -65,7 +41,7 @@ export default function OnboardingGender() {
 
   const handleNext = () => {
     if (selectedGender) {
-      setGender(selectedGender);
+      updateUser({ gender: selectedGender });
     }
     router.push('/(onboarding)/birthdate');
   };
@@ -74,20 +50,10 @@ export default function OnboardingGender() {
     router.push('/(onboarding)/birthdate');
   };
 
-  const handleBack = () => {
-    router.back();
-  };
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="뒤로 가기">
-          <IconSymbol name="chevron.left" size={24} color={textColor} />
-        </TouchableOpacity>
-      </View>
+      <BackHeader />
 
-      {/* Content */}
       <View style={styles.content}>
         <Text style={[styles.title, { color: textColor }]}>성별</Text>
         <Text style={[styles.subtitle, { color: textSecondary }]}>
@@ -145,26 +111,12 @@ export default function OnboardingGender() {
         </View>
       </View>
 
-      {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity
+        <GradientButton
+          label="다음"
           onPress={handleNext}
-          activeOpacity={0.9}
-          disabled={!selectedGender}
-          accessibilityRole="button"
-          accessibilityLabel="다음"
-        >
-          <Animated.View style={animatedButtonStyle}>
-            <LinearGradient
-              colors={Gradients.accent}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.button}
-            >
-              <Text style={styles.buttonText}>다음</Text>
-            </LinearGradient>
-          </Animated.View>
-        </TouchableOpacity>
+          isEnabled={!!selectedGender}
+        />
 
         <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="건너뛰기">
           <Text style={[styles.skipText, { color: textSecondary }]}>건너뛰기</Text>
@@ -177,16 +129,6 @@ export default function OnboardingGender() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   content: {
     flex: 1,
@@ -220,16 +162,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
-  },
-  button: {
-    paddingVertical: Spacing.md + 2,
-    borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
   },
   skipButton: {
     alignItems: 'center',

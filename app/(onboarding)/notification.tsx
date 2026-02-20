@@ -4,11 +4,9 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -18,7 +16,9 @@ import { useSettingsStore } from '@/stores/settings-store';
 import { notificationService } from '@/services/notification';
 import { userApi } from '@/services/api/user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { BackHeader } from '@/components/ui/back-header';
+import { GradientButton } from '@/components/ui/gradient-button';
+import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
 export default function OnboardingNotification() {
   const textColor = useThemeColor({}, 'text');
@@ -74,22 +74,11 @@ export default function OnboardingNotification() {
     router.replace('/(tabs)');
   };
 
-  const handleBack = () => {
-    router.back();
-  };
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="뒤로 가기">
-          <IconSymbol name="chevron.left" size={24} color={textColor} />
-        </TouchableOpacity>
-      </View>
+      <BackHeader />
 
-      {/* Content */}
       <View style={styles.content}>
-        {/* Icon with entrance animation */}
         <Animated.View
           entering={FadeInDown.duration(500).delay(100)}
           style={styles.iconArea}
@@ -101,7 +90,6 @@ export default function OnboardingNotification() {
           </View>
         </Animated.View>
 
-        {/* Text with entrance animation */}
         <Animated.View entering={FadeInDown.duration(500).delay(200)}>
           <Text style={[styles.title, { color: textColor }]}>알림 설정</Text>
           <Text style={[styles.subtitle, { color: textSecondary }]}>
@@ -109,7 +97,6 @@ export default function OnboardingNotification() {
           </Text>
         </Animated.View>
 
-        {/* Preview Card with slide-up animation */}
         <Animated.View
           entering={FadeInUp.duration(600).delay(400)}
           style={[styles.previewCard, { backgroundColor: surfaceColor }, Shadows.md]}
@@ -129,28 +116,13 @@ export default function OnboardingNotification() {
         </Animated.View>
       </View>
 
-      {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity
+        <GradientButton
+          label="알림 받기"
           onPress={handleEnableNotification}
-          activeOpacity={0.9}
+          loading={isLoading}
           disabled={isLoading}
-          accessibilityRole="button"
-          accessibilityLabel="알림 받기"
-        >
-          <LinearGradient
-            colors={Gradients.accent}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.button, isLoading && styles.buttonLoading]}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#FFF" />
-            ) : (
-              <Text style={styles.buttonText}>알림 받기</Text>
-            )}
-          </LinearGradient>
-        </TouchableOpacity>
+        />
 
         <TouchableOpacity onPress={handleSkip} style={styles.skipButton} activeOpacity={0.7} disabled={isLoading} accessibilityRole="button" accessibilityLabel="나중에 설정할게요">
           <Text style={[styles.skipText, { color: textSecondary }]}>나중에 설정할게요</Text>
@@ -163,16 +135,6 @@ export default function OnboardingNotification() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   content: {
     flex: 1,
@@ -252,19 +214,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
-  },
-  button: {
-    paddingVertical: Spacing.md + 2,
-    borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-  },
-  buttonLoading: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: '#FFF',
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
   },
   skipButton: {
     alignItems: 'center',
