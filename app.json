@@ -13,7 +13,9 @@
       "bundleIdentifier": "com.oyeapp.fortune",
       "usesAppleSignIn": true,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": ["kakaokompassauth", "kakaolink", "kakaoplus"],
+        "CFBundleURLTypes": [{ "CFBundleURLSchemes": ["kakao9a09ffd0172882098f151551e8e85f11"] }]
       }
     },
     "android": {
@@ -52,6 +54,7 @@
           "defaultChannel": "fortune"
         }
       ],
+      ["@react-native-seoul/kakao-login", { "kakaoAppKey": "9a09ffd0172882098f151551e8e85f11" }],
       "expo-secure-store",
       [
         "@sentry/react-native/expo",

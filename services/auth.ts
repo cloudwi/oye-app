@@ -7,6 +7,7 @@ import type { AuthToken } from '@/types/auth';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.yegam.today';
 const KAKAO_LOGIN_PATH = '/api/auth/login/kakao';
+const KAKAO_NATIVE_LOGIN_PATH = '/api/auth/login/kakao/native';
 const APPLE_LOGIN_PATH = '/api/auth/login/apple';
 const NATIVE_CALLBACK_SCHEME = 'oyeapp://auth/callback';
 
@@ -22,24 +23,33 @@ export const authService = {
   },
 
   /**
-   * 네이티브: expo-web-browser로 OAuth 수행
+   * 네이티브: 카카오 SDK로 로그인 → 백엔드에서 JWT 발급
    */
   async loginWithKakaoNative(): Promise<AuthToken | null> {
     try {
-      const redirectUri = NATIVE_CALLBACK_SCHEME;
-      const loginUrl = `${API_BASE_URL}${KAKAO_LOGIN_PATH}?redirect_uri=${encodeURIComponent(redirectUri)}&platform=native`;
+      const { login: kakaoLogin } = require('@react-native-seoul/kakao-login');
+      const result = await kakaoLogin();
 
-      const result = await WebBrowser.openAuthSessionAsync(loginUrl, redirectUri);
+      const response = await fetch(`${API_BASE_URL}${KAKAO_NATIVE_LOGIN_PATH}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: result.accessToken }),
+      });
 
-      if (result.type === 'success' && result.url) {
-        const token = this.parseTokenFromUrl(result.url);
-        if (token) {
-          useAuthStore.getState().setToken(token);
-          return token;
-        }
+      if (!response.ok) {
+        return null;
       }
 
-      return null;
+      const data = await response.json();
+      const token: AuthToken = {
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        expiresAt: data.expiresAt,
+        isNewUser: data.isNewUser,
+      };
+
+      useAuthStore.getState().setToken(token);
+      return token;
     } catch (error) {
       console.error('Kakao native login error:', error);
       return null;
