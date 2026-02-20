@@ -22,7 +22,7 @@ Sentry.init({
   tracesSampleRate: 0.2,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1,
-  integrations: [Sentry.mobileReplayIntegration()],
+  integrations: Platform.OS !== 'web' ? [Sentry.mobileReplayIntegration()] : [],
 });
 
 // Custom themes for the fortune app
