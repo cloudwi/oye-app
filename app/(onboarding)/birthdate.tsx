@@ -21,13 +21,14 @@ import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
 const ITEM_HEIGHT = 44;
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 export default function OnboardingBirthdate() {
+  const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
@@ -126,7 +127,7 @@ export default function OnboardingBirthdate() {
             key={item}
             style={[
               styles.pickerItem,
-              isSelected && { backgroundColor: BrandColors.accent + '20' },
+              isSelected && { backgroundColor: tintColor + '20' },
             ]}
             onPress={() => {
               if (Platform.OS !== 'web') {
@@ -140,7 +141,7 @@ export default function OnboardingBirthdate() {
             <Text
               style={[
                 styles.pickerText,
-                { color: isSelected ? BrandColors.accent : textSecondary },
+                { color: isSelected ? tintColor : textSecondary },
                 isSelected && styles.pickerTextSelected,
               ]}
             >

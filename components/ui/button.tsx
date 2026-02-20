@@ -33,6 +33,8 @@ export function Button({
   const primaryColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
+  const disabledBg = useThemeColor({ light: '#D1D5DB', dark: '#374151' }, 'surfaceSecondary');
+  const disabledText = useThemeColor({ light: '#9CA3AF', dark: '#6B7280' }, 'textMuted');
 
   const getButtonStyle = (): ViewStyle => {
     const baseStyle: ViewStyle = {
@@ -44,19 +46,19 @@ export function Button({
       case 'primary':
         return {
           ...baseStyle,
-          backgroundColor: disabled ? '#ccc' : primaryColor,
+          backgroundColor: disabled ? disabledBg : primaryColor,
         };
       case 'secondary':
         return {
           ...baseStyle,
-          backgroundColor: disabled ? '#ccc' : '#FF6B6B',
+          backgroundColor: disabled ? disabledBg : '#FF6B6B',
         };
       case 'outline':
         return {
           ...baseStyle,
           backgroundColor: 'transparent',
           borderWidth: 2,
-          borderColor: disabled ? '#ccc' : primaryColor,
+          borderColor: disabled ? disabledBg : primaryColor,
         };
       case 'ghost':
         return {
@@ -75,7 +77,7 @@ export function Button({
         return { color: '#fff' };
       case 'outline':
       case 'ghost':
-        return { color: disabled ? '#ccc' : primaryColor };
+        return { color: disabled ? disabledText : primaryColor };
       default:
         return { color: '#fff' };
     }

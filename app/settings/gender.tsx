@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -21,10 +21,11 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { userApi } from '@/services/api/user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 import type { Gender } from '@/types/user';
 
 export default function GenderEditScreen() {
+  const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
@@ -56,7 +57,12 @@ export default function GenderEditScreen() {
     transform: [{ scale: buttonScale.value }],
   }));
 
+  const lastTapRef = useRef(0);
+
   const handleSelectGender = (gender: Gender) => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) return;
+    lastTapRef.current = now;
     setSelectedGender(selectedGender === gender ? null : gender);
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -103,17 +109,17 @@ export default function GenderEditScreen() {
               styles.optionButton,
               { backgroundColor: surfaceColor },
               Shadows.sm,
-              selectedGender === 'MALE' && styles.optionButtonActive,
+              selectedGender === 'MALE' && { borderColor: tintColor, backgroundColor: tintColor + '10' },
             ]}
             onPress={() => handleSelectGender('MALE')}
             activeOpacity={0.7}
           >
-            <IconSymbol name="figure.stand" size={28} color={selectedGender === 'MALE' ? BrandColors.primary : textSecondary} />
+            <IconSymbol name="figure.stand" size={28} color={selectedGender === 'MALE' ? tintColor : textSecondary} />
             <Text
               style={[
                 styles.optionText,
                 { color: textColor },
-                selectedGender === 'MALE' && styles.optionTextActive,
+                selectedGender === 'MALE' && { color: tintColor },
               ]}
             >
               남성
@@ -124,17 +130,17 @@ export default function GenderEditScreen() {
               styles.optionButton,
               { backgroundColor: surfaceColor },
               Shadows.sm,
-              selectedGender === 'FEMALE' && styles.optionButtonActive,
+              selectedGender === 'FEMALE' && { borderColor: tintColor, backgroundColor: tintColor + '10' },
             ]}
             onPress={() => handleSelectGender('FEMALE')}
             activeOpacity={0.7}
           >
-            <IconSymbol name="figure.stand.dress" size={28} color={selectedGender === 'FEMALE' ? BrandColors.primary : textSecondary} />
+            <IconSymbol name="figure.stand.dress" size={28} color={selectedGender === 'FEMALE' ? tintColor : textSecondary} />
             <Text
               style={[
                 styles.optionText,
                 { color: textColor },
-                selectedGender === 'FEMALE' && styles.optionTextActive,
+                selectedGender === 'FEMALE' && { color: tintColor },
               ]}
             >
               여성
@@ -209,16 +215,9 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     gap: Spacing.sm,
   },
-  optionButtonActive: {
-    borderColor: BrandColors.primary,
-    backgroundColor: BrandColors.primary + '10',
-  },
   optionText: {
     fontSize: FontSizes.md,
     fontWeight: '600',
-  },
-  optionTextActive: {
-    color: BrandColors.primary,
   },
   footer: {
     paddingHorizontal: Spacing.lg,

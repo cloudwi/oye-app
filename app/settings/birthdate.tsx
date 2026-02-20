@@ -22,10 +22,11 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { userApi } from '@/services/api/user';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 import type { CalendarType } from '@/types/user';
 
 export default function BirthDateEditScreen() {
+  const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
@@ -145,7 +146,7 @@ export default function BirthDateEditScreen() {
             key={item}
             style={[
               styles.pickerItem,
-              isSelected && { backgroundColor: BrandColors.primary + '15' },
+              isSelected && { backgroundColor: tintColor + '15' },
             ]}
             onPress={() => onSelect(item)}
             activeOpacity={0.7}
@@ -153,7 +154,7 @@ export default function BirthDateEditScreen() {
             <Text
               style={[
                 styles.pickerText,
-                { color: isSelected ? BrandColors.primary : textSecondary },
+                { color: isSelected ? tintColor : textSecondary },
                 isSelected && styles.pickerTextSelected,
               ]}
             >
@@ -210,17 +211,17 @@ export default function BirthDateEditScreen() {
                 styles.optionButton,
                 { backgroundColor: surfaceColor },
                 Shadows.sm,
-                selectedCalendarType === 'SOLAR' && styles.optionButtonActive,
+                selectedCalendarType === 'SOLAR' && { borderColor: tintColor, backgroundColor: tintColor + '10' },
               ]}
               onPress={() => handleSelectCalendarType('SOLAR')}
               activeOpacity={0.7}
             >
-              <IconSymbol name="sun.max.fill" size={28} color={selectedCalendarType === 'SOLAR' ? BrandColors.primary : textSecondary} />
+              <IconSymbol name="sun.max.fill" size={28} color={selectedCalendarType === 'SOLAR' ? tintColor : textSecondary} />
               <Text
                 style={[
                   styles.optionText,
                   { color: textColor },
-                  selectedCalendarType === 'SOLAR' && styles.optionTextActive,
+                  selectedCalendarType === 'SOLAR' && { color: tintColor },
                 ]}
               >
                 양력
@@ -231,17 +232,17 @@ export default function BirthDateEditScreen() {
                 styles.optionButton,
                 { backgroundColor: surfaceColor },
                 Shadows.sm,
-                selectedCalendarType === 'LUNAR' && styles.optionButtonActive,
+                selectedCalendarType === 'LUNAR' && { borderColor: tintColor, backgroundColor: tintColor + '10' },
               ]}
               onPress={() => handleSelectCalendarType('LUNAR')}
               activeOpacity={0.7}
             >
-              <IconSymbol name="moon.fill" size={28} color={selectedCalendarType === 'LUNAR' ? BrandColors.primary : textSecondary} />
+              <IconSymbol name="moon.fill" size={28} color={selectedCalendarType === 'LUNAR' ? tintColor : textSecondary} />
               <Text
                 style={[
                   styles.optionText,
                   { color: textColor },
-                  selectedCalendarType === 'LUNAR' && styles.optionTextActive,
+                  selectedCalendarType === 'LUNAR' && { color: tintColor },
                 ]}
               >
                 음력
@@ -327,16 +328,9 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     gap: Spacing.sm,
   },
-  optionButtonActive: {
-    borderColor: BrandColors.primary,
-    backgroundColor: BrandColors.primary + '10',
-  },
   optionText: {
     fontSize: FontSizes.md,
     fontWeight: '600',
-  },
-  optionTextActive: {
-    color: BrandColors.primary,
   },
   dateDisplay: {
     padding: Spacing.md,

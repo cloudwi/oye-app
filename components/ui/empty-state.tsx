@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import {
-  BrandColors,
   Spacing,
   BorderRadius,
   FontSizes,
@@ -21,22 +20,24 @@ interface EmptyStateProps {
 
 export function EmptyState({
   icon,
-  iconColor = BrandColors.primary,
+  iconColor,
   title,
   message,
   actionLabel,
   onAction,
 }: EmptyStateProps) {
+  const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor(
     { light: '#6B7280', dark: '#9CA3AF' },
     'textSecondary'
   );
+  const effectiveIconColor = iconColor || tintColor;
 
   return (
     <View style={styles.container}>
-      <View style={[styles.iconBg, { backgroundColor: iconColor + '15' }]}>
-        <IconSymbol name={icon} size={32} color={iconColor} />
+      <View style={[styles.iconBg, { backgroundColor: effectiveIconColor + '15' }]}>
+        <IconSymbol name={icon} size={32} color={effectiveIconColor} />
       </View>
       <Text style={[styles.title, { color: textColor }]}>{title}</Text>
       {message && (
@@ -44,7 +45,7 @@ export function EmptyState({
       )}
       {actionLabel && onAction && (
         <TouchableOpacity
-          style={styles.actionButton}
+          style={[styles.actionButton, { backgroundColor: tintColor }]}
           onPress={onAction}
           activeOpacity={0.8}
         >
@@ -82,7 +83,6 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     marginTop: Spacing.lg,
-    backgroundColor: BrandColors.primary,
     paddingVertical: Spacing.sm + 2,
     paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.lg,

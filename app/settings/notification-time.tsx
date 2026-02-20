@@ -12,9 +12,10 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useSettingsStore } from '@/stores/settings-store';
 import { notificationService } from '@/services/notification';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 
 export default function NotificationTimeScreen() {
+  const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
@@ -57,7 +58,7 @@ export default function NotificationTimeScreen() {
             key={item}
             style={[
               styles.pickerItem,
-              isSelected && { backgroundColor: BrandColors.primary + '15' },
+              isSelected && { backgroundColor: tintColor + '15' },
             ]}
             onPress={() => onSelect(item)}
             activeOpacity={0.7}
@@ -65,7 +66,7 @@ export default function NotificationTimeScreen() {
             <Text
               style={[
                 styles.pickerText,
-                { color: isSelected ? BrandColors.primary : textSecondary },
+                { color: isSelected ? tintColor : textSecondary },
                 isSelected && styles.pickerTextSelected,
               ]}
             >
@@ -117,7 +118,7 @@ export default function NotificationTimeScreen() {
         <TouchableOpacity
           onPress={handleSave}
           activeOpacity={0.9}
-          style={[styles.saveButton, { backgroundColor: BrandColors.primary }]}
+          style={[styles.saveButton, { backgroundColor: tintColor }]}
         >
           <Text style={styles.saveButtonText}>저장</Text>
         </TouchableOpacity>

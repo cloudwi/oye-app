@@ -19,7 +19,6 @@ import { HistoryListSkeleton } from '@/components/ui/skeleton';
 import { format, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
-  BrandColors,
   Spacing,
   BorderRadius,
   FontSizes,
@@ -30,6 +29,7 @@ import type { Fortune } from '@/types/fortune';
 const PAGE_SIZE = 20;
 
 export default function HistoryScreen() {
+  const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
@@ -155,7 +155,7 @@ export default function HistoryScreen() {
     if (!isLoadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={BrandColors.primary} />
+        <ActivityIndicator size="small" color={tintColor} />
       </View>
     );
   };
@@ -180,7 +180,7 @@ export default function HistoryScreen() {
           <Text style={[styles.title, { color: textColor }]}>히스토리</Text>
           {Platform.OS === 'web' && (
             <TouchableOpacity onPress={handleRefresh} style={styles.refreshButton}>
-              <IconSymbol name="arrow.clockwise" size={18} color={BrandColors.accent} />
+              <IconSymbol name="arrow.clockwise" size={18} color={tintColor} />
             </TouchableOpacity>
           )}
         </View>
@@ -206,7 +206,7 @@ export default function HistoryScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor={BrandColors.primary}
+              tintColor={tintColor}
             />
           ) : undefined
         }

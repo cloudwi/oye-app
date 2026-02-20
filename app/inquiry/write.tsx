@@ -17,7 +17,6 @@ import { inquiryApi } from '@/services/api/inquiry';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { router } from 'expo-router';
 import {
-  BrandColors,
   Spacing,
   BorderRadius,
   FontSizes,
@@ -27,6 +26,7 @@ const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 const wrapperProps = Platform.OS === 'ios' ? { behavior: 'padding' as const } : {};
 
 export default function InquiryWriteScreen() {
+  const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
@@ -121,7 +121,7 @@ export default function InquiryWriteScreen() {
           <TouchableOpacity
             style={[
               styles.submitButton,
-              { backgroundColor: isValid ? BrandColors.accent : BrandColors.accent + '40' },
+              { backgroundColor: isValid ? tintColor : tintColor + '40' },
             ]}
             onPress={handleSubmit}
             disabled={!isValid || isSubmitting}

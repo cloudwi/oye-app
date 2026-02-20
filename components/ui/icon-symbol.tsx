@@ -37,6 +37,12 @@ const MAPPING = {
   'sun.max.fill': 'wb-sunny',
   'figure.stand': 'male',
   'figure.stand.dress': 'female',
+  'arrow.clockwise': 'refresh',
+  'plus': 'add',
+  'bubble.left.fill': 'chat-bubble',
+  'doc.text.fill': 'description',
+  'doc.plaintext': 'article',
+  'envelope.fill': 'email',
 } as IconMapping;
 
 /**

@@ -19,10 +19,11 @@ import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors, Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { Gradients, Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
 import type { CalendarType } from '@/types/user';
 
 export default function OnboardingCalendarType() {
+  const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
@@ -94,19 +95,19 @@ export default function OnboardingCalendarType() {
               styles.optionCard,
               { backgroundColor: surfaceColor },
               Shadows.md,
-              selectedType === 'SOLAR' && styles.optionCardActive,
+              selectedType === 'SOLAR' && { borderColor: tintColor, backgroundColor: tintColor + '10' },
             ]}
             onPress={() => handleSelectType('SOLAR')}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel={`양력, 일반 달력 기준${selectedType === 'SOLAR' ? ', 선택됨' : ''}`}
           >
-            <IconSymbol name="sun.max.fill" size={48} color={selectedType === 'SOLAR' ? BrandColors.primary : textSecondary} />
+            <IconSymbol name="sun.max.fill" size={48} color={selectedType === 'SOLAR' ? tintColor : textSecondary} />
             <Text
               style={[
                 styles.optionText,
                 { color: textColor },
-                selectedType === 'SOLAR' && styles.optionTextActive,
+                selectedType === 'SOLAR' && { color: tintColor },
               ]}
             >
               양력
@@ -121,19 +122,19 @@ export default function OnboardingCalendarType() {
               styles.optionCard,
               { backgroundColor: surfaceColor },
               Shadows.md,
-              selectedType === 'LUNAR' && styles.optionCardActive,
+              selectedType === 'LUNAR' && { borderColor: tintColor, backgroundColor: tintColor + '10' },
             ]}
             onPress={() => handleSelectType('LUNAR')}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel={`음력, 음력 달력 기준${selectedType === 'LUNAR' ? ', 선택됨' : ''}`}
           >
-            <IconSymbol name="moon.fill" size={48} color={selectedType === 'LUNAR' ? BrandColors.primary : textSecondary} />
+            <IconSymbol name="moon.fill" size={48} color={selectedType === 'LUNAR' ? tintColor : textSecondary} />
             <Text
               style={[
                 styles.optionText,
                 { color: textColor },
-                selectedType === 'LUNAR' && styles.optionTextActive,
+                selectedType === 'LUNAR' && { color: tintColor },
               ]}
             >
               음력
@@ -214,16 +215,9 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     gap: Spacing.sm,
   },
-  optionCardActive: {
-    borderColor: BrandColors.primary,
-    backgroundColor: BrandColors.primary + '10',
-  },
   optionText: {
     fontSize: FontSizes.lg,
     fontWeight: '600',
-  },
-  optionTextActive: {
-    color: BrandColors.primary,
   },
   optionDescription: {
     fontSize: FontSizes.sm,

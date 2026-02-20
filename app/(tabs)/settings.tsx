@@ -23,7 +23,6 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { router } from 'expo-router';
 import {
-  BrandColors,
   Spacing,
   BorderRadius,
   FontSizes,
@@ -51,9 +50,11 @@ function SettingRow({
   isLast = false,
   destructive = false,
 }: SettingRowProps) {
+  const defaultIconColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
   const dividerColor = useThemeColor({ light: '#E5E7EB', dark: '#374151' }, 'divider');
+  const effectiveIconColor = iconColor || defaultIconColor;
 
   return (
     <TouchableOpacity
@@ -67,8 +68,8 @@ function SettingRow({
       accessibilityRole="button"
       accessibilityLabel={`${title}${subtitle ? `, ${subtitle}` : ''}`}
     >
-      <View style={[styles.iconContainer, { backgroundColor: (iconColor || BrandColors.primary) + '15' }]}>
-        <IconSymbol name={icon as any} size={18} color={iconColor || BrandColors.primary} />
+      <View style={[styles.iconContainer, { backgroundColor: effectiveIconColor + '15' }]}>
+        <IconSymbol name={icon as any} size={18} color={effectiveIconColor} />
       </View>
       <View style={styles.settingContent}>
         <Text style={[styles.settingTitle, { color: destructive ? '#EF4444' : textColor }]}>
@@ -87,6 +88,8 @@ function SettingRow({
 }
 
 export default function SettingsScreen() {
+  const tintColor = useThemeColor({}, 'tint');
+  const switchFalseTrack = useThemeColor({ light: '#E5E7EB', dark: '#374151' }, 'divider');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
@@ -221,15 +224,22 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionLabel, { color: textSecondary }]}>프로필</Text>
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
+              icon="pencil"
+              iconColor={tintColor}
+              title="이름"
+              subtitle={user?.name || '미설정'}
+              onPress={() => router.push('/settings/name')}
+            />
+            <SettingRow
               icon="person.fill"
-              iconColor={BrandColors.primary}
+              iconColor={tintColor}
               title="성별"
               subtitle={genderLabel}
               onPress={() => router.push('/settings/gender')}
             />
             <SettingRow
               icon="calendar"
-              iconColor={BrandColors.primary}
+              iconColor={tintColor}
               title="생년월일"
               subtitle={`${formattedBirthDate} (${calendarLabel})`}
               onPress={() => router.push('/settings/birthdate')}
@@ -251,8 +261,8 @@ export default function SettingsScreen() {
                 <Switch
                   value={notificationEnabled}
                   onValueChange={handleNotificationToggle}
-                  trackColor={{ false: '#E5E7EB', true: BrandColors.primary + '60' }}
-                  thumbColor={notificationEnabled ? BrandColors.primary : '#F3F4F6'}
+                  trackColor={{ false: switchFalseTrack, true: tintColor + '60' }}
+                  thumbColor={notificationEnabled ? tintColor : '#F3F4F6'}
                 />
               }
             />

@@ -29,6 +29,7 @@ import type { Inquiry } from '@/types/inquiry';
 const PAGE_SIZE = 20;
 
 export default function InquiryListScreen() {
+  const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
@@ -146,7 +147,7 @@ export default function InquiryListScreen() {
     if (!isLoadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={BrandColors.primary} />
+        <ActivityIndicator size="small" color={tintColor} />
       </View>
     );
   };
@@ -160,7 +161,7 @@ export default function InquiryListScreen() {
         <Text style={[styles.title, { color: textColor }]}>문의하기</Text>
         <TouchableOpacity
           onPress={() => router.push('/inquiry/write')}
-          style={[styles.writeButton, { backgroundColor: BrandColors.accent }]}
+          style={[styles.writeButton, { backgroundColor: tintColor }]}
         >
           <IconSymbol name="plus" size={16} color="#FFFFFF" />
         </TouchableOpacity>
@@ -174,14 +175,14 @@ export default function InquiryListScreen() {
         )}
         {Platform.OS === 'web' && (
           <TouchableOpacity onPress={handleRefresh} style={styles.refreshButton}>
-            <IconSymbol name="arrow.clockwise" size={16} color={BrandColors.accent} />
+            <IconSymbol name="arrow.clockwise" size={16} color={tintColor} />
           </TouchableOpacity>
         )}
       </View>
 
       {isLoading && inquiries.length === 0 ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={BrandColors.accent} />
+          <ActivityIndicator size="large" color={tintColor} />
         </View>
       ) : (
         <FlatList
@@ -199,7 +200,7 @@ export default function InquiryListScreen() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
-                tintColor={BrandColors.primary}
+                tintColor={tintColor}
               />
             ) : undefined
           }
