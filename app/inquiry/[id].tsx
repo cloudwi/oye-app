@@ -114,24 +114,27 @@ export default function InquiryDetailScreen() {
           <Text style={[styles.inquiryContent, { color: textColor }]}>{inquiry.content}</Text>
         </View>
 
-        {/* Admin Reply Section */}
-        {inquiry.adminReply && (
-          <View style={[styles.card, styles.replyCard, { backgroundColor: surfaceColor }, Shadows.sm]}>
+        {/* Admin Comments Section */}
+        {inquiry.comments.map((comment) => (
+          <View
+            key={comment.id}
+            style={[styles.card, styles.replyCard, { backgroundColor: surfaceColor }, Shadows.sm]}
+          >
             <View style={styles.replyHeader}>
               <View style={[styles.replyIcon, { backgroundColor: BrandColors.accent + '15' }]}>
                 <IconSymbol name="bubble.left.fill" size={14} color={BrandColors.accent} />
               </View>
-              <Text style={[styles.replyLabel, { color: BrandColors.accent }]}>관리자 답변</Text>
-              {inquiry.adminRepliedAt && (
-                <Text style={[styles.dateText, { color: textSecondary, marginLeft: 'auto' }]}>
-                  {format(parseISO(inquiry.adminRepliedAt), 'yyyy.MM.dd HH:mm', { locale: ko })}
-                </Text>
-              )}
+              <Text style={[styles.replyLabel, { color: BrandColors.accent }]}>
+                {comment.adminName}
+              </Text>
+              <Text style={[styles.dateText, { color: textSecondary, marginLeft: 'auto' }]}>
+                {format(parseISO(comment.createdAt), 'yyyy.MM.dd HH:mm', { locale: ko })}
+              </Text>
             </View>
 
-            <Text style={[styles.replyContent, { color: textColor }]}>{inquiry.adminReply}</Text>
+            <Text style={[styles.replyContent, { color: textColor }]}>{comment.content}</Text>
           </View>
-        )}
+        ))}
       </ScrollView>
     </SafeAreaView>
   );

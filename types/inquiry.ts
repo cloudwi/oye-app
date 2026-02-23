@@ -1,12 +1,18 @@
 export type InquiryStatus = 'PENDING' | 'ANSWERED';
 
+export interface InquiryComment {
+  id: number;
+  adminName: string;
+  content: string;
+  createdAt: string; // ISO datetime
+}
+
 export interface Inquiry {
   id: number;
   title: string;
   content: string;
   status: InquiryStatus;
-  adminReply: string | null;
-  adminRepliedAt: string | null; // ISO datetime
+  comments: InquiryComment[];
   createdAt: string; // ISO datetime
 }
 
