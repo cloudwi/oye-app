@@ -28,10 +28,7 @@ export function EmptyState({
 }: EmptyStateProps) {
   const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor(
-    { light: '#6B7280', dark: '#9CA3AF' },
-    'textSecondary'
-  );
+  const textSecondary = useThemeColor({}, 'textSecondary');
   const effectiveIconColor = iconColor || tintColor;
 
   return (

@@ -17,10 +17,7 @@ export function Skeleton({
   style,
 }: SkeletonProps) {
   const opacity = useRef(new Animated.Value(0.3)).current;
-  const baseColor = useThemeColor(
-    { light: '#E5E7EB', dark: '#374151' },
-    'surfaceSecondary'
-  );
+  const baseColor = useThemeColor({}, 'surfaceSecondary');
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -58,10 +55,7 @@ export function Skeleton({
 }
 
 export function FortuneCardSkeleton() {
-  const surfaceColor = useThemeColor(
-    { light: '#FFFFFF', dark: '#1A1A1A' },
-    'surface'
-  );
+  const surfaceColor = useThemeColor({}, 'surface');
 
   return (
     <View style={[skeletonStyles.fortuneCard, { backgroundColor: surfaceColor }]}>
@@ -81,10 +75,7 @@ export function FortuneCardSkeleton() {
 }
 
 export function HistoryItemSkeleton() {
-  const surfaceColor = useThemeColor(
-    { light: '#FFFFFF', dark: '#1A1A1A' },
-    'surface'
-  );
+  const surfaceColor = useThemeColor({}, 'surface');
 
   return (
     <View style={[skeletonStyles.historyItem, { backgroundColor: surfaceColor }]}>
