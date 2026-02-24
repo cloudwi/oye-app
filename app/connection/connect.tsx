@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  Keyboard,
   KeyboardAvoidingView,
   ScrollView,
   ActivityIndicator,
@@ -52,6 +53,8 @@ export default function ConnectScreen() {
 
   const handleSubmit = () => {
     if (!isValid || connect.isPending || !relationType) return;
+
+    Keyboard.dismiss();
 
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -163,7 +166,11 @@ export default function ConnectScreen() {
           <TouchableOpacity
             style={[
               styles.submitButton,
-              { backgroundColor: isValid ? tintColor : tintColor + '40' },
+              {
+                backgroundColor: isValid ? tintColor : 'transparent',
+                borderWidth: isValid ? 0 : 1.5,
+                borderColor: isValid ? 'transparent' : textSecondary + '40',
+              },
             ]}
             onPress={handleSubmit}
             disabled={!isValid || connect.isPending}
@@ -174,7 +181,14 @@ export default function ConnectScreen() {
             {connect.isPending ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
-              <Text style={styles.submitButtonText}>연결하기</Text>
+              <Text
+                style={[
+                  styles.submitButtonText,
+                  !isValid && { color: textSecondary + '80' },
+                ]}
+              >
+                연결하기
+              </Text>
             )}
           </TouchableOpacity>
         </View>
