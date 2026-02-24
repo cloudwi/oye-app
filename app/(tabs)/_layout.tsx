@@ -57,6 +57,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="compatibility"
+        options={{
+          title: '궁합',
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
+          tabBarAccessibilityLabel: '궁합 탭',
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: '설정',

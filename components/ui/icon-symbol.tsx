@@ -48,6 +48,14 @@ const MAPPING = {
   'brain': 'psychology',
   'drop.fill': 'water-drop',
   'star.fill': 'star',
+  'heart.fill': 'favorite',
+  'heart': 'favorite-border',
+  'doc.on.doc': 'content-copy',
+  'person.2.fill': 'people',
+  'link': 'link',
+  'xmark': 'close',
+  'envelope': 'mail-outline',
+  'chart.bar.fill': 'bar-chart',
 } as IconMapping;
 
 /**
