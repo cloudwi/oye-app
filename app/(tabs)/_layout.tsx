@@ -43,25 +43,23 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: '오늘의 예감',
+          title: '홈',
           tabBarIcon: ({ color }) => <IconSymbol size={22} name="sparkles" color={color} />,
-          tabBarAccessibilityLabel: '오늘의 예감 탭',
+          tabBarAccessibilityLabel: '홈 탭',
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: '히스토리',
+          title: '기록',
           tabBarIcon: ({ color }) => <IconSymbol size={22} name="calendar" color={color} />,
-          tabBarAccessibilityLabel: '히스토리 탭',
+          tabBarAccessibilityLabel: '기록 탭',
         }}
       />
       <Tabs.Screen
         name="compatibility"
         options={{
-          title: '궁합',
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
-          tabBarAccessibilityLabel: '궁합 탭',
+          href: null,
         }}
       />
       <Tabs.Screen

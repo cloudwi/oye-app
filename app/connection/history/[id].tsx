@@ -24,15 +24,16 @@ import {
   BorderRadius,
   FontSizes,
   Shadows,
+  ScoreColors,
 } from '@/constants/theme';
 import type { CompatibilityResult } from '@/types/compatibility';
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return '#10B981';
-  if (score >= 60) return '#22C55E';
-  if (score >= 40) return '#F59E0B';
-  if (score >= 20) return '#F97316';
-  return '#EF4444';
+  if (score >= 80) return ScoreColors.excellent;
+  if (score >= 60) return ScoreColors.good;
+  if (score >= 40) return ScoreColors.average;
+  if (score >= 20) return ScoreColors.belowAverage;
+  return ScoreColors.poor;
 }
 
 export default function CompatibilityHistoryScreen() {
@@ -42,8 +43,8 @@ export default function CompatibilityHistoryScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const surfaceColor = useThemeColor({}, 'surface');
 
   const { data: connections } = useConnections();
   const {

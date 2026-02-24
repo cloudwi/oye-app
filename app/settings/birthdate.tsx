@@ -24,8 +24,8 @@ export default function BirthDateEditScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const surfaceColor = useThemeColor({}, 'surface');
 
   const { user } = useUserStore();
   const updateUserMutation = useUpdateUser();

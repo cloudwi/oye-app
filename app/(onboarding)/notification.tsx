@@ -23,8 +23,8 @@ import { BrandColors, Spacing, BorderRadius, FontSizes, Shadows } from '@/consta
 export default function OnboardingNotification() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const surfaceColor = useThemeColor({}, 'surface');
 
   const { user, completeOnboarding } = useUserStore();
   const { setNotificationEnabled } = useSettingsStore();
@@ -88,9 +88,9 @@ export default function OnboardingNotification() {
           entering={FadeInDown.duration(500).delay(100)}
           style={styles.iconArea}
         >
-          <View style={[styles.iconOuter, { backgroundColor: '#F59E0B' + '20' }]}>
-            <View style={[styles.iconInner, { backgroundColor: '#F59E0B' + '30' }]}>
-              <IconSymbol name="bell.fill" size={48} color="#F59E0B" />
+          <View style={[styles.iconOuter, { backgroundColor: '#C9956B' + '20' }]}>
+            <View style={[styles.iconInner, { backgroundColor: '#C9956B' + '30' }]}>
+              <IconSymbol name="bell.fill" size={48} color="#C9956B" />
             </View>
           </View>
         </Animated.View>

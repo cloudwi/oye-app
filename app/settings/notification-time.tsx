@@ -20,7 +20,7 @@ export default function NotificationTimeScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
+  const surfaceColor = useThemeColor({}, 'surface');
 
   const { notificationTime, setNotificationTime } = useSettingsStore();
   const [hour, minute] = notificationTime.split(':').map(Number);

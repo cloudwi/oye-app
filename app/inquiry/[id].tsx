@@ -26,9 +26,9 @@ export default function InquiryDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
-  const dividerColor = useThemeColor({ light: '#E5E7EB', dark: '#374151' }, 'divider');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const surfaceColor = useThemeColor({}, 'surface');
+  const dividerColor = useThemeColor({}, 'divider');
 
   const { data: inquiry, isLoading } = useInquiryDetail(Number(id));
 

@@ -29,9 +29,9 @@ export default function InquiryWriteScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const inputBg = useThemeColor({ light: '#F3F4F6', dark: '#161632' }, 'inputBackground');
-  const placeholderColor = useThemeColor({ light: '#9CA3AF', dark: '#6B7280' }, 'placeholder');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const inputBg = useThemeColor({}, 'inputBackground');
+  const placeholderColor = useThemeColor({}, 'placeholder');
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');

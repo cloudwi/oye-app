@@ -170,53 +170,48 @@ export const authService = {
 
   /**
    * Apple 로그인
+   * - 사용자 취소: null 반환
+   * - 실패: 예외 throw
    */
   async loginWithApple(): Promise<AuthToken | null> {
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-        ],
-      });
+    const credential = await AppleAuthentication.signInAsync({
+      requestedScopes: [
+        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+      ],
+    });
 
-      if (!credential.identityToken) {
-        return null;
-      }
-
-      const fullName = [credential.fullName?.givenName, credential.fullName?.familyName]
-        .filter(Boolean)
-        .join(' ') || null;
-
-      const response = await fetch(`${API_BASE_URL}${APPLE_LOGIN_PATH}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identityToken: credential.identityToken,
-          fullName,
-        }),
-      });
-
-      if (!response.ok) {
-        return null;
-      }
-
-      const data = await response.json();
-      const token: AuthToken = {
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-        expiresAt: data.expiresAt,
-        isNewUser: data.isNewUser,
-      };
-
-      useAuthStore.getState().setToken(token);
-      return token;
-    } catch (error: any) {
-      if (error.code === 'ERR_REQUEST_CANCELED') {
-        return null;
-      }
-      console.error('Apple login error:', error);
-      return null;
+    if (!credential.identityToken) {
+      throw new Error('Apple 인증에서 identityToken을 받지 못했습니다.');
     }
+
+    const fullName = [credential.fullName?.givenName, credential.fullName?.familyName]
+      .filter(Boolean)
+      .join(' ') || null;
+
+    const response = await fetch(`${API_BASE_URL}${APPLE_LOGIN_PATH}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identityToken: credential.identityToken,
+        fullName,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      throw new Error(`Apple 로그인 서버 오류 (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const token: AuthToken = {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      expiresAt: data.expiresAt,
+      isNewUser: data.isNewUser,
+    };
+
+    useAuthStore.getState().setToken(token);
+    return token;
   },
 
   /**

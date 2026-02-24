@@ -32,8 +32,8 @@ interface ProfileRowProps {
 
 function ProfileRow({ icon, iconColor, title, value, onPress, isLast = false }: ProfileRowProps) {
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const dividerColor = useThemeColor({ light: '#E5E7EB', dark: '#374151' }, 'divider');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const dividerColor = useThemeColor({}, 'divider');
 
   return (
     <TouchableOpacity
@@ -60,8 +60,8 @@ export default function ProfileScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const surfaceColor = useThemeColor({}, 'surface');
 
   const { user } = useUserStore();
 
@@ -125,28 +125,28 @@ export default function ProfileScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <ProfileRow
               icon="briefcase.fill"
-              iconColor="#F59E0B"
+              iconColor="#C9956B"
               title="직업"
               value={user?.occupation || '미설정'}
               onPress={() => router.push('/settings/occupation')}
             />
             <ProfileRow
               icon="brain"
-              iconColor="#8B5CF6"
+              iconColor="#7B6B8A"
               title="MBTI"
               value={user?.mbti || '미설정'}
               onPress={() => router.push('/settings/mbti')}
             />
             <ProfileRow
               icon="drop.fill"
-              iconColor="#EF4444"
+              iconColor="#C75C5C"
               title="혈액형"
               value={bloodTypeLabel}
               onPress={() => router.push('/settings/bloodtype')}
             />
             <ProfileRow
               icon="star.fill"
-              iconColor="#10B981"
+              iconColor="#5B9A6F"
               title="관심사"
               value={user?.interests || '미설정'}
               onPress={() => router.push('/settings/interests')}

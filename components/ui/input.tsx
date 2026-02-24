@@ -24,9 +24,9 @@ export function Input({
   ...props
 }: InputProps) {
   const textColor = useThemeColor({}, 'text');
-  const backgroundColor = useThemeColor({ light: '#F5F5F5', dark: '#2A2A2A' }, 'background');
-  const borderColor = useThemeColor({ light: '#E0E0E0', dark: '#444' }, 'icon');
-  const placeholderColor = useThemeColor({ light: '#999', dark: '#666' }, 'icon');
+  const backgroundColor = useThemeColor({}, 'background');
+  const borderColor = useThemeColor({}, 'icon');
+  const placeholderColor = useThemeColor({}, 'icon');
 
   return (
     <View style={[styles.container, containerStyle]}>

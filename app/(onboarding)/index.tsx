@@ -13,7 +13,7 @@ import { KakaoSymbol } from '@/components/ui/kakao-symbol';
 export default function OnboardingWelcome() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
+  const textSecondary = useThemeColor({}, 'textSecondary');
   const [loadingProvider, setLoadingProvider] = useState<'kakao' | 'apple' | null>(null);
   const [appleSignInAvailable, setAppleSignInAvailable] = useState(false);
   const { setUser, completeOnboarding } = useUserStore();
@@ -69,12 +69,13 @@ export default function OnboardingWelcome() {
 
       if (token) {
         await handleLoginSuccess(token);
-      } else {
-        // null은 사용자 취소 포함 - 별도 알림 불필요
       }
-    } catch (error) {
+    } catch (error: any) {
+      // 사용자 취소는 무시
+      if (error.code === 'ERR_REQUEST_CANCELED') return;
+
       console.error('Apple login error:', error);
-      Alert.alert('로그인 오류', '로그인 중 문제가 발생했습니다.');
+      Alert.alert('로그인 실패', 'Apple 로그인에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setLoadingProvider(null);
     }

@@ -32,8 +32,8 @@ export function Button({
   textStyle,
 }: ButtonProps) {
   const primaryColor = useThemeColor({}, 'tint');
-  const disabledBg = useThemeColor({ light: '#D1D5DB', dark: '#374151' }, 'surfaceSecondary');
-  const disabledText = useThemeColor({ light: '#9CA3AF', dark: '#6B7280' }, 'textMuted');
+  const disabledBg = useThemeColor({}, 'surfaceSecondary');
+  const disabledText = useThemeColor({}, 'textMuted');
 
   const buttonStyle = useMemo((): ViewStyle => {
     const baseStyle: ViewStyle = {

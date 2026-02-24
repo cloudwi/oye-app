@@ -20,7 +20,7 @@ interface LegalDocumentProps {
 export function LegalDocument({ title, effectiveDate, sections }: LegalDocumentProps) {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
+  const textSecondary = useThemeColor({}, 'textSecondary');
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>

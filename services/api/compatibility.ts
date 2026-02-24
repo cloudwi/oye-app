@@ -4,10 +4,10 @@ import type { ApiResponse, PageResponse, PaginatedResult } from '@/types/api';
 
 export const compatibilityApi = {
   async getToday(connectionId: number): Promise<CompatibilityResult> {
-    const response = await apiClient.get<CompatibilityResult>(
+    const response = await apiClient.get<ApiResponse<CompatibilityResult>>(
       `/api/connections/${connectionId}/compatibility`
     );
-    return response.data;
+    return response.data.data!;
   },
 
   async getHistory(

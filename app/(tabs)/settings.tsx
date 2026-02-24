@@ -51,8 +51,8 @@ const SettingRow = React.memo(function SettingRow({
 }: SettingRowProps) {
   const defaultIconColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const dividerColor = useThemeColor({ light: '#E5E7EB', dark: '#374151' }, 'divider');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const dividerColor = useThemeColor({}, 'divider');
   const effectiveIconColor = iconColor || defaultIconColor;
 
   return (
@@ -88,11 +88,11 @@ const SettingRow = React.memo(function SettingRow({
 
 export default function SettingsScreen() {
   const tintColor = useThemeColor({}, 'tint');
-  const switchFalseTrack = useThemeColor({ light: '#E5E7EB', dark: '#374151' }, 'divider');
+  const switchFalseTrack = useThemeColor({}, 'divider');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const surfaceColor = useThemeColor({}, 'surface');
 
   const { user, reset: resetUser } = useUserStore();
   const { logout: authLogout } = useAuthStore();
@@ -240,7 +240,7 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
               icon="bell.fill"
-              iconColor="#F59E0B"
+              iconColor="#C9956B"
               title="푸시 알림"
               subtitle={notificationEnabled ? '켜짐' : '꺼짐'}
               rightElement={
@@ -248,13 +248,13 @@ export default function SettingsScreen() {
                   value={notificationEnabled}
                   onValueChange={handleNotificationToggle}
                   trackColor={{ false: switchFalseTrack, true: tintColor + '60' }}
-                  thumbColor={notificationEnabled ? tintColor : '#F3F4F6'}
+                  thumbColor={notificationEnabled ? tintColor : '#F3EDE5'}
                 />
               }
             />
             <SettingRow
               icon="clock.fill"
-              iconColor="#F59E0B"
+              iconColor="#C9956B"
               title="알림 시간"
               subtitle={formatNotificationTime(notificationTime)}
               onPress={() => router.push('/settings/notification-time')}
@@ -269,7 +269,7 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
               icon="moon.fill"
-              iconColor="#8B5CF6"
+              iconColor="#7B6B8A"
               title="다크 모드"
               subtitle={getDarkModeLabel()}
               onPress={handleDarkModeChange}
@@ -284,13 +284,13 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
               icon="rectangle.portrait.and.arrow.right"
-              iconColor="#F59E0B"
+              iconColor="#C9956B"
               title="로그아웃"
               onPress={handleLogout}
             />
             <SettingRow
               icon="trash.fill"
-              iconColor="#EF4444"
+              iconColor="#C75C5C"
               title="계정 탈퇴"
               onPress={handleDeleteAccount}
               destructive
@@ -305,19 +305,19 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
               icon="doc.text.fill"
-              iconColor="#3B82F6"
+              iconColor="#7B8DAE"
               title="개인정보 처리방침"
               onPress={() => router.push('/legal/privacy')}
             />
             <SettingRow
               icon="doc.plaintext"
-              iconColor="#3B82F6"
+              iconColor="#7B8DAE"
               title="이용약관"
               onPress={() => router.push('/legal/terms')}
             />
             <SettingRow
               icon="envelope.fill"
-              iconColor="#10B981"
+              iconColor="#5B9A6F"
               title="문의하기"
               onPress={() => router.push('/inquiry')}
               isLast

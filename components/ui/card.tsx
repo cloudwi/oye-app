@@ -11,7 +11,7 @@ interface CardProps {
 
 export function Card({ children, style, variant = 'default' }: CardProps) {
   const backgroundColor = useThemeColor({}, 'background');
-  const borderColor = useThemeColor({ light: '#E5E5E5', dark: '#333' }, 'icon');
+  const borderColor = useThemeColor({}, 'icon');
 
   const cardStyle = useMemo((): ViewStyle => {
     const baseStyle: ViewStyle = {

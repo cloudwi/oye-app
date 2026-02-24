@@ -23,27 +23,25 @@ import {
   Spacing,
   BorderRadius,
   FontSizes,
+  RelationConfig,
 } from '@/constants/theme';
 import type { RelationType } from '@/types/connection';
 
 const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 const wrapperProps = Platform.OS === 'ios' ? { behavior: 'padding' as const } : {};
 
-const RELATION_OPTIONS: { type: RelationType; label: string; emoji: string; color: string }[] = [
-  { type: 'LOVER', label: '연인', emoji: '💕', color: '#EC4899' },
-  { type: 'FRIEND', label: '친구', emoji: '👫', color: '#3B82F6' },
-  { type: 'FAMILY', label: '가족', emoji: '👨‍👩‍👧', color: '#10B981' },
-  { type: 'COLLEAGUE', label: '직장동료', emoji: '💼', color: '#F59E0B' },
-];
+const RELATION_OPTIONS = (Object.entries(RelationConfig) as [RelationType, typeof RelationConfig[keyof typeof RelationConfig]][]).map(
+  ([type, config]) => ({ type, ...config })
+);
 
 export default function ConnectScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const inputBg = useThemeColor({ light: '#F3F4F6', dark: '#161632' }, 'inputBackground');
-  const placeholderColor = useThemeColor({ light: '#9CA3AF', dark: '#6B7280' }, 'placeholder');
-  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const inputBg = useThemeColor({}, 'inputBackground');
+  const placeholderColor = useThemeColor({}, 'placeholder');
+  const surfaceColor = useThemeColor({}, 'surface');
 
   const [code, setCode] = useState('');
   const [relationType, setRelationType] = useState<RelationType | null>(null);
@@ -145,7 +143,6 @@ export default function ConnectScreen() {
                     accessibilityRole="button"
                     accessibilityLabel={`${option.label} 선택${isSelected ? ', 선택됨' : ''}`}
                   >
-                    <Text style={styles.relationEmoji}>{option.emoji}</Text>
                     <Text
                       style={[
                         styles.relationLabel,
@@ -259,9 +256,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
     gap: Spacing.xs,
-  },
-  relationEmoji: {
-    fontSize: 24,
   },
   relationLabel: {
     fontSize: FontSizes.md,

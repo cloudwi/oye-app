@@ -21,35 +21,29 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { router } from 'expo-router';
 import {
-  BrandColors,
   Spacing,
   BorderRadius,
   FontSizes,
   Shadows,
+  RelationConfig,
+  ScoreColors,
 } from '@/constants/theme';
 import type { Connection, RelationType } from '@/types/connection';
 
-const RELATION_CONFIG: Record<RelationType, { label: string; emoji: string; color: string }> = {
-  LOVER: { label: '연인', emoji: '💕', color: '#EC4899' },
-  FRIEND: { label: '친구', emoji: '👫', color: '#3B82F6' },
-  FAMILY: { label: '가족', emoji: '👨‍👩‍👧', color: '#10B981' },
-  COLLEAGUE: { label: '직장동료', emoji: '💼', color: '#F59E0B' },
-};
-
 function getScoreColor(score: number): string {
-  if (score >= 80) return '#10B981';
-  if (score >= 60) return '#22C55E';
-  if (score >= 40) return '#F59E0B';
-  if (score >= 20) return '#F97316';
-  return '#EF4444';
+  if (score >= 80) return ScoreColors.excellent;
+  if (score >= 60) return ScoreColors.good;
+  if (score >= 40) return ScoreColors.average;
+  if (score >= 20) return ScoreColors.belowAverage;
+  return ScoreColors.poor;
 }
 
 export default function CompatibilityScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const surfaceColor = useThemeColor({}, 'surface');
 
   const { data: myCode, isLoading: isCodeLoading, refetch: refetchCode } = useMyCode();
   const { data: connections, isLoading: isConnectionsLoading, refetch: refetchConnections } = useConnections();
@@ -206,7 +200,7 @@ export default function CompatibilityScreen() {
 
         {connections && connections.length > 0 ? (
           connections.map((connection, index) => {
-            const config = RELATION_CONFIG[connection.relationType];
+            const config = RelationConfig[connection.relationType];
             return (
               <Animated.View
                 key={connection.id}
@@ -226,7 +220,7 @@ export default function CompatibilityScreen() {
                       </Text>
                       <View style={[styles.relationBadge, { backgroundColor: config.color + '15' }]}>
                         <Text style={[styles.relationText, { color: config.color }]}>
-                          {config.emoji} {config.label}
+                          {config.label}
                         </Text>
                       </View>
                     </View>

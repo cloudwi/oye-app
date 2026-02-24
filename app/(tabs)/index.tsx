@@ -7,6 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   Dimensions,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,14 +18,17 @@ import Animated, {
   withDelay,
   withSequence,
   FadeIn,
+  FadeInDown,
 } from 'react-native-reanimated';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTodayFortune } from '@/hooks/queries/use-today-fortune';
+import { useConnections } from '@/hooks/queries/use-connections';
 import { shareService } from '@/services/share';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FortuneCardSkeleton } from '@/components/ui/skeleton';
+import { router } from 'expo-router';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
@@ -34,7 +38,10 @@ import {
   FontSizes,
   Shadows,
   TimeTheme,
+  RelationConfig,
+  ScoreColors,
 } from '@/constants/theme';
+import type { Connection } from '@/types/connection';
 
 type TimePeriod = 'morning' | 'afternoon' | 'evening' | 'night';
 
@@ -46,24 +53,34 @@ function getTimePeriod(): TimePeriod {
   return 'night';
 }
 
+function getScoreColor(score: number): string {
+  if (score >= 80) return ScoreColors.excellent;
+  if (score >= 60) return ScoreColors.good;
+  if (score >= 40) return ScoreColors.average;
+  if (score >= 20) return ScoreColors.belowAverage;
+  return ScoreColors.poor;
+}
+
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export default function TodayFortuneScreen() {
+export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
-  const textSecondary = useThemeColor({ light: '#6B7280', dark: '#9CA3AF' }, 'textSecondary');
-  const surfaceColor = useThemeColor({ light: '#FFFFFF', dark: '#1A1A1A' }, 'surface');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const surfaceColor = useThemeColor({}, 'surface');
+  const cardBorderColor = useThemeColor({}, 'cardBorder');
+  const tintColor = useThemeColor({}, 'tint');
 
   const { data: todayFortune, isLoading, refetch } = useTodayFortune();
+  const { data: connections, refetch: refetchConnections } = useConnections();
   const [refreshing, setRefreshing] = useState(false);
 
   const timePeriod = useMemo(() => getTimePeriod(), []);
   const timeConfig = TimeTheme[timePeriod];
   const gradientColors = isDark ? timeConfig.gradient.dark : timeConfig.gradient.light;
 
-  // Card entrance animation
   const cardOpacity = useSharedValue(0);
   const cardScale = useSharedValue(0.95);
 
@@ -87,15 +104,19 @@ export default function TodayFortuneScreen() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.all([refetch(), refetchConnections()]);
     setRefreshing(false);
-  }, [refetch]);
+  }, [refetch, refetchConnections]);
 
   const handleShare = useCallback(async () => {
     if (todayFortune) {
       await shareService.shareFortune(todayFortune);
     }
   }, [todayFortune]);
+
+  const handleConnectionPress = useCallback((connection: Connection) => {
+    router.push({ pathname: '/connection/[id]', params: { id: connection.id } });
+  }, []);
 
   const today = format(new Date(), 'M월 d일 EEEE', { locale: ko });
 
@@ -114,7 +135,7 @@ export default function TodayFortuneScreen() {
           <View style={styles.content}>
             <View style={styles.header}>
               <Text style={[styles.greetingText, { color: textSecondary }]}>
-                {timeConfig.greeting} {timeConfig.emoji}
+                {timeConfig.greeting}
               </Text>
               <Text style={[styles.dateText, { color: textSecondary }]}>{today}</Text>
               <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
@@ -145,7 +166,7 @@ export default function TodayFortuneScreen() {
           {/* Header */}
           <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
             <Text style={[styles.greetingText, { color: textSecondary }]}>
-              {timeConfig.greeting} {timeConfig.emoji}
+              {timeConfig.greeting}
             </Text>
             <Text style={[styles.dateText, { color: textSecondary }]}>{today}</Text>
             <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
@@ -212,6 +233,116 @@ export default function TodayFortuneScreen() {
               actionLabel="다시 시도"
               onAction={() => refetch()}
             />
+          )}
+
+          {/* Compatibility Summary Section */}
+          {connections && connections.length > 0 && (
+            <Animated.View
+              entering={FadeInDown.duration(400).delay(400)}
+              style={styles.compatSection}
+            >
+              <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { color: textColor }]}>오늘의 궁합</Text>
+                <TouchableOpacity
+                  onPress={() => router.push('/(tabs)/compatibility')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.sectionMore, { color: tintColor }]}>전체보기</Text>
+                </TouchableOpacity>
+              </View>
+
+              <FlatList
+                data={connections}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item) => String(item.id)}
+                contentContainerStyle={styles.compatList}
+                renderItem={({ item }) => {
+                  const config = RelationConfig[item.relationType];
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        styles.compatCard,
+                        { backgroundColor: surfaceColor, borderColor: cardBorderColor },
+                        Shadows.sm,
+                      ]}
+                      onPress={() => handleConnectionPress(item)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[styles.compatIcon, { backgroundColor: config.color + '15' }]}>
+                        <IconSymbol name="person.fill" size={16} color={config.color} />
+                      </View>
+                      <Text
+                        style={[styles.compatName, { color: textColor }]}
+                        numberOfLines={1}
+                      >
+                        {item.partnerName}
+                      </Text>
+                      <Text style={[styles.compatRelation, { color: textSecondary }]}>
+                        {config.label}
+                      </Text>
+                      {item.latestScore !== null ? (
+                        <Text
+                          style={[
+                            styles.compatScore,
+                            { color: getScoreColor(item.latestScore) },
+                          ]}
+                        >
+                          {item.latestScore}점
+                        </Text>
+                      ) : (
+                        <Text style={[styles.compatScore, { color: textSecondary }]}>
+                          --
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  );
+                }}
+                ListFooterComponent={
+                  <TouchableOpacity
+                    style={[
+                      styles.compatCard,
+                      styles.compatAddCard,
+                      { borderColor: cardBorderColor },
+                    ]}
+                    onPress={() => router.push('/connection/connect')}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.addIconCircle, { backgroundColor: tintColor + '15' }]}>
+                      <IconSymbol name="plus" size={20} color={tintColor} />
+                    </View>
+                    <Text style={[styles.compatAddText, { color: tintColor }]}>추가</Text>
+                  </TouchableOpacity>
+                }
+              />
+            </Animated.View>
+          )}
+
+          {/* No connections yet — invite prompt */}
+          {connections && connections.length === 0 && (
+            <Animated.View
+              entering={FadeInDown.duration(400).delay(400)}
+              style={styles.compatSection}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.inviteCard,
+                  { backgroundColor: surfaceColor, borderColor: cardBorderColor },
+                  Shadows.sm,
+                ]}
+                onPress={() => router.push('/(tabs)/compatibility')}
+                activeOpacity={0.7}
+              >
+                <IconSymbol name="heart.fill" size={20} color={tintColor} />
+                <View style={styles.inviteTextWrap}>
+                  <Text style={[styles.inviteTitle, { color: textColor }]}>궁합 확인하기</Text>
+                  <Text style={[styles.inviteDesc, { color: textSecondary }]}>
+                    초대 코드를 공유하고 궁합을 확인해보세요
+                  </Text>
+                </View>
+                <IconSymbol name="chevron.right" size={14} color={textSecondary} />
+              </TouchableOpacity>
+            </Animated.View>
           )}
         </ScrollView>
       </SafeAreaView>
@@ -299,5 +430,94 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: FontSizes.md,
     fontWeight: '600',
+  },
+
+  // Compatibility Section
+  compatSection: {
+    marginTop: Spacing.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.md,
+  },
+  sectionTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+  },
+  sectionMore: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
+  },
+  compatList: {
+    gap: Spacing.sm,
+  },
+  compatCard: {
+    width: 100,
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+  },
+  compatAddCard: {
+    justifyContent: 'center',
+    borderStyle: 'dashed',
+    backgroundColor: 'transparent',
+  },
+  compatIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.xs,
+  },
+  compatName: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  compatRelation: {
+    fontSize: FontSizes.xs,
+    marginBottom: Spacing.sm,
+  },
+  compatScore: {
+    fontSize: FontSizes.lg,
+    fontWeight: '700',
+  },
+  addIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.xs,
+  },
+  compatAddText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
+  },
+
+  // Invite Card
+  inviteCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    gap: Spacing.md,
+  },
+  inviteTextWrap: {
+    flex: 1,
+  },
+  inviteTitle: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  inviteDesc: {
+    fontSize: FontSizes.sm,
   },
 });
