@@ -2,11 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 function getBallColor(num: number): string {
-  if (num <= 10) return '#FBC400';
-  if (num <= 20) return '#69C8F2';
-  if (num <= 30) return '#FF7272';
-  if (num <= 40) return '#AAAAAA';
-  return '#B0D840';
+  if (num <= 10) return '#DB9B00';
+  if (num <= 20) return '#3B9DD1';
+  if (num <= 30) return '#E04848';
+  if (num <= 40) return '#787878';
+  return '#7CAE1E';
 }
 
 interface LottoBallProps {
@@ -61,5 +61,8 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '800',
     textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });
