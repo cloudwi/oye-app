@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
 import { SettingsHeader } from '@/components/ui/settings-header';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -22,7 +22,7 @@ import {
 } from '@/constants/theme';
 
 interface ProfileRowProps {
-  icon: string;
+  icon: IconSymbolName;
   iconColor: string;
   title: string;
   value: string;
@@ -45,7 +45,7 @@ function ProfileRow({ icon, iconColor, title, value, onPress, isLast = false }: 
       activeOpacity={0.6}
     >
       <View style={[styles.rowIcon, { backgroundColor: iconColor + '15' }]}>
-        <IconSymbol name={icon as any} size={18} color={iconColor} />
+        <IconSymbol name={icon} size={18} color={iconColor} />
       </View>
       <View style={styles.rowContent}>
         <Text style={[styles.rowTitle, { color: textSecondary }]}>{title}</Text>

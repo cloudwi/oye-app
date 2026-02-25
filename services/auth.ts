@@ -27,7 +27,7 @@ export const authService = {
    */
   async loginWithKakaoNative(): Promise<AuthToken | null> {
     try {
-      let kakaoLogin: (() => Promise<any>) | null = null;
+      let kakaoLogin: (() => Promise<{ accessToken: string }>) | null = null;
       try {
         const kakaoModule = require('@react-native-seoul/kakao-login');
         kakaoLogin = kakaoModule?.login ?? kakaoModule?.default?.login ?? null;

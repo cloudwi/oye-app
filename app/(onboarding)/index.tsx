@@ -8,6 +8,7 @@ import { useUserStore } from '@/stores/user-store';
 import { authService } from '@/services/auth';
 import { userApi } from '@/services/api/user';
 import { Spacing, BorderRadius, FontSizes } from '@/constants/theme';
+import type { AuthToken } from '@/types/auth';
 import { KakaoSymbol } from '@/components/ui/kakao-symbol';
 
 export default function OnboardingWelcome() {
@@ -22,7 +23,7 @@ export default function OnboardingWelcome() {
     authService.isAppleSignInAvailable().then(setAppleSignInAvailable);
   }, []);
 
-  const handleLoginSuccess = async (token: any) => {
+  const handleLoginSuccess = async (token: AuthToken) => {
     if (!token) return;
 
     // 기존 회원: 서버에서 유저 데이터 복원 후 메인으로 이동
@@ -70,9 +71,9 @@ export default function OnboardingWelcome() {
       if (token) {
         await handleLoginSuccess(token);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // 사용자 취소는 무시
-      if (error.code === 'ERR_REQUEST_CANCELED') return;
+      if (error instanceof Error && (error as Error & { code?: string }).code === 'ERR_REQUEST_CANCELED') return;
 
       console.error('Apple login error:', error);
       Alert.alert('로그인 실패', 'Apple 로그인에 실패했습니다. 다시 시도해주세요.');

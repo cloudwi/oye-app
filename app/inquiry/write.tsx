@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
   Platform,
   KeyboardAvoidingView,
   ScrollView,
@@ -16,6 +15,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useCreateInquiry } from '@/hooks/queries/use-create-inquiry';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { router } from 'expo-router';
+import { showAlert } from '@/utils/alert';
 import {
   Spacing,
   BorderRadius,
@@ -46,11 +46,7 @@ export default function InquiryWriteScreen() {
       { title: title.trim(), content: content.trim() },
       {
         onSuccess: () => {
-          if (Platform.OS === 'web') {
-            window.alert('문의가 등록되었습니다.');
-          } else {
-            Alert.alert('완료', '문의가 등록되었습니다.');
-          }
+          showAlert('완료', '문의가 등록되었습니다.');
           router.back();
         },
       }

@@ -1,7 +1,16 @@
-import axios, { AxiosError } from 'axios';
-import { Platform } from 'react-native';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+
 import { useAuthStore } from '@/stores/auth-store';
 import { authService } from '@/services/auth';
+
+interface ApiErrorData {
+  code?: string;
+  message?: string;
+}
+
+interface RetriableRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.yegam.today';
 
@@ -28,11 +37,11 @@ apiClient.interceptors.request.use(
 // Response interceptor: 401 시 토큰 갱신 시도
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (value: any) => void;
-  reject: (reason?: any) => void;
+  resolve: (value: string | null) => void;
+  reject: (reason?: unknown) => void;
 }> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) {
       reject(error);
@@ -46,7 +55,7 @@ const processQueue = (error: any, token: string | null = null) => {
 // 로그아웃이 필요한 에러인지 판별
 function shouldLogout(error: AxiosError): boolean {
   const status = error.response?.status;
-  const code = (error.response?.data as any)?.code;
+  const code = (error.response?.data as ApiErrorData)?.code;
 
   // 토큰 관련 에러만 로그아웃
   if (status === 401 && code === 'TOKEN_EXPIRED') return true;
@@ -66,7 +75,7 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
-    const originalRequest = error.config as any;
+    const originalRequest = error.config as RetriableRequestConfig;
 
     // 401: 토큰 갱신 시도
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -134,7 +143,7 @@ export function getUserFriendlyError(error: unknown): string | null {
   // USER_NOT_FOUND는 로그아웃으로 처리
   if (
     axiosError.response?.status === 404 &&
-    (axiosError.response?.data as any)?.code === 'USER_NOT_FOUND'
+    (axiosError.response?.data as ApiErrorData)?.code === 'USER_NOT_FOUND'
   ) return null;
 
   // 타임아웃
@@ -148,8 +157,8 @@ export function getUserFriendlyError(error: unknown): string | null {
   }
 
   const status = axiosError.response.status;
-  const serverMessage = (axiosError.response.data as any)?.message;
-  const code = (axiosError.response.data as any)?.code;
+  const serverMessage = (axiosError.response.data as ApiErrorData)?.message;
+  const code = (axiosError.response.data as ApiErrorData)?.code;
 
   // 서버가 보낸 한국어 메시지가 있으면 그대로 사용
   if (serverMessage && typeof serverMessage === 'string') {

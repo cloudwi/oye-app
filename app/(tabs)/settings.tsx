@@ -18,8 +18,9 @@ import { useSettingsStore } from '@/stores/settings-store';
 import { userApi } from '@/services/api/user';
 import { queryClient } from '@/services/query-client';
 import { notificationService } from '@/services/notification';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
 import { router } from 'expo-router';
+import { showAlert } from '@/utils/alert';
 import {
   BrandColors,
   Spacing,
@@ -29,7 +30,7 @@ import {
 } from '@/constants/theme';
 
 interface SettingRowProps {
-  icon: string;
+  icon: IconSymbolName;
   iconColor?: string;
   title: string;
   subtitle?: string;
@@ -68,7 +69,7 @@ const SettingRow = React.memo(function SettingRow({
       accessibilityLabel={`${title}${subtitle ? `, ${subtitle}` : ''}`}
     >
       <View style={[styles.iconContainer, { backgroundColor: effectiveIconColor + '15' }]}>
-        <IconSymbol name={icon as any} size={18} color={effectiveIconColor} />
+        <IconSymbol name={icon} size={18} color={effectiveIconColor} />
       </View>
       <View style={styles.settingContent}>
         <Text style={[styles.settingTitle, { color: destructive ? BrandColors.error : textColor }]}>
@@ -122,11 +123,7 @@ export default function SettingsScreen() {
         await notificationService.scheduleDailyNotification(hour, minute);
         setNotificationEnabled(true);
       } else {
-        if (Platform.OS === 'web') {
-          window.alert('설정에서 알림 권한을 허용해주세요.');
-        } else {
-          Alert.alert('알림 권한', '설정에서 알림 권한을 허용해주세요.');
-        }
+        showAlert('알림 권한', '설정에서 알림 권한을 허용해주세요.');
       }
     } else {
       await notificationService.cancelAllScheduledNotifications();
@@ -180,11 +177,7 @@ export default function SettingsScreen() {
         await userApi.deleteMe();
         performLogout();
       } catch (error) {
-        if (Platform.OS === 'web') {
-          window.alert('계정 삭제에 실패했습니다. 다시 시도해주세요.');
-        } else {
-          Alert.alert('오류', '계정 삭제에 실패했습니다. 다시 시도해주세요.');
-        }
+        showAlert('오류', '계정 삭제에 실패했습니다. 다시 시도해주세요.');
       }
     };
 

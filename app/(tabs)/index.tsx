@@ -41,8 +41,10 @@ import {
   Shadows,
   TimeTheme,
   RelationConfig,
-  ScoreColors,
+  LottoColors,
 } from '@/constants/theme';
+import { lottoStyles } from '@/components/lotto/styles';
+import { getScoreColor } from '@/utils/score';
 import type { Connection } from '@/types/connection';
 
 type TimePeriod = 'morning' | 'afternoon' | 'evening' | 'night';
@@ -53,14 +55,6 @@ function getTimePeriod(): TimePeriod {
   if (hour >= 11 && hour < 17) return 'afternoon';
   if (hour >= 17 && hour < 21) return 'evening';
   return 'night';
-}
-
-function getScoreColor(score: number): string {
-  if (score >= 80) return ScoreColors.excellent;
-  if (score >= 60) return ScoreColors.good;
-  if (score >= 40) return ScoreColors.average;
-  if (score >= 20) return ScoreColors.belowAverage;
-  return ScoreColors.poor;
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -80,7 +74,7 @@ export default function HomeScreen() {
   const { data: lottoData } = useLottoHistory();
   const [refreshing, setRefreshing] = useState(false);
 
-  const latestLotto = (() => {
+  const latestLotto = useMemo(() => {
     const all = lottoData?.pages.flatMap((p) => p.content) ?? [];
     if (all.length === 0) return null;
     const maxRound = Math.max(...all.map((r) => r.round));
@@ -88,7 +82,7 @@ export default function HomeScreen() {
       round: maxRound,
       sets: all.filter((r) => r.round === maxRound).sort((a, b) => a.setNumber - b.setNumber),
     };
-  })();
+  }, [lottoData]);
 
   const timePeriod = useMemo(() => getTimePeriod(), []);
   const timeConfig = TimeTheme[timePeriod];
@@ -377,7 +371,7 @@ export default function HomeScreen() {
               <View style={[styles.lottoCard, Shadows.sm]}>
                 <Text style={styles.lottoRound}>{latestLotto.round}회차 추천 번호</Text>
                 {latestLotto.sets.map((set, idx) => (
-                  <View key={set.id} style={styles.lottoRow}>
+                  <View key={set.id} style={lottoStyles.numberSetRow}>
                     <Text style={styles.lottoSetLabel}>
                       {String.fromCharCode(65 + idx)}
                     </Text>
@@ -617,20 +611,14 @@ const styles = StyleSheet.create({
   lottoCard: {
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
-    backgroundColor: '#1E2333',
+    backgroundColor: LottoColors.cardBg,
     gap: Spacing.sm,
   },
   lottoRound: {
     fontSize: FontSizes.sm,
     fontWeight: '700',
-    color: 'rgba(255,255,255,0.7)',
+    color: LottoColors.roundText,
     marginBottom: Spacing.xs,
-  },
-  lottoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
   },
   lottoSetLabel: {
     fontSize: FontSizes.xs,

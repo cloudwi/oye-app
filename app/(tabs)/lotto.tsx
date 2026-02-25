@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,12 +17,15 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { LottoBall } from '@/components/lotto/lotto-ball';
 import { useLottoRecommend } from '@/hooks/queries/use-lotto-recommend';
 import { getUserFriendlyError } from '@/services/api/client';
+import { showAlert } from '@/utils/alert';
 import {
   Spacing,
   BorderRadius,
   FontSizes,
   Shadows,
+  LottoColors,
 } from '@/constants/theme';
+import { lottoStyles } from '@/components/lotto/styles';
 
 export default function LottoScreen() {
   const backgroundColor = useThemeColor({}, 'background');
@@ -49,11 +51,7 @@ export default function LottoScreen() {
       },
       onError: (error) => {
         const msg = getUserFriendlyError(error) || '번호 생성에 실패했습니다.';
-        if (Platform.OS === 'web') {
-          window.alert(msg);
-        } else {
-          Alert.alert('오류', msg);
-        }
+        showAlert('오류', msg);
       },
     });
   }, [recommend]);
@@ -103,11 +101,11 @@ export default function LottoScreen() {
             {[...recommend.data]
               .sort((a, b) => a.setNumber - b.setNumber)
               .map((set, idx) => (
-                <View key={set.id} style={styles.numberSet}>
-                  <Text style={styles.setLabel}>
+                <View key={set.id} style={lottoStyles.numberSetRow}>
+                  <Text style={[lottoStyles.setLabelBase, { color: LottoColors.setLabel }]}>
                     {String.fromCharCode(65 + idx)}
                   </Text>
-                  <View style={styles.ballRow}>
+                  <View style={lottoStyles.ballRow}>
                     {set.numbers.map((num, i) => (
                       <LottoBall key={i} number={num} size={44} />
                     ))}
@@ -170,7 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     gap: Spacing.sm,
     height: 52,
-    backgroundColor: '#5248A3',
+    backgroundColor: LottoColors.button,
   },
   generateText: {
     color: '#FFFFFF',
@@ -181,31 +179,13 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
     gap: Spacing.md,
-    backgroundColor: '#1E2333',
+    backgroundColor: LottoColors.cardBg,
   },
   resultTitle: {
     fontSize: FontSizes.lg,
     fontWeight: '600',
     marginBottom: Spacing.xs,
-    color: '#FFFFFF',
-  },
-  numberSet: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-  },
-  setLabel: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-    width: 20,
-    color: 'rgba(255,255,255,0.6)',
-  },
-  ballRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 6,
-    flexShrink: 1,
+    color: LottoColors.title,
   },
   historyButton: {
     flexDirection: 'row',

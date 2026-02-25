@@ -1,7 +1,7 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Stack, router } from 'expo-router';
+import { Stack, router, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Platform, View, StyleSheet } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
@@ -65,7 +65,7 @@ export default Sentry.wrap(function RootLayout() {
 
   useEffect(() => {
     const subscription = notificationService.addNotificationResponseListener(() => {
-      router.navigate('/(tabs)' as any);
+      router.navigate('/(tabs)' as Href);
     });
     return () => {
       subscription?.remove();

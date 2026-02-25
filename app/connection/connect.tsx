@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
   Platform,
   Keyboard,
   KeyboardAvoidingView,
@@ -19,6 +18,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useConnect } from '@/hooks/queries/use-connect';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { router } from 'expo-router';
+import { showAlert } from '@/utils/alert';
 import {
   Spacing,
   BorderRadius,
@@ -64,20 +64,12 @@ export default function ConnectScreen() {
       { code: code.trim().toUpperCase(), relationType },
       {
         onSuccess: () => {
-          if (Platform.OS === 'web') {
-            window.alert('연결되었습니다!');
-          } else {
-            Alert.alert('완료', '연결되었습니다!');
-          }
+          showAlert('완료', '연결되었습니다!');
           router.back();
         },
         onError: (error) => {
           const msg = getUserFriendlyError(error) || '연결에 실패했습니다. 코드를 다시 확인해주세요.';
-          if (Platform.OS === 'web') {
-            window.alert(msg);
-          } else {
-            Alert.alert('연결 실패', msg);
-          }
+          showAlert('연결 실패', msg);
         },
       }
     );

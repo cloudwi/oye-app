@@ -24,17 +24,9 @@ import {
   BorderRadius,
   FontSizes,
   Shadows,
-  ScoreColors,
 } from '@/constants/theme';
+import { getScoreColor } from '@/utils/score';
 import type { CompatibilityResult } from '@/types/compatibility';
-
-function getScoreColor(score: number): string {
-  if (score >= 80) return ScoreColors.excellent;
-  if (score >= 60) return ScoreColors.good;
-  if (score >= 40) return ScoreColors.average;
-  if (score >= 20) return ScoreColors.belowAverage;
-  return ScoreColors.poor;
-}
 
 export default function CompatibilityHistoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

@@ -36,19 +36,11 @@ import {
   FontSizes,
   Shadows,
   RelationConfig,
-  ScoreColors,
 } from '@/constants/theme';
+import { getScoreColor } from '@/utils/score';
 import type { RelationType } from '@/types/connection';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-function getScoreColor(score: number): string {
-  if (score >= 80) return ScoreColors.excellent;
-  if (score >= 60) return ScoreColors.good;
-  if (score >= 40) return ScoreColors.average;
-  if (score >= 20) return ScoreColors.belowAverage;
-  return ScoreColors.poor;
-}
 
 const GAUGE_SIZE = 160;
 const STROKE_WIDTH = 12;

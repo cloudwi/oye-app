@@ -269,7 +269,17 @@ export const TimeTheme = {
   },
 };
 
-// ─── 12. Shadows ─────────────────────────────────────────────────
+// ─── 12. Lotto Colors ────────────────────────────────────────────
+
+export const LottoColors = {
+  cardBg: '#1E2333',
+  button: '#5248A3',
+  setLabel: 'rgba(255,255,255,0.6)',
+  roundText: 'rgba(255,255,255,0.7)',
+  title: '#FFFFFF',
+} as const;
+
+// ─── 13. Shadows ─────────────────────────────────────────────────
 
 export const Shadows = {
   card: {

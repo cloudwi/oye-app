@@ -23,6 +23,7 @@ import {
   BorderRadius,
   FontSizes,
 } from '@/constants/theme';
+import { lottoStyles } from '@/components/lotto/styles';
 import type { LottoRecommendation } from '@/types/lotto';
 
 interface RoundGroup {
@@ -102,11 +103,11 @@ export default function LottoHistoryScreen() {
           </Text>
         </View>
         {item.sets.map((set) => (
-          <View key={set.id} style={styles.historySet}>
-            <Text style={[styles.setLabel, { color: textSecondary }]}>
+          <View key={set.id} style={lottoStyles.numberSetRow}>
+            <Text style={[lottoStyles.setLabelBase, { color: textSecondary }]}>
               {String.fromCharCode(64 + set.setNumber)}
             </Text>
-            <View style={styles.ballRow}>
+            <View style={lottoStyles.ballRow}>
               {set.numbers.map((num, i) => (
                 <LottoBall key={i} number={num} size={36} />
               ))}
@@ -269,23 +270,6 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: FontSizes.xs,
-  },
-  historySet: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-  },
-  setLabel: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-    width: 20,
-  },
-  ballRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 6,
-    flexShrink: 1,
   },
   rankBadge: {
     backgroundColor: '#FFD700',
