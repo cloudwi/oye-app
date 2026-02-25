@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,7 +16,12 @@ import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { LottoBall } from '@/components/lotto/lotto-ball';
+import { LottoWinningNumbers } from '@/components/lotto/winning-numbers';
+import { LottoMatchResult } from '@/components/lotto/match-result';
+import { LottoWinnersPreview } from '@/components/lotto/winners-preview';
 import { useLottoRecommend } from '@/hooks/queries/use-lotto-recommend';
+import { useLottoRound } from '@/hooks/queries/use-lotto-round';
+import { useLottoHistory } from '@/hooks/queries/use-lotto-history';
 import { getUserFriendlyError } from '@/services/api/client';
 import { showAlert } from '@/utils/alert';
 import {
@@ -35,6 +41,27 @@ export default function LottoScreen() {
   const tintColor = useThemeColor({}, 'tint');
 
   const recommend = useLottoRecommend();
+  const { data: historyData, refetch: refetchHistory } = useLottoHistory();
+
+  // 최신 추천 세트의 회차를 가져와 당첨번호 조회
+  const latestSets = recommend.data
+    ?? historyData?.pages[0]?.content
+    ?? [];
+
+  const latestRound = useMemo(() => {
+    if (latestSets.length === 0) return undefined;
+    return latestSets[0].round;
+  }, [latestSets]);
+
+  const { data: roundData } = useLottoRound(latestRound);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetchHistory();
+    setRefreshing(false);
+  }, [refetchHistory]);
 
   const handleGenerate = useCallback(() => {
     if (recommend.isPending) return;
@@ -56,6 +83,10 @@ export default function LottoScreen() {
     });
   }, [recommend]);
 
+  const displaySets = useMemo(() => {
+    return [...latestSets].sort((a, b) => a.setNumber - b.setNumber);
+  }, [latestSets]);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
@@ -69,6 +100,13 @@ export default function LottoScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={tintColor}
+          />
+        }
       >
         {/* Generate Button */}
         <Animated.View entering={FadeInDown.duration(400).delay(100)}>
@@ -90,33 +128,50 @@ export default function LottoScreen() {
         </Animated.View>
 
         {/* Latest Generated Numbers */}
-        {recommend.data && (
+        {displaySets.length > 0 && (
           <Animated.View
             entering={FadeInDown.duration(400).delay(200)}
             style={[styles.resultCard, Shadows.md]}
           >
             <Text style={styles.resultTitle}>
-              생성된 번호
+              이번 회차 추천 번호
             </Text>
-            {[...recommend.data]
-              .sort((a, b) => a.setNumber - b.setNumber)
-              .map((set, idx) => (
-                <View key={set.id} style={lottoStyles.numberSetRow}>
-                  <Text style={[lottoStyles.setLabelBase, { color: LottoColors.setLabel }]}>
-                    {String.fromCharCode(65 + idx)}
-                  </Text>
-                  <View style={lottoStyles.ballRow}>
-                    {set.numbers.map((num, i) => (
-                      <LottoBall key={i} number={num} size={44} />
-                    ))}
-                  </View>
+            {displaySets.map((set, idx) => (
+              <View key={set.id} style={lottoStyles.numberSetRow}>
+                <Text style={[lottoStyles.setLabelBase, { color: LottoColors.setLabel }]}>
+                  {String.fromCharCode(65 + idx)}
+                </Text>
+                <View style={lottoStyles.ballRow}>
+                  {set.numbers.map((num, i) => (
+                    <LottoBall key={i} number={num} size={36} />
+                  ))}
                 </View>
-              ))}
+              </View>
+            ))}
           </Animated.View>
         )}
 
+        {/* Winning Numbers Section */}
+        {roundData && (
+          <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+            <LottoWinningNumbers roundData={roundData} />
+          </Animated.View>
+        )}
+
+        {/* Match Result Section */}
+        {roundData && displaySets.length > 0 && (
+          <Animated.View entering={FadeInDown.duration(400).delay(400)}>
+            <LottoMatchResult sets={displaySets} roundData={roundData} />
+          </Animated.View>
+        )}
+
+        {/* Winners Preview Section */}
+        <Animated.View entering={FadeInDown.duration(400).delay(500)}>
+          <LottoWinnersPreview />
+        </Animated.View>
+
         {/* History Button */}
-        <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+        <Animated.View entering={FadeInDown.duration(400).delay(600)}>
           <TouchableOpacity
             style={[styles.historyButton, { backgroundColor: surfaceColor }]}
             onPress={() => router.push('/lotto/history')}

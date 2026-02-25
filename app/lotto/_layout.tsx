@@ -9,6 +9,7 @@ export default function LottoLayout() {
       }}
     >
       <Stack.Screen name="history" />
+      <Stack.Screen name="winners" />
     </Stack>
   );
 }

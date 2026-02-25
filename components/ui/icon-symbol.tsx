@@ -57,6 +57,11 @@ const MAPPING = {
   'envelope': 'mail-outline',
   'chart.bar.fill': 'bar-chart',
   'dice.fill': 'casino',
+  'clock.arrow.circlepath': 'history',
+  'trophy.fill': 'emoji-events',
+  'magnifyingglass': 'search',
+  'xmark.circle.fill': 'cancel',
+  'ticket': 'confirmation-number',
 } as IconMapping;
 
 /**

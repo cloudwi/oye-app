@@ -13,9 +13,10 @@ interface LottoBallProps {
   number: number;
   size?: number;
   isBonus?: boolean;
+  isMatched?: boolean;
 }
 
-export function LottoBall({ number, size = 40, isBonus = false }: LottoBallProps) {
+export function LottoBall({ number, size = 40, isBonus = false, isMatched = false }: LottoBallProps) {
   const bgColor = getBallColor(number);
 
   return (
@@ -29,6 +30,7 @@ export function LottoBall({ number, size = 40, isBonus = false }: LottoBallProps
           backgroundColor: bgColor,
         },
         isBonus && styles.bonusBall,
+        isMatched && styles.matchedBall,
       ]}
     >
       <Text
@@ -56,6 +58,15 @@ const styles = StyleSheet.create({
   bonusBall: {
     borderWidth: 2,
     borderColor: '#FFD700',
+  },
+  matchedBall: {
+    borderWidth: 2.5,
+    borderColor: '#4CAF82',
+    shadowColor: '#4CAF82',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 6,
   },
   number: {
     color: '#FFFFFF',

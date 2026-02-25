@@ -25,4 +25,31 @@ export const lottoStyles = StyleSheet.create({
     fontWeight: '600',
     width: 20,
   },
+  /** Section header row (title + optional "더보기" link) */
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '700',
+  },
+  sectionMore: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  sectionMoreText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
+  },
+  /** Match count text with color-coding */
+  matchCountText: {
+    fontSize: FontSizes.xs,
+    fontWeight: '700',
+    minWidth: 50,
+    textAlign: 'right',
+  },
 });

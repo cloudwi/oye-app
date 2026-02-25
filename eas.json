@@ -16,7 +16,8 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.yegam.today",
         "EXPO_PUBLIC_PROJECT_ID": "ffe93a8a-1201-4948-a656-919106e6adcb",
-        "EXPO_PUBLIC_SENTRY_DSN": "https://1416e4d053b6f7b6c085203d9df7d5e6@o4510362292781056.ingest.us.sentry.io/4510916701847552"
+        "EXPO_PUBLIC_SENTRY_DSN": "https://1416e4d053b6f7b6c085203d9df7d5e6@o4510362292781056.ingest.us.sentry.io/4510916701847552",
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }
   },
