@@ -3,8 +3,8 @@
  * Design System — Systematic Scale (Toss-inspired)
  *
  * Color Architecture:
- * 1. Gray Scale — UI 기본 구조 (배경, 텍스트, 보더)
- * 2. Accent Scale — 웜 토프 계열 (CTA, 강조, 브랜드)
+ * 1. Gray Scale — 뉴트럴 쿨톤 (배경, 텍스트, 보더)
+ * 2. Accent Scale — 인디고 퍼플 계열 (CTA, 강조, 브랜드)
  * 3. Semantic Colors — 상태 표현 (성공, 경고, 에러)
  * 4. Category Colors — 콘텐츠 구분 (운세 카테고리)
  */
@@ -13,43 +13,43 @@ import { Platform } from 'react-native';
 
 // ─── 1. Color Scales ─────────────────────────────────────────────
 
-/** 따뜻한 그레이 스케일 (자줏빛 톤) */
+/** 쿨 뉴트럴 그레이 스케일 */
 export const Gray = {
-  50:  '#FAF8F6',
-  100: '#F3EDE7',
-  200: '#E8DFD4',
-  300: '#C4B8A8',
-  400: '#A89BB0',
-  500: '#7B6B8A',
-  600: '#5E4F6B',
-  700: '#3D3150',
-  800: '#2D2438',
-  900: '#1C1628',
-  950: '#141018',
+  50:  '#F8F9FB',
+  100: '#F0F1F5',
+  200: '#E2E4EA',
+  300: '#C1C4CE',
+  400: '#9398A7',
+  500: '#6B7080',
+  600: '#4E5362',
+  700: '#363A47',
+  800: '#252833',
+  900: '#181A23',
+  950: '#111318',
 } as const;
 
-/** 웜 토프 액센트 스케일 */
+/** 인디고 퍼플 액센트 스케일 */
 export const Accent = {
-  50:  '#F7F5F3',
-  100: '#EDE8E3',
-  200: '#C4BAB0',
-  300: '#A89A8E',
-  400: '#8C7B6B',
-  500: '#6F6052',
-  600: '#544840',
+  50:  '#F3F2FB',
+  100: '#E5E3F6',
+  200: '#B8B3E0',
+  300: '#9189D0',
+  400: '#6C63C0',
+  500: '#5248A3',
+  600: '#3F3780',
 } as const;
 
 // ─── 2. Semantic Colors ─────────────────────────────────────────
 
 export const Semantic = {
-  success:    '#5B9A6F',
-  successBg:  '#F0F7F2',
-  warning:    '#C9956B',
-  warningBg:  '#FBF3EC',
-  error:      '#C75C5C',
-  errorBg:    '#FBF0F0',
-  info:       '#7B8DAE',
-  infoBg:     '#F0F2F7',
+  success:    '#4CAF82',
+  successBg:  '#EFF8F3',
+  warning:    '#E09C4F',
+  warningBg:  '#FDF5EB',
+  error:      '#D45555',
+  errorBg:    '#FDF0F0',
+  info:       '#5B8EC9',
+  infoBg:     '#EFF4FA',
 } as const;
 
 // ─── 3. Brand Colors (semantic aliases) ──────────────────────────
@@ -64,20 +64,20 @@ export const BrandColors = {
 
 // ─── 4. Score Colors (5단계) ─────────────────────────────────────
 export const ScoreColors = {
-  excellent:    '#5B9A6F',
-  good:         '#7AAF6B',
-  average:      '#C9956B',
-  belowAverage: '#C9784A',
-  poor:         '#C75C5C',
+  excellent:    '#4CAF82',
+  good:         '#6BBF7A',
+  average:      '#E09C4F',
+  belowAverage: '#D97A42',
+  poor:         '#D45555',
 };
 
 // ─── 5. Category Colors ─────────────────────────────────────────
 export const CategoryColors = {
-  love:   '#C4929A',   // 더스티 로즈
-  money:  Accent[400], // 웜 토프
-  health: '#5B9A6F',   // 약초색
-  work:   Gray[500],   // 자수정
-  study:  '#C9956B',   // 캐러멜
+  love:   '#D47C9A',   // 로즈 핑크
+  money:  '#5B8EC9',   // 블루
+  health: '#4CAF82',   // 그린
+  work:   Accent[400], // 인디고
+  study:  '#E09C4F',   // 앰버
 };
 
 export const CategoryIcons = {
@@ -90,17 +90,17 @@ export const CategoryIcons = {
 
 // ─── 6. Relation Config ─────────────────────────────────────────
 export const RelationConfig = {
-  LOVER:     { label: '연인',     color: '#C4929A' },
-  FRIEND:    { label: '친구',     color: Gray[500] },
-  FAMILY:    { label: '가족',     color: '#5B9A6F' },
-  COLLEAGUE: { label: '직장동료', color: '#C9956B' },
+  LOVER:     { label: '연인',     color: '#D47C9A' },
+  FRIEND:    { label: '친구',     color: '#5B8EC9' },
+  FAMILY:    { label: '가족',     color: '#4CAF82' },
+  COLLEAGUE: { label: '직장동료', color: Accent[400] },
 } as const;
 
 // ─── 7. Gradients ───────────────────────────────────────────────
 export const Gradients = {
   fortune: {
-    light: [Accent[50], '#EDE8E3'] as const,
-    dark: ['#231B2E', '#1A1328'] as const,
+    light: [Accent[50], Gray[100]] as const,
+    dark: ['#1C1A2E', '#151320'] as const,
   },
   accent: [Accent[400], Accent[500]] as const,
 };
@@ -116,7 +116,7 @@ export const Colors = {
 
     // Surfaces
     background:       Gray[50],
-    surface:          '#FFFDF9',
+    surface:          '#FFFFFF',
     surfaceSecondary: Gray[100],
 
     // Interactive
@@ -126,7 +126,7 @@ export const Colors = {
     tabIconSelected:  Accent[400],
 
     // Components
-    card:             '#FFFDF9',
+    card:             '#FFFFFF',
     cardBorder:       Gray[200],
     inputBackground:  Gray[100],
     placeholder:      Gray[400],
@@ -139,41 +139,41 @@ export const Colors = {
     // Fortune Card
     fortuneCardBg:            Accent[50],
     fortuneCardGradientStart: Accent[50],
-    fortuneCardGradientEnd:   '#EDE8E3',
+    fortuneCardGradientEnd:   Gray[100],
   },
   dark: {
     // Text
-    text:          '#F5F0E8',
+    text:          '#EDEEF2',
     textSecondary: Gray[300],
-    textMuted:     '#8F8278',
-    textTertiary:  '#8F8278',
+    textMuted:     '#7A7E8C',
+    textTertiary:  '#7A7E8C',
 
     // Surfaces
     background:       Gray[950],
-    surface:          '#1C1623',
-    surfaceSecondary: '#2A2233',
+    surface:          '#1A1C26',
+    surfaceSecondary: '#222430',
 
     // Interactive
     tint:             Accent[200],
-    icon:             '#8F8278',
-    tabIconDefault:   '#5E5550',
+    icon:             '#7A7E8C',
+    tabIconDefault:   '#4A4D58',
     tabIconSelected:  Accent[200],
 
     // Components
-    card:             '#1C1623',
-    cardBorder:       '#2A2233',
-    inputBackground:  '#1C1623',
-    placeholder:      '#5E5550',
-    divider:          '#2A2233',
+    card:             '#1A1C26',
+    cardBorder:       '#222430',
+    inputBackground:  '#1A1C26',
+    placeholder:      '#4A4D58',
+    divider:          '#222430',
 
     // Accent
     accent:      Accent[200],
     accentLight: Accent[400],
 
     // Fortune Card
-    fortuneCardBg:            '#231B2E',
-    fortuneCardGradientStart: '#231B2E',
-    fortuneCardGradientEnd:   '#1A1328',
+    fortuneCardBg:            '#1C1A2E',
+    fortuneCardGradientStart: '#1C1A2E',
+    fortuneCardGradientEnd:   '#151320',
   },
 };
 
@@ -238,34 +238,34 @@ export const TimeTheme = {
   morning: {
     greeting: '좋은 아침이에요',
     gradient: {
-      light: ['#FDF6E8', Gray[50]] as const,
-      dark: ['#1F1810', Gray[950]] as const,
+      light: ['#F5F0FB', Gray[50]] as const,
+      dark: ['#1C1828', Gray[950]] as const,
     },
     iconGradient: [Accent[300], Accent[400]] as const,
   },
   afternoon: {
     greeting: '활기찬 오후예요',
     gradient: {
-      light: ['#F0EAF2', Gray[50]] as const,
-      dark: ['#1A1525', Gray[950]] as const,
+      light: ['#EEF1F8', Gray[50]] as const,
+      dark: ['#171A28', Gray[950]] as const,
     },
-    iconGradient: [Gray[500], Accent[400]] as const,
+    iconGradient: ['#5B8EC9', Accent[400]] as const,
   },
   evening: {
     greeting: '수고한 하루예요',
     gradient: {
-      light: ['#F8ECE8', Gray[50]] as const,
-      dark: ['#1F1418', Gray[950]] as const,
+      light: ['#F5EEF5', Gray[50]] as const,
+      dark: ['#1C1520', Gray[950]] as const,
     },
-    iconGradient: ['#C4929A', Accent[400]] as const,
+    iconGradient: ['#D47C9A', Accent[400]] as const,
   },
   night: {
     greeting: '고요한 밤이에요',
     gradient: {
-      light: ['#EEEAF5', Gray[50]] as const,
-      dark: ['#18142B', Gray[950]] as const,
+      light: ['#ECEEF8', Gray[50]] as const,
+      dark: ['#151428', Gray[950]] as const,
     },
-    iconGradient: [Gray[600], '#4A3D6B'] as const,
+    iconGradient: [Accent[500], '#3A3570'] as const,
   },
 };
 

@@ -19,4 +19,10 @@ export const queryKeys = {
     today: (id: number) => ['compatibility', 'today', id] as const,
     history: (id: number) => ['compatibility', 'history', id] as const,
   },
+  lotto: {
+    all: () => ['lotto'] as const,
+    history: () => ['lotto', 'history'] as const,
+    winners: () => ['lotto', 'winners'] as const,
+    round: (round: number) => ['lotto', 'round', round] as const,
+  },
 };

@@ -26,6 +26,7 @@ import {
   RelationConfig,
 } from '@/constants/theme';
 import type { RelationType } from '@/types/connection';
+import { getUserFriendlyError } from '@/services/api/client';
 
 const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 const wrapperProps = Platform.OS === 'ios' ? { behavior: 'padding' as const } : {};
@@ -44,10 +45,11 @@ export default function ConnectScreen() {
   const surfaceColor = useThemeColor({}, 'surface');
 
   const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState('');
   const [relationType, setRelationType] = useState<RelationType | null>(null);
   const connect = useConnect();
 
-  const isValid = code.trim().length === 6 && relationType !== null;
+  const isValid = code.trim().length === 6 && relationType !== null && !codeError;
 
   const handleSubmit = () => {
     if (!isValid || connect.isPending || !relationType) return;
@@ -68,6 +70,14 @@ export default function ConnectScreen() {
             Alert.alert('완료', '연결되었습니다!');
           }
           router.back();
+        },
+        onError: (error) => {
+          const msg = getUserFriendlyError(error) || '연결에 실패했습니다. 코드를 다시 확인해주세요.';
+          if (Platform.OS === 'web') {
+            window.alert(msg);
+          } else {
+            Alert.alert('연결 실패', msg);
+          }
         },
       }
     );
@@ -106,16 +116,28 @@ export default function ConnectScreen() {
               style={[
                 styles.codeInput,
                 { backgroundColor: inputBg, color: textColor },
+                codeError && { borderColor: '#EF4444', borderWidth: 2 },
               ]}
               placeholder="6자리 코드 입력"
               placeholderTextColor={placeholderColor}
               value={code}
-              onChangeText={(text) => setCode(text.toUpperCase().slice(0, 6))}
+              onChangeText={(text) => {
+                const filtered = text.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6);
+                setCode(filtered);
+                if (text !== filtered) {
+                  setCodeError('영문 대문자와 숫자만 입력 가능합니다');
+                } else {
+                  setCodeError('');
+                }
+              }}
               maxLength={6}
               autoCapitalize="characters"
               autoCorrect={false}
               returnKeyType="done"
             />
+            {codeError ? (
+              <Text style={[styles.errorText, { color: '#EF4444' }]}>{codeError}</Text>
+            ) : null}
           </Animated.View>
 
           {/* Relation Type Selection */}
@@ -240,6 +262,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 6,
     textAlign: 'center',
+  },
+  errorText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
+    marginLeft: Spacing.xs,
   },
 
   // Relation Grid
