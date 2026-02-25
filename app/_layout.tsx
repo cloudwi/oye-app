@@ -107,6 +107,10 @@ export default Sentry.wrap(function RootLayout() {
           name="inquiry"
           options={{ animation: 'slide_from_right' }}
         />
+        <Stack.Screen
+          name="lotto"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack>
       {Platform.OS !== 'web' && <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />}
     </ThemeProvider>
