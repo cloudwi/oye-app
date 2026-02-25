@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     gap: Spacing.sm,
     height: 52,
-    backgroundColor: '#D4A017',
+    backgroundColor: '#5248A3',
   },
   generateText: {
     color: '#FFFFFF',
