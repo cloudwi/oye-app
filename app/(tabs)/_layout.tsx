@@ -51,9 +51,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="history"
         options={{
-          title: '기록',
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="calendar" color={color} />,
-          tabBarAccessibilityLabel: '기록 탭',
+          href: null,
         }}
       />
       <Tabs.Screen

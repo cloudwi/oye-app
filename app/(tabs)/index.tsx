@@ -24,9 +24,11 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTodayFortune } from '@/hooks/queries/use-today-fortune';
 import { useConnections } from '@/hooks/queries/use-connections';
+import { useLottoHistory } from '@/hooks/queries/use-lotto-history';
 import { shareService } from '@/services/share';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
+import { LottoBall } from '@/components/lotto/lotto-ball';
 import { FortuneCardSkeleton } from '@/components/ui/skeleton';
 import { router } from 'expo-router';
 import { format } from 'date-fns';
@@ -75,7 +77,18 @@ export default function HomeScreen() {
 
   const { data: todayFortune, isLoading, refetch } = useTodayFortune();
   const { data: connections, refetch: refetchConnections } = useConnections();
+  const { data: lottoData } = useLottoHistory();
   const [refreshing, setRefreshing] = useState(false);
+
+  const latestLotto = (() => {
+    const all = lottoData?.pages.flatMap((p) => p.content) ?? [];
+    if (all.length === 0) return null;
+    const maxRound = Math.max(...all.map((r) => r.round));
+    return {
+      round: maxRound,
+      sets: all.filter((r) => r.round === maxRound).sort((a, b) => a.setNumber - b.setNumber),
+    };
+  })();
 
   const timePeriod = useMemo(() => getTimePeriod(), []);
   const timeConfig = TimeTheme[timePeriod];
@@ -344,6 +357,85 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </Animated.View>
           )}
+
+          {/* Lotto Section */}
+          <Animated.View
+            entering={FadeInDown.duration(400).delay(500)}
+            style={styles.compatSection}
+          >
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: textColor }]}>로또 번호</Text>
+              <TouchableOpacity
+                onPress={() => router.push('/(tabs)/lotto')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.sectionMore, { color: tintColor }]}>추천받기</Text>
+              </TouchableOpacity>
+            </View>
+
+            {latestLotto ? (
+              <View style={[styles.lottoCard, Shadows.sm]}>
+                <Text style={styles.lottoRound}>{latestLotto.round}회차 추천 번호</Text>
+                {latestLotto.sets.map((set, idx) => (
+                  <View key={set.id} style={styles.lottoRow}>
+                    <Text style={styles.lottoSetLabel}>
+                      {String.fromCharCode(65 + idx)}
+                    </Text>
+                    <View style={styles.lottoBallRow}>
+                      {set.numbers.map((num, i) => (
+                        <LottoBall key={i} number={num} size={34} />
+                      ))}
+                    </View>
+                    {set.rank && (
+                      <View style={styles.lottoRankBadge}>
+                        <Text style={styles.lottoRankText}>{set.rank}</Text>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={[
+                  styles.inviteCard,
+                  { backgroundColor: surfaceColor, borderColor: cardBorderColor },
+                  Shadows.sm,
+                ]}
+                onPress={() => router.push('/(tabs)/lotto')}
+                activeOpacity={0.7}
+              >
+                <IconSymbol name="dice.fill" size={20} color={tintColor} />
+                <View style={styles.inviteTextWrap}>
+                  <Text style={[styles.inviteTitle, { color: textColor }]}>번호 추천받기</Text>
+                  <Text style={[styles.inviteDesc, { color: textSecondary }]}>
+                    행운의 로또 번호를 생성해보세요
+                  </Text>
+                </View>
+                <IconSymbol name="chevron.right" size={14} color={textSecondary} />
+              </TouchableOpacity>
+            )}
+          </Animated.View>
+
+          {/* Fortune History Link */}
+          <Animated.View
+            entering={FadeInDown.duration(400).delay(600)}
+            style={styles.compatSection}
+          >
+            <TouchableOpacity
+              style={[
+                styles.historyLink,
+                { backgroundColor: surfaceColor, borderColor: cardBorderColor },
+              ]}
+              onPress={() => router.push('/(tabs)/history')}
+              activeOpacity={0.7}
+            >
+              <IconSymbol name="clock" size={18} color={textSecondary} />
+              <Text style={[styles.historyLinkText, { color: textSecondary }]}>
+                지난 예감 보기
+              </Text>
+              <IconSymbol name="chevron.right" size={14} color={textSecondary} />
+            </TouchableOpacity>
+          </Animated.View>
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -519,5 +611,61 @@ const styles = StyleSheet.create({
   },
   inviteDesc: {
     fontSize: FontSizes.sm,
+  },
+
+  // Lotto Section
+  lottoCard: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    backgroundColor: '#1E2333',
+    gap: Spacing.sm,
+  },
+  lottoRound: {
+    fontSize: FontSizes.sm,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.7)',
+    marginBottom: Spacing.xs,
+  },
+  lottoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+  },
+  lottoSetLabel: {
+    fontSize: FontSizes.xs,
+    fontWeight: '600',
+    width: 16,
+    color: 'rgba(255,255,255,0.5)',
+  },
+  lottoBallRow: {
+    flexDirection: 'row',
+    gap: 5,
+  },
+  lottoRankBadge: {
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 8,
+  },
+  lottoRankText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#333',
+  },
+
+  // History Link
+  historyLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  historyLinkText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
   },
 });
