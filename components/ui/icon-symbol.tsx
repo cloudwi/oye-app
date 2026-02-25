@@ -56,6 +56,7 @@ const MAPPING = {
   'xmark': 'close',
   'envelope': 'mail-outline',
   'chart.bar.fill': 'bar-chart',
+  'dice.fill': 'casino',
 } as IconMapping;
 
 /**

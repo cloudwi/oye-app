@@ -58,7 +58,13 @@ function shouldLogout(error: AxiosError): boolean {
 }
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const data = response.data;
+    if (data && typeof data === 'object' && 'success' in data && 'data' in data) {
+      response.data = data.data;
+    }
+    return response;
+  },
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 

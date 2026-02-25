@@ -1,13 +1,13 @@
 import { apiClient } from './client';
 import type { CompatibilityResult } from '@/types/compatibility';
-import type { ApiResponse, PageResponse, PaginatedResult } from '@/types/api';
+import type { PageResponse, PaginatedResult } from '@/types/api';
 
 export const compatibilityApi = {
   async getToday(connectionId: number): Promise<CompatibilityResult> {
-    const response = await apiClient.get<ApiResponse<CompatibilityResult>>(
+    const response = await apiClient.get<CompatibilityResult>(
       `/api/connections/${connectionId}/compatibility`
     );
-    return response.data.data!;
+    return response.data;
   },
 
   async getHistory(
@@ -15,16 +15,15 @@ export const compatibilityApi = {
     page: number = 0,
     size: number = 20
   ): Promise<PaginatedResult<CompatibilityResult>> {
-    const response = await apiClient.get<ApiResponse<PageResponse<CompatibilityResult>>>(
+    const response = await apiClient.get<PageResponse<CompatibilityResult>>(
       `/api/connections/${connectionId}/compatibility/history`,
       { params: { page, size } }
     );
-    const pageData = response.data.data!;
     return {
-      content: pageData.content,
-      totalElements: pageData.totalElements,
-      totalPages: pageData.totalPages,
-      page: pageData.page,
+      content: response.data.content,
+      totalElements: response.data.totalElements,
+      totalPages: response.data.totalPages,
+      page: response.data.page,
     };
   },
 };
