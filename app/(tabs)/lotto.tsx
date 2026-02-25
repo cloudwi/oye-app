@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   ballRow: {
     flexDirection: 'row',
     gap: 6,
-    flex: 1,
+    flexShrink: 1,
   },
   sectionHeader: {
     marginTop: Spacing.lg,
