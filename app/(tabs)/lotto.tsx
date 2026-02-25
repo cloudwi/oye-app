@@ -75,7 +75,7 @@ export default function LottoScreen() {
         {/* Generate Button */}
         <Animated.View entering={FadeInDown.duration(400).delay(100)}>
           <TouchableOpacity
-            style={[styles.generateButton, { backgroundColor: tintColor }]}
+            style={styles.generateButton}
             onPress={handleGenerate}
             disabled={recommend.isPending}
             activeOpacity={0.8}
@@ -95,16 +95,16 @@ export default function LottoScreen() {
         {recommend.data && (
           <Animated.View
             entering={FadeInDown.duration(400).delay(200)}
-            style={[styles.resultCard, { backgroundColor: surfaceColor }, Shadows.md]}
+            style={[styles.resultCard, Shadows.md]}
           >
-            <Text style={[styles.resultTitle, { color: textColor }]}>
+            <Text style={styles.resultTitle}>
               생성된 번호
             </Text>
             {[...recommend.data]
               .sort((a, b) => a.setNumber - b.setNumber)
               .map((set, idx) => (
                 <View key={set.id} style={styles.numberSet}>
-                  <Text style={[styles.setLabel, { color: textSecondary }]}>
+                  <Text style={styles.setLabel}>
                     {String.fromCharCode(65 + idx)}
                   </Text>
                   <View style={styles.ballRow}>
@@ -170,6 +170,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     gap: Spacing.sm,
     height: 52,
+    backgroundColor: '#D4A017',
   },
   generateText: {
     color: '#FFFFFF',
@@ -180,21 +181,25 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
     gap: Spacing.md,
+    backgroundColor: '#1E2333',
   },
   resultTitle: {
     fontSize: FontSizes.lg,
     fontWeight: '600',
     marginBottom: Spacing.xs,
+    color: '#FFFFFF',
   },
   numberSet: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: Spacing.sm,
   },
   setLabel: {
     fontSize: FontSizes.sm,
     fontWeight: '600',
     width: 20,
+    color: 'rgba(255,255,255,0.6)',
   },
   ballRow: {
     flexDirection: 'row',

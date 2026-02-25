@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   FlatList,
   RefreshControl,
@@ -48,6 +49,10 @@ export default function LottoHistoryScreen() {
   } = useLottoHistory();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const inputBgColor = useThemeColor({}, 'inputBackground');
+  const placeholderColor = useThemeColor({}, 'placeholder');
 
   const allHistory = historyData?.pages.flatMap((p) => p.content) ?? [];
 
@@ -60,6 +65,7 @@ export default function LottoHistoryScreen() {
     return Object.keys(grouped)
       .map(Number)
       .sort((a, b) => b - a)
+      .filter((round) => !searchQuery || String(round).includes(searchQuery))
       .map((round) => ({
         round,
         sets: grouped[round].sort((a, b) => a.setNumber - b.setNumber),
@@ -129,23 +135,42 @@ export default function LottoHistoryScreen() {
           <IconSymbol name="chevron.left" size={24} color={textColor} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: textColor }]}>추천 기록</Text>
-        <View style={styles.headerRight}>
-          {roundGroups.length > 0 && (
-            <Text style={[styles.countText, { color: textSecondary }]}>
-              {allHistory.length}건
-            </Text>
-          )}
-        </View>
+        <View style={styles.headerRight} />
+      </View>
+
+      {/* Search */}
+      <View style={[styles.searchContainer, { backgroundColor: inputBgColor }]}>
+        <IconSymbol name="magnifyingglass" size={18} color={placeholderColor} />
+        <TextInput
+          style={[styles.searchInput, { color: textColor }]}
+          placeholder="회차 검색"
+          placeholderTextColor={placeholderColor}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          keyboardType="number-pad"
+          returnKeyType="search"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <IconSymbol name="xmark.circle.fill" size={18} color={placeholderColor} />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Content */}
       {isLoading ? (
         <ActivityIndicator style={styles.loader} color={tintColor} />
-      ) : roundGroups.length === 0 ? (
+      ) : roundGroups.length === 0 && !searchQuery ? (
         <EmptyState
           icon="ticket"
           title="아직 추천 기록이 없어요"
           message="번호를 생성하면 기록이 쌓입니다"
+        />
+      ) : roundGroups.length === 0 && searchQuery ? (
+        <EmptyState
+          icon="magnifyingglass"
+          title={`${searchQuery}회차 기록이 없어요`}
+          message="다른 회차를 검색해보세요"
         />
       ) : (
         <FlatList
@@ -203,9 +228,20 @@ const styles = StyleSheet.create({
     width: 40,
     alignItems: 'flex-end',
   },
-  countText: {
-    fontSize: FontSizes.xs,
-    fontWeight: '600',
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    height: 42,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: FontSizes.sm,
+    paddingVertical: 0,
   },
   loader: {
     flex: 1,
@@ -237,6 +273,7 @@ const styles = StyleSheet.create({
   historySet: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: Spacing.sm,
   },
   setLabel: {
