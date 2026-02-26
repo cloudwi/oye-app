@@ -2,6 +2,7 @@ export type Gender = 'MALE' | 'FEMALE';
 export type CalendarType = 'SOLAR' | 'LUNAR';
 export type BloodType = 'A' | 'B' | 'O' | 'AB';
 export type SocialProvider = 'KAKAO' | 'APPLE';
+export type UserRole = 'USER' | 'ADMIN';
 
 // API 응답에 맞는 User 타입
 export interface User {
@@ -16,6 +17,7 @@ export interface User {
   mbti: string | null;
   bloodType: BloodType | null;
   interests: string | null;
+  role: UserRole;
   createdAt: string; // ISO datetime
 }
 
