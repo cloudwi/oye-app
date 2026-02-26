@@ -5,6 +5,7 @@ export interface Connection {
   partnerName: string;
   relationType: RelationType;
   latestScore: number | null;
+  latestContent: string | null;
   createdAt: string;
 }
 
