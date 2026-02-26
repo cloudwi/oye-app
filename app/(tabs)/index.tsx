@@ -7,7 +7,6 @@ import {
   RefreshControl,
   TouchableOpacity,
   Dimensions,
-  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,19 +17,14 @@ import Animated, {
   withDelay,
   withSequence,
   FadeIn,
-  FadeInDown,
 } from 'react-native-reanimated';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTodayFortune } from '@/hooks/queries/use-today-fortune';
-import { useConnections } from '@/hooks/queries/use-connections';
-import { useLottoHistory } from '@/hooks/queries/use-lotto-history';
 import { shareService } from '@/services/share';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
-import { LottoBall } from '@/components/lotto/lotto-ball';
 import { FortuneCardSkeleton } from '@/components/ui/skeleton';
-import { router } from 'expo-router';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
@@ -40,12 +34,8 @@ import {
   FontSizes,
   Shadows,
   TimeTheme,
-  RelationConfig,
-  LottoColors,
 } from '@/constants/theme';
-import { lottoStyles } from '@/components/lotto/styles';
 import { getScoreColor } from '@/utils/score';
-import type { Connection } from '@/types/connection';
 
 type TimePeriod = 'morning' | 'afternoon' | 'evening' | 'night';
 
@@ -66,23 +56,9 @@ export default function HomeScreen() {
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const surfaceColor = useThemeColor({}, 'surface');
-  const cardBorderColor = useThemeColor({}, 'cardBorder');
-  const tintColor = useThemeColor({}, 'tint');
 
   const { data: todayFortune, isLoading, refetch } = useTodayFortune();
-  const { data: connections, refetch: refetchConnections } = useConnections();
-  const { data: lottoData } = useLottoHistory();
   const [refreshing, setRefreshing] = useState(false);
-
-  const latestLotto = useMemo(() => {
-    const all = lottoData?.pages.flatMap((p) => p.content) ?? [];
-    if (all.length === 0) return null;
-    const maxRound = Math.max(...all.map((r) => r.round));
-    return {
-      round: maxRound,
-      sets: all.filter((r) => r.round === maxRound).sort((a, b) => a.setNumber - b.setNumber),
-    };
-  }, [lottoData]);
 
   const timePeriod = useMemo(() => getTimePeriod(), []);
   const timeConfig = TimeTheme[timePeriod];
@@ -111,19 +87,15 @@ export default function HomeScreen() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refetch(), refetchConnections()]);
+    await refetch();
     setRefreshing(false);
-  }, [refetch, refetchConnections]);
+  }, [refetch]);
 
   const handleShare = useCallback(async () => {
     if (todayFortune) {
       await shareService.shareFortune(todayFortune);
     }
   }, [todayFortune]);
-
-  const handleConnectionPress = useCallback((connection: Connection) => {
-    router.push({ pathname: '/connection/[id]', params: { id: connection.id } });
-  }, []);
 
   const today = format(new Date(), 'M월 d일 EEEE', { locale: ko });
 
@@ -202,6 +174,18 @@ export default function HomeScreen() {
                   </LinearGradient>
                 </View>
 
+                {todayFortune.score != null && (
+                  <View style={styles.scoreContainer}>
+                    <Text
+                      style={[styles.scoreValue, { color: getScoreColor(todayFortune.score) }]}
+                      accessibilityLabel={`오늘의 예감 점수: ${todayFortune.score}점`}
+                    >
+                      {todayFortune.score}
+                    </Text>
+                    <Text style={[styles.scoreLabel, { color: textSecondary }]}>점</Text>
+                  </View>
+                )}
+
                 <Text
                   style={[styles.fortuneContent, { color: textColor }]}
                   accessibilityLabel={`오늘의 운세: ${todayFortune.content}`}
@@ -241,195 +225,6 @@ export default function HomeScreen() {
               onAction={() => refetch()}
             />
           )}
-
-          {/* Compatibility Summary Section */}
-          {connections && connections.length > 0 && (
-            <Animated.View
-              entering={FadeInDown.duration(400).delay(400)}
-              style={styles.compatSection}
-            >
-              <View style={styles.sectionHeader}>
-                <Text style={[styles.sectionTitle, { color: textColor }]}>오늘의 궁합</Text>
-                <TouchableOpacity
-                  onPress={() => router.push('/(tabs)/compatibility')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.sectionMore, { color: tintColor }]}>전체보기</Text>
-                </TouchableOpacity>
-              </View>
-
-              <FlatList
-                data={connections}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(item) => String(item.id)}
-                contentContainerStyle={styles.compatList}
-                renderItem={({ item }) => {
-                  const config = RelationConfig[item.relationType];
-                  return (
-                    <TouchableOpacity
-                      style={[
-                        styles.compatCard,
-                        { backgroundColor: surfaceColor, borderColor: cardBorderColor },
-                        Shadows.sm,
-                      ]}
-                      onPress={() => handleConnectionPress(item)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={[styles.compatIcon, { backgroundColor: config.color + '15' }]}>
-                        <IconSymbol name="person.fill" size={16} color={config.color} />
-                      </View>
-                      <Text
-                        style={[styles.compatName, { color: textColor }]}
-                        numberOfLines={1}
-                      >
-                        {item.partnerName}
-                      </Text>
-                      <Text style={[styles.compatRelation, { color: textSecondary }]}>
-                        {config.label}
-                      </Text>
-                      {item.latestScore !== null ? (
-                        <Text
-                          style={[
-                            styles.compatScore,
-                            { color: getScoreColor(item.latestScore) },
-                          ]}
-                        >
-                          {item.latestScore}점
-                        </Text>
-                      ) : (
-                        <Text style={[styles.compatScore, { color: textSecondary }]}>
-                          --
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-                  );
-                }}
-                ListFooterComponent={
-                  <TouchableOpacity
-                    style={[
-                      styles.compatCard,
-                      styles.compatAddCard,
-                      { borderColor: cardBorderColor },
-                    ]}
-                    onPress={() => router.push('/connection/connect')}
-                    activeOpacity={0.7}
-                  >
-                    <View style={[styles.addIconCircle, { backgroundColor: tintColor + '15' }]}>
-                      <IconSymbol name="plus" size={20} color={tintColor} />
-                    </View>
-                    <Text style={[styles.compatAddText, { color: tintColor }]}>추가</Text>
-                  </TouchableOpacity>
-                }
-              />
-            </Animated.View>
-          )}
-
-          {/* No connections yet — invite prompt */}
-          {connections && connections.length === 0 && (
-            <Animated.View
-              entering={FadeInDown.duration(400).delay(400)}
-              style={styles.compatSection}
-            >
-              <TouchableOpacity
-                style={[
-                  styles.inviteCard,
-                  { backgroundColor: surfaceColor, borderColor: cardBorderColor },
-                  Shadows.sm,
-                ]}
-                onPress={() => router.push('/(tabs)/compatibility')}
-                activeOpacity={0.7}
-              >
-                <IconSymbol name="heart.fill" size={20} color={tintColor} />
-                <View style={styles.inviteTextWrap}>
-                  <Text style={[styles.inviteTitle, { color: textColor }]}>궁합 확인하기</Text>
-                  <Text style={[styles.inviteDesc, { color: textSecondary }]}>
-                    초대 코드를 공유하고 궁합을 확인해보세요
-                  </Text>
-                </View>
-                <IconSymbol name="chevron.right" size={14} color={textSecondary} />
-              </TouchableOpacity>
-            </Animated.View>
-          )}
-
-          {/* Lotto Section */}
-          <Animated.View
-            entering={FadeInDown.duration(400).delay(500)}
-            style={styles.compatSection}
-          >
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: textColor }]}>로또 번호</Text>
-              <TouchableOpacity
-                onPress={() => router.push('/lotto' as any)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.sectionMore, { color: tintColor }]}>추천받기</Text>
-              </TouchableOpacity>
-            </View>
-
-            {latestLotto ? (
-              <View style={[styles.lottoCard, Shadows.sm]}>
-                <Text style={styles.lottoRound}>{latestLotto.round}회차 추천 번호</Text>
-                {latestLotto.sets.map((set, idx) => (
-                  <View key={set.id} style={lottoStyles.numberSetRow}>
-                    <Text style={styles.lottoSetLabel}>
-                      {String.fromCharCode(65 + idx)}
-                    </Text>
-                    <View style={styles.lottoBallRow}>
-                      {set.numbers.map((num, i) => (
-                        <LottoBall key={i} number={num} size={34} />
-                      ))}
-                    </View>
-                    {set.rank && (
-                      <View style={styles.lottoRankBadge}>
-                        <Text style={styles.lottoRankText}>{set.rank}</Text>
-                      </View>
-                    )}
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <TouchableOpacity
-                style={[
-                  styles.inviteCard,
-                  { backgroundColor: surfaceColor, borderColor: cardBorderColor },
-                  Shadows.sm,
-                ]}
-                onPress={() => router.push('/lotto' as any)}
-                activeOpacity={0.7}
-              >
-                <IconSymbol name="dice.fill" size={20} color={tintColor} />
-                <View style={styles.inviteTextWrap}>
-                  <Text style={[styles.inviteTitle, { color: textColor }]}>번호 추천받기</Text>
-                  <Text style={[styles.inviteDesc, { color: textSecondary }]}>
-                    행운의 로또 번호를 생성해보세요
-                  </Text>
-                </View>
-                <IconSymbol name="chevron.right" size={14} color={textSecondary} />
-              </TouchableOpacity>
-            )}
-          </Animated.View>
-
-          {/* Fortune History Link */}
-          <Animated.View
-            entering={FadeInDown.duration(400).delay(600)}
-            style={styles.compatSection}
-          >
-            <TouchableOpacity
-              style={[
-                styles.historyLink,
-                { backgroundColor: surfaceColor, borderColor: cardBorderColor },
-              ]}
-              onPress={() => router.push('/(tabs)/history')}
-              activeOpacity={0.7}
-            >
-              <IconSymbol name="clock" size={18} color={textSecondary} />
-              <Text style={[styles.historyLinkText, { color: textSecondary }]}>
-                지난 예감 보기
-              </Text>
-              <IconSymbol name="chevron.right" size={14} color={textSecondary} />
-            </TouchableOpacity>
-          </Animated.View>
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -494,6 +289,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  scoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: Spacing.md,
+  },
+  scoreValue: {
+    fontSize: 48,
+    fontWeight: '700',
+  },
+  scoreLabel: {
+    fontSize: FontSizes.lg,
+    fontWeight: '500',
+    marginLeft: 2,
+  },
   fortuneContent: {
     fontSize: 20,
     lineHeight: 32,
@@ -516,144 +325,5 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: FontSizes.md,
     fontWeight: '600',
-  },
-
-  // Compatibility Section
-  compatSection: {
-    marginTop: Spacing.xl,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.md,
-  },
-  sectionTitle: {
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
-  },
-  sectionMore: {
-    fontSize: FontSizes.sm,
-    fontWeight: '500',
-  },
-  compatList: {
-    gap: Spacing.sm,
-  },
-  compatCard: {
-    width: 100,
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-  },
-  compatAddCard: {
-    justifyContent: 'center',
-    borderStyle: 'dashed',
-    backgroundColor: 'transparent',
-  },
-  compatIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.xs,
-  },
-  compatName: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  compatRelation: {
-    fontSize: FontSizes.xs,
-    marginBottom: Spacing.sm,
-  },
-  compatScore: {
-    fontSize: FontSizes.lg,
-    fontWeight: '700',
-  },
-  addIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.xs,
-  },
-  compatAddText: {
-    fontSize: FontSizes.sm,
-    fontWeight: '500',
-  },
-
-  // Invite Card
-  inviteCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    gap: Spacing.md,
-  },
-  inviteTextWrap: {
-    flex: 1,
-  },
-  inviteTitle: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  inviteDesc: {
-    fontSize: FontSizes.sm,
-  },
-
-  // Lotto Section
-  lottoCard: {
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    backgroundColor: LottoColors.cardBg,
-    gap: Spacing.sm,
-  },
-  lottoRound: {
-    fontSize: FontSizes.sm,
-    fontWeight: '700',
-    color: LottoColors.roundText,
-    marginBottom: Spacing.xs,
-  },
-  lottoSetLabel: {
-    fontSize: FontSizes.xs,
-    fontWeight: '600',
-    width: 16,
-    color: 'rgba(255,255,255,0.5)',
-  },
-  lottoBallRow: {
-    flexDirection: 'row',
-    gap: 5,
-  },
-  lottoRankBadge: {
-    backgroundColor: '#FFD700',
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 8,
-  },
-  lottoRankText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#333',
-  },
-
-  // History Link
-  historyLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    gap: Spacing.sm,
-  },
-  historyLinkText: {
-    fontSize: FontSizes.sm,
-    fontWeight: '500',
   },
 });

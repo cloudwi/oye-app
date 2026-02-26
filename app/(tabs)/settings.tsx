@@ -233,13 +233,13 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
               icon="clock"
-              iconColor="#C9956B"
+              iconColor="#E8944E"
               title="지난 예감"
               onPress={() => router.push('/(tabs)/history')}
             />
             <SettingRow
               icon="dice.fill"
-              iconColor="#7B6B8A"
+              iconColor="#9189D0"
               title="로또 추천 기록"
               onPress={() => router.push('/lotto/history' as any)}
               isLast
@@ -253,7 +253,7 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
               icon="bell.fill"
-              iconColor="#C9956B"
+              iconColor="#E8944E"
               title="푸시 알림"
               subtitle={notificationEnabled ? '켜짐' : '꺼짐'}
               rightElement={
@@ -267,7 +267,7 @@ export default function SettingsScreen() {
             />
             <SettingRow
               icon="clock.fill"
-              iconColor="#C9956B"
+              iconColor="#E8944E"
               title="알림 시간"
               subtitle={formatNotificationTime(notificationTime)}
               onPress={() => router.push('/settings/notification-time')}
@@ -282,7 +282,7 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
               icon="moon.fill"
-              iconColor="#7B6B8A"
+              iconColor="#9189D0"
               title="다크 모드"
               subtitle={getDarkModeLabel()}
               onPress={handleDarkModeChange}
@@ -297,13 +297,13 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
               icon="rectangle.portrait.and.arrow.right"
-              iconColor="#C9956B"
+              iconColor="#E8944E"
               title="로그아웃"
               onPress={handleLogout}
             />
             <SettingRow
               icon="trash.fill"
-              iconColor="#C75C5C"
+              iconColor="#D45555"
               title="계정 탈퇴"
               onPress={handleDeleteAccount}
               destructive
@@ -318,19 +318,19 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
             <SettingRow
               icon="doc.text.fill"
-              iconColor="#7B8DAE"
+              iconColor="#5B8EC9"
               title="개인정보 처리방침"
               onPress={() => router.push('/legal/privacy')}
             />
             <SettingRow
               icon="doc.plaintext"
-              iconColor="#7B8DAE"
+              iconColor="#5B8EC9"
               title="이용약관"
               onPress={() => router.push('/legal/terms')}
             />
             <SettingRow
               icon="envelope.fill"
-              iconColor="#5B9A6F"
+              iconColor="#4CAF82"
               title="문의하기"
               onPress={() => router.push('/inquiry')}
               isLast
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   },
   settingTitle: {
     fontSize: FontSizes.md,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   settingSubtitle: {
     fontSize: FontSizes.sm,
