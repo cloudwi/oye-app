@@ -95,7 +95,7 @@ export default function OnboardingName() {
               borderColor: trimmed ? BrandColors.primary : 'transparent',
             },
           ]}
-          value={name}
+          defaultValue={name}
           onChangeText={setName}
           placeholder="이름을 입력해주세요"
           placeholderTextColor={textSecondary}

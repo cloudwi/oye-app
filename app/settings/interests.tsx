@@ -66,7 +66,7 @@ export default function InterestsEditScreen() {
             { color: textColor, backgroundColor: surfaceColor, borderColor: tintColor },
             Shadows.sm,
           ]}
-          value={interests}
+          defaultValue={interests}
           onChangeText={setInterests}
           placeholder="예: 독서, 요리, 운동, 여행"
           placeholderTextColor={textSecondary}

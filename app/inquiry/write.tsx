@@ -81,7 +81,7 @@ export default function InquiryWriteScreen() {
               ]}
               placeholder="문의 제목을 입력해 주세요"
               placeholderTextColor={placeholderColor}
-              value={title}
+              defaultValue={title}
               onChangeText={setTitle}
               maxLength={100}
               returnKeyType="next"
@@ -100,7 +100,7 @@ export default function InquiryWriteScreen() {
               ]}
               placeholder="문의 내용을 입력해 주세요"
               placeholderTextColor={placeholderColor}
-              value={content}
+              defaultValue={content}
               onChangeText={setContent}
               maxLength={2000}
               multiline

@@ -66,7 +66,7 @@ export default function OccupationEditScreen() {
             { color: textColor, backgroundColor: surfaceColor, borderColor: tintColor },
             Shadows.sm,
           ]}
-          value={occupation}
+          defaultValue={occupation}
           onChangeText={setOccupation}
           placeholder="예: 개발자, 학생, 디자이너"
           placeholderTextColor={textSecondary}

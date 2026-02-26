@@ -66,7 +66,7 @@ export default function NameEditScreen() {
             { color: textColor, backgroundColor: surfaceColor, borderColor: tintColor },
             Shadows.sm,
           ]}
-          value={name}
+          defaultValue={name}
           onChangeText={setName}
           placeholder="이름을 입력해주세요"
           placeholderTextColor={textSecondary}

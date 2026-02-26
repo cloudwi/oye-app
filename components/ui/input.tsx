@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import {
   TextInput,
   View,
@@ -21,6 +21,8 @@ export function Input({
   error,
   containerStyle,
   style,
+  value,
+  onChangeText,
   ...props
 }: InputProps) {
   const textColor = useThemeColor({}, 'text');
@@ -28,12 +30,28 @@ export function Input({
   const borderColor = useThemeColor({}, 'icon');
   const placeholderColor = useThemeColor({}, 'icon');
 
+  const inputRef = useRef<TextInput>(null);
+  const lastValue = useRef(value);
+
+  useEffect(() => {
+    if (value !== undefined && value !== lastValue.current) {
+      inputRef.current?.setNativeProps({ text: value });
+      lastValue.current = value;
+    }
+  }, [value]);
+
+  const handleChangeText = useCallback((text: string) => {
+    lastValue.current = text;
+    onChangeText?.(text);
+  }, [onChangeText]);
+
   return (
     <View style={[styles.container, containerStyle]}>
       {label && (
         <Text style={[styles.label, { color: textColor }]}>{label}</Text>
       )}
       <TextInput
+        ref={inputRef}
         style={[
           styles.input,
           {
@@ -43,6 +61,8 @@ export function Input({
           },
           style,
         ]}
+        defaultValue={value}
+        onChangeText={handleChangeText}
         placeholderTextColor={placeholderColor}
         {...props}
       />

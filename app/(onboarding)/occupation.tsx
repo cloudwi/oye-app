@@ -55,7 +55,7 @@ export default function OnboardingOccupation() {
               borderColor: trimmed ? BrandColors.primary : 'transparent',
             },
           ]}
-          value={occupation}
+          defaultValue={occupation}
           onChangeText={setOccupation}
           placeholder="예: 개발자, 학생, 디자이너"
           placeholderTextColor={textSecondary}
