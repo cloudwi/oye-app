@@ -360,7 +360,7 @@ export default function HomeScreen() {
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: textColor }]}>로또 번호</Text>
               <TouchableOpacity
-                onPress={() => router.push('/(tabs)/lotto')}
+                onPress={() => router.push('/lotto' as any)}
                 activeOpacity={0.7}
               >
                 <Text style={[styles.sectionMore, { color: tintColor }]}>추천받기</Text>
@@ -395,7 +395,7 @@ export default function HomeScreen() {
                   { backgroundColor: surfaceColor, borderColor: cardBorderColor },
                   Shadows.sm,
                 ]}
-                onPress={() => router.push('/(tabs)/lotto')}
+                onPress={() => router.push('/lotto' as any)}
                 activeOpacity={0.7}
               >
                 <IconSymbol name="dice.fill" size={20} color={tintColor} />

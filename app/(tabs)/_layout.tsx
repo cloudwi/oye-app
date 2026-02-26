@@ -55,15 +55,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="lotto"
+        name="compatibility"
         options={{
-          title: '로또',
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="dice.fill" color={color} />,
-          tabBarAccessibilityLabel: '로또 탭',
+          title: '궁합',
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
+          tabBarAccessibilityLabel: '궁합 탭',
         }}
       />
       <Tabs.Screen
-        name="compatibility"
+        name="lotto"
         options={{
           href: null,
         }}
@@ -71,9 +71,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: '설정',
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="gearshape.fill" color={color} />,
-          tabBarAccessibilityLabel: '설정 탭',
+          title: '마이',
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="person.fill" color={color} />,
+          tabBarAccessibilityLabel: '마이 탭',
         }}
       />
     </Tabs>

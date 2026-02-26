@@ -201,7 +201,7 @@ export default function SettingsScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: textColor }]}>설정</Text>
+          <Text style={[styles.title, { color: textColor }]}>마이</Text>
         </View>
 
         {/* Profile Section */}
@@ -225,6 +225,26 @@ export default function SettingsScreen() {
             </View>
             <IconSymbol name="chevron.right" size={14} color={textSecondary} />
           </TouchableOpacity>
+        </View>
+
+        {/* History Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: textSecondary }]}>기록</Text>
+          <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
+            <SettingRow
+              icon="clock"
+              iconColor="#C9956B"
+              title="지난 예감"
+              onPress={() => router.push('/(tabs)/history')}
+            />
+            <SettingRow
+              icon="dice.fill"
+              iconColor="#7B6B8A"
+              title="로또 추천 기록"
+              onPress={() => router.push('/lotto/history' as any)}
+              isLast
+            />
+          </View>
         </View>
 
         {/* Notification Section */}
