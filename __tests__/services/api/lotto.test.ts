@@ -47,18 +47,6 @@ describe('lottoApi', () => {
     jest.clearAllMocks();
   });
 
-  describe('recommend', () => {
-    it('should call POST /api/lotto/recommendations and return recommendations', async () => {
-      const recommendations = [mockRecommendation];
-      (apiClient.post as jest.Mock).mockResolvedValue({ data: recommendations });
-
-      const result = await lottoApi.recommend();
-
-      expect(apiClient.post).toHaveBeenCalledWith('/api/lotto/recommendations');
-      expect(result).toEqual(recommendations);
-    });
-  });
-
   describe('getHistory', () => {
     it('should call GET /api/lotto/recommendations with default pagination', async () => {
       const pageResponse = {

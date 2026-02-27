@@ -5,13 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -19,11 +16,8 @@ import { LottoBall } from '@/components/lotto/lotto-ball';
 import { LottoWinningNumbers } from '@/components/lotto/winning-numbers';
 import { LottoMatchResult } from '@/components/lotto/match-result';
 import { LottoWinnersPreview } from '@/components/lotto/winners-preview';
-import { useLottoRecommend } from '@/hooks/queries/use-lotto-recommend';
 import { useLottoRound } from '@/hooks/queries/use-lotto-round';
 import { useLottoHistory } from '@/hooks/queries/use-lotto-history';
-import { getUserFriendlyError } from '@/services/api/client';
-import { showAlert } from '@/utils/alert';
 import {
   Spacing,
   BorderRadius,
@@ -40,13 +34,9 @@ export default function LottoScreen() {
   const surfaceColor = useThemeColor({}, 'surface');
   const tintColor = useThemeColor({}, 'tint');
 
-  const recommend = useLottoRecommend();
   const { data: historyData, refetch: refetchHistory } = useLottoHistory();
 
-  // 최신 추천 세트의 회차를 가져와 당첨번호 조회
-  const latestSets = recommend.data
-    ?? historyData?.pages[0]?.content
-    ?? [];
+  const latestSets = historyData?.pages[0]?.content ?? [];
 
   const latestRound = useMemo(() => {
     if (latestSets.length === 0) return undefined;
@@ -62,26 +52,6 @@ export default function LottoScreen() {
     await refetchHistory();
     setRefreshing(false);
   }, [refetchHistory]);
-
-  const handleGenerate = useCallback(() => {
-    if (recommend.isPending) return;
-
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-
-    recommend.mutate(undefined, {
-      onSuccess: () => {
-        if (Platform.OS !== 'web') {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-      },
-      onError: (error) => {
-        const msg = getUserFriendlyError(error) || '번호 생성에 실패했습니다.';
-        showAlert('오류', msg);
-      },
-    });
-  }, [recommend]);
 
   const displaySets = useMemo(() => {
     return [...latestSets].sort((a, b) => a.setNumber - b.setNumber);
@@ -108,25 +78,6 @@ export default function LottoScreen() {
           />
         }
       >
-        {/* Generate Button */}
-        <Animated.View entering={FadeInDown.duration(400).delay(100)}>
-          <TouchableOpacity
-            style={styles.generateButton}
-            onPress={handleGenerate}
-            disabled={recommend.isPending}
-            activeOpacity={0.8}
-          >
-            {recommend.isPending ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <>
-                <IconSymbol name="dice.fill" size={22} color="#FFFFFF" />
-                <Text style={styles.generateText}>번호 생성하기</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </Animated.View>
-
         {/* Latest Generated Numbers */}
         {displaySets.length > 0 && (
           <Animated.View
@@ -214,21 +165,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xxl,
     gap: Spacing.md,
-  },
-  generateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    gap: Spacing.sm,
-    height: 52,
-    backgroundColor: LottoColors.button,
-  },
-  generateText: {
-    color: '#FFFFFF',
-    fontSize: FontSizes.md,
-    fontWeight: '600',
   },
   resultCard: {
     borderRadius: BorderRadius.xl,
