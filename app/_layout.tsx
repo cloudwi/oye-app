@@ -150,7 +150,6 @@ const webStyles = StyleSheet.create({
     flex: 1,
     width: '100%',
     maxWidth: 480,
-    // @ts-ignore - web only
     boxShadow: '0 0 20px rgba(0, 0, 0, 0.1)',
   },
 });

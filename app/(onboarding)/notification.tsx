@@ -59,6 +59,7 @@ export default function OnboardingNotification() {
         await notificationService.getExpoPushToken();
         await notificationService.scheduleDailyNotification(8, 0);
         setNotificationEnabled(true);
+        notificationService.registerPushTokenToServer();
       }
     } catch (error) {
       console.error('Error setting up notifications:', error);

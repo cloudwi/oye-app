@@ -4,36 +4,24 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { BackHeader } from '@/components/ui/back-header';
 import { GradientButton } from '@/components/ui/gradient-button';
-import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { BloodTypeForm } from '@/components/forms/BloodTypeForm';
+import { Spacing, FontSizes, Shadows } from '@/constants/theme';
 import type { BloodType } from '@/types/user';
 
-const BLOOD_TYPES: BloodType[] = ['A', 'B', 'O', 'AB'];
-
 export default function OnboardingBloodType() {
-  const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { updateUser } = useUserStore();
   const [selected, setSelected] = useState<BloodType | null>(null);
-
-  const handleSelect = (type: BloodType) => {
-    setSelected(selected === type ? null : type);
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  };
 
   const handleNext = () => {
     if (selected) {
@@ -56,37 +44,11 @@ export default function OnboardingBloodType() {
           혈액형을 알려주세요
         </Text>
 
-        <View style={styles.optionsContainer}>
-          {BLOOD_TYPES.map((type) => {
-            const isSelected = selected === type;
-            return (
-              <TouchableOpacity
-                key={type}
-                style={[
-                  styles.optionCard,
-                  { backgroundColor: surfaceColor },
-                  Shadows.md,
-                  isSelected && { borderColor: tintColor, backgroundColor: tintColor + '10' },
-                ]}
-                onPress={() => handleSelect(type)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel={`${type}형${isSelected ? ', 선택됨' : ''}`}
-              >
-                <Text
-                  style={[
-                    styles.typeLabel,
-                    { color: textColor },
-                    isSelected && { color: tintColor },
-                  ]}
-                >
-                  {type}
-                </Text>
-                <Text style={[styles.typeText, { color: textSecondary }]}>형</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <BloodTypeForm
+          value={selected}
+          onChange={setSelected}
+          shadow={Shadows.md}
+        />
       </View>
 
       <View style={styles.footer}>
@@ -120,26 +82,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FontSizes.md,
     marginBottom: Spacing.xxl,
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  optionCard: {
-    flex: 1,
-    paddingVertical: Spacing.xl,
-    borderRadius: BorderRadius.xl,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-    gap: Spacing.xs,
-  },
-  typeLabel: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-  },
-  typeText: {
-    fontSize: FontSizes.sm,
   },
   footer: {
     paddingHorizontal: Spacing.lg,

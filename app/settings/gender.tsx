@@ -1,9 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,18 +10,15 @@ import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { useUpdateUser } from '@/hooks/queries/use-update-user';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { SettingsHeader } from '@/components/ui/settings-header';
 import { SaveButton } from '@/components/ui/save-button';
-import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { GenderForm } from '@/components/forms/GenderForm';
+import { Spacing } from '@/constants/theme';
+import { buildUpdatePayload } from '@/utils/user';
 import type { Gender } from '@/types/user';
 
 export default function GenderEditScreen() {
-  const tintColor = useThemeColor({}, 'tint');
-  const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const textSecondary = useThemeColor({}, 'textSecondary');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { user } = useUserStore();
   const updateUserMutation = useUpdateUser();
@@ -32,32 +27,10 @@ export default function GenderEditScreen() {
   const originalGender = user?.gender || null;
   const hasChanged = selectedGender !== originalGender;
 
-  const lastTapRef = useRef(0);
-
-  const handleSelectGender = (gender: Gender) => {
-    const now = Date.now();
-    if (now - lastTapRef.current < 300) return;
-    lastTapRef.current = now;
-    setSelectedGender(selectedGender === gender ? null : gender);
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  };
-
   const handleSave = () => {
     if (!hasChanged) return;
     updateUserMutation.mutate(
-      {
-        name: user?.name || '사용자',
-        birthDate: user?.birthDate || undefined,
-        birthTime: user?.birthTime || undefined,
-        gender: selectedGender || undefined,
-        calendarType: user?.calendarType || undefined,
-        occupation: user?.occupation || undefined,
-        mbti: user?.mbti || undefined,
-        bloodType: user?.bloodType || undefined,
-        interests: user?.interests || undefined,
-      },
+      buildUpdatePayload(user, { gender: selectedGender || undefined }),
       {
         onSuccess: () => {
           if (Platform.OS !== 'web') {
@@ -74,50 +47,11 @@ export default function GenderEditScreen() {
       <SettingsHeader title="성별 수정" />
 
       <View style={styles.content}>
-        <View style={styles.optionRow}>
-          <TouchableOpacity
-            style={[
-              styles.optionButton,
-              { backgroundColor: surfaceColor },
-              Shadows.sm,
-              selectedGender === 'MALE' && { borderColor: tintColor, backgroundColor: tintColor + '10' },
-            ]}
-            onPress={() => handleSelectGender('MALE')}
-            activeOpacity={0.7}
-          >
-            <IconSymbol name="figure.stand" size={28} color={selectedGender === 'MALE' ? tintColor : textSecondary} />
-            <Text
-              style={[
-                styles.optionText,
-                { color: textColor },
-                selectedGender === 'MALE' && { color: tintColor },
-              ]}
-            >
-              남성
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.optionButton,
-              { backgroundColor: surfaceColor },
-              Shadows.sm,
-              selectedGender === 'FEMALE' && { borderColor: tintColor, backgroundColor: tintColor + '10' },
-            ]}
-            onPress={() => handleSelectGender('FEMALE')}
-            activeOpacity={0.7}
-          >
-            <IconSymbol name="figure.stand.dress" size={28} color={selectedGender === 'FEMALE' ? tintColor : textSecondary} />
-            <Text
-              style={[
-                styles.optionText,
-                { color: textColor },
-                selectedGender === 'FEMALE' && { color: tintColor },
-              ]}
-            >
-              여성
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <GenderForm
+          value={selectedGender}
+          onChange={setSelectedGender}
+          allowDeselect
+        />
       </View>
 
       <View style={styles.footer}>
@@ -139,23 +73,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  optionButton: {
-    flex: 1,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-    gap: Spacing.sm,
-  },
-  optionText: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
   },
   footer: {
     paddingHorizontal: Spacing.lg,

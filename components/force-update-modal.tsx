@@ -30,13 +30,12 @@ export function ForceUpdateModal({ storeUrl, minVersion }: ForceUpdateModalProps
           업데이트해 주세요.
         </ThemedText>
         <Button
+          title="업데이트하기"
           variant="primary"
           size="large"
           onPress={handleUpdate}
           style={styles.button}
-        >
-          업데이트하기
-        </Button>
+        />
       </View>
     </View>
   );

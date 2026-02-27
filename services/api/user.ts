@@ -15,4 +15,8 @@ export const userApi = {
   async deleteMe(): Promise<void> {
     await apiClient.delete('/api/users/me');
   },
+
+  async registerPushToken(token: string | null): Promise<void> {
+    await apiClient.put('/api/users/push-token', { token });
+  },
 };

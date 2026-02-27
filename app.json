@@ -15,7 +15,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationQueriesSchemes": ["kakaokompassauth", "kakaolink", "kakaoplus"],
-        "CFBundleURLTypes": [{ "CFBundleURLSchemes": ["kakao9a09ffd0172882098f151551e8e85f11"] }]
+        "CFBundleURLTypes": []
       }
     },
     "android": {
@@ -54,7 +54,7 @@
           "defaultChannel": "fortune"
         }
       ],
-      ["@react-native-seoul/kakao-login", { "kakaoAppKey": "9a09ffd0172882098f151551e8e85f11" }],
+      "@react-native-seoul/kakao-login",
       "expo-secure-store",
       [
         "@sentry/react-native/expo",

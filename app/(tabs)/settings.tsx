@@ -19,7 +19,7 @@ import { userApi } from '@/services/api/user';
 import { queryClient } from '@/services/query-client';
 import { notificationService } from '@/services/notification';
 import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { showAlert } from '@/utils/alert';
 import {
   BrandColors,
@@ -122,6 +122,7 @@ export default function SettingsScreen() {
         const [hour, minute] = notificationTime.split(':').map(Number);
         await notificationService.scheduleDailyNotification(hour, minute);
         setNotificationEnabled(true);
+        notificationService.registerPushTokenToServer();
       } else {
         showAlert('알림 권한', '설정에서 알림 권한을 허용해주세요.');
       }
@@ -147,6 +148,7 @@ export default function SettingsScreen() {
   };
 
   const performLogout = () => {
+    notificationService.clearPushTokenFromServer();
     authLogout();
     resetUser();
     resetSettings();
@@ -241,7 +243,7 @@ export default function SettingsScreen() {
               icon="dice.fill"
               iconColor="#9189D0"
               title="로또 추천 기록"
-              onPress={() => router.push('/lotto/history' as any)}
+              onPress={() => router.push('/lotto/history' as Href)}
               isLast
             />
           </View>

@@ -1,9 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
   Platform,
 } from 'react-native';
@@ -13,26 +11,21 @@ import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { useUpdateUser } from '@/hooks/queries/use-update-user';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { SettingsHeader } from '@/components/ui/settings-header';
 import { SaveButton } from '@/components/ui/save-button';
-import { ScrollPicker } from '@/components/ui/scroll-picker';
-import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { BirthdateForm } from '@/components/forms/BirthdateForm';
+import { Spacing } from '@/constants/theme';
+import { buildUpdatePayload } from '@/utils/user';
 import type { CalendarType } from '@/types/user';
 
 export default function BirthDateEditScreen() {
-  const tintColor = useThemeColor({}, 'tint');
-  const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const textSecondary = useThemeColor({}, 'textSecondary');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { user } = useUserStore();
   const updateUserMutation = useUpdateUser();
 
   const [selectedCalendarType, setSelectedCalendarType] = useState<CalendarType | null>(user?.calendarType || null);
 
-  const currentYear = new Date().getFullYear();
   const parsedDate = user?.birthDate ? user.birthDate.split('-').map(Number) : [1990, 1, 1];
   const parsedTime = user?.birthTime ? user.birthTime.split(':').map(Number) : [null, null];
   const [selectedYear, setSelectedYear] = useState(parsedDate[0]);
@@ -40,13 +33,6 @@ export default function BirthDateEditScreen() {
   const [selectedDay, setSelectedDay] = useState(parsedDate[2]);
   const [selectedHour, setSelectedHour] = useState<number | null>(parsedTime[0]);
   const [selectedMinute, setSelectedMinute] = useState<number | null>(parsedTime[1]);
-
-  const years = Array.from({ length: 80 }, (_, i) => currentYear - 10 - i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-  const minutes = Array.from({ length: 60 }, (_, i) => i);
 
   const originalBirthDate = user?.birthDate || null;
   const originalBirthTime = user?.birthTime || null;
@@ -57,64 +43,14 @@ export default function BirthDateEditScreen() {
     : null;
   const hasChanged = currentBirthDate !== originalBirthDate || selectedCalendarType !== originalCalendarType || currentBirthTime !== originalBirthTime;
 
-  const handleSelectYear = useCallback((value: number) => {
-    setSelectedYear(value);
-    if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
-    }
-  }, []);
-
-  const handleSelectMonth = useCallback((value: number) => {
-    setSelectedMonth(value);
-    if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
-    }
-  }, []);
-
-  const handleSelectDay = useCallback((value: number) => {
-    setSelectedDay(value);
-    if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
-    }
-  }, []);
-
-  const handleSelectCalendarType = (type: CalendarType) => {
-    setSelectedCalendarType(selectedCalendarType === type ? null : type);
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  };
-
-  const handleSelectHour = useCallback((value: number) => {
-    setSelectedHour(value);
-    if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
-    }
-  }, []);
-
-  const handleSelectMinute = useCallback((value: number) => {
-    setSelectedMinute(value);
-    if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
-    }
-  }, []);
-
   const handleSave = () => {
     if (!hasChanged) return;
-    const birthDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
-
     updateUserMutation.mutate(
-      {
-        name: user?.name || '사용자',
-        birthDate,
+      buildUpdatePayload(user, {
+        birthDate: currentBirthDate,
         birthTime: currentBirthTime || undefined,
-        gender: user?.gender || undefined,
         calendarType: selectedCalendarType || undefined,
-        occupation: user?.occupation || undefined,
-        mbti: user?.mbti || undefined,
-        bloodType: user?.bloodType || undefined,
-        interests: user?.interests || undefined,
-      },
+      }),
       {
         onSuccess: () => {
           if (Platform.OS !== 'web') {
@@ -131,84 +67,22 @@ export default function BirthDateEditScreen() {
       <SettingsHeader title="생년월일 수정" />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Birth Date Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: textSecondary }]}>생년월일</Text>
-          <View style={[styles.dateDisplay, { backgroundColor: surfaceColor }, Shadows.sm]}>
-            <Text style={[styles.dateText, { color: textColor }]}>
-              {selectedYear}년 {selectedMonth}월 {selectedDay}일
-            </Text>
-          </View>
-          <View style={styles.pickerContainer}>
-            <ScrollPicker data={years} selected={selectedYear} onSelect={handleSelectYear} label="년" maxHeight={200} />
-            <ScrollPicker data={months} selected={selectedMonth} onSelect={handleSelectMonth} label="월" maxHeight={200} />
-            <ScrollPicker data={days} selected={selectedDay} onSelect={handleSelectDay} label="일" maxHeight={200} />
-          </View>
-        </View>
-
-        {/* Birth Time Section */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: textSecondary }]}>태어난 시각 (선택)</Text>
-          <View style={[styles.dateDisplay, { backgroundColor: surfaceColor }, Shadows.sm]}>
-            <Text style={[styles.dateText, { color: currentBirthTime ? textColor : textSecondary }]}>
-              {currentBirthTime
-                ? `${selectedHour}시 ${selectedMinute}분`
-                : '시각을 선택해주세요'}
-            </Text>
-          </View>
-          <View style={styles.pickerContainer}>
-            <ScrollPicker data={hours} selected={selectedHour} onSelect={handleSelectHour} label="시" maxHeight={200} formatter={(v) => `${v}시`} />
-            <ScrollPicker data={minutes} selected={selectedMinute} onSelect={handleSelectMinute} label="분" maxHeight={200} formatter={(v) => `${v}분`} />
-          </View>
-        </View>
-
-        {/* Calendar Type Section */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: textSecondary }]}>달력 유형</Text>
-          <View style={styles.optionRow}>
-            <TouchableOpacity
-              style={[
-                styles.optionButton,
-                { backgroundColor: surfaceColor },
-                Shadows.sm,
-                selectedCalendarType === 'SOLAR' && { borderColor: tintColor, backgroundColor: tintColor + '10' },
-              ]}
-              onPress={() => handleSelectCalendarType('SOLAR')}
-              activeOpacity={0.7}
-            >
-              <IconSymbol name="sun.max.fill" size={28} color={selectedCalendarType === 'SOLAR' ? tintColor : textSecondary} />
-              <Text
-                style={[
-                  styles.optionText,
-                  { color: textColor },
-                  selectedCalendarType === 'SOLAR' && { color: tintColor },
-                ]}
-              >
-                양력
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.optionButton,
-                { backgroundColor: surfaceColor },
-                Shadows.sm,
-                selectedCalendarType === 'LUNAR' && { borderColor: tintColor, backgroundColor: tintColor + '10' },
-              ]}
-              onPress={() => handleSelectCalendarType('LUNAR')}
-              activeOpacity={0.7}
-            >
-              <IconSymbol name="moon.fill" size={28} color={selectedCalendarType === 'LUNAR' ? tintColor : textSecondary} />
-              <Text
-                style={[
-                  styles.optionText,
-                  { color: textColor },
-                  selectedCalendarType === 'LUNAR' && { color: tintColor },
-                ]}
-              >
-                음력
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <BirthdateForm
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
+            selectedDay={selectedDay}
+            selectedHour={selectedHour}
+            selectedMinute={selectedMinute}
+            selectedCalendarType={selectedCalendarType}
+            onYearChange={setSelectedYear}
+            onMonthChange={setSelectedMonth}
+            onDayChange={useCallback((d: number) => setSelectedDay(d), [])}
+            onHourChange={setSelectedHour}
+            onMinuteChange={setSelectedMinute}
+            onCalendarTypeChange={setSelectedCalendarType}
+            pickerMaxHeight={200}
+          />
         </View>
       </ScrollView>
 
@@ -233,45 +107,6 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: Spacing.lg,
     marginTop: Spacing.lg,
-  },
-  sectionLabel: {
-    fontSize: FontSizes.xs,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: Spacing.sm,
-    marginLeft: Spacing.xs,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  optionButton: {
-    flex: 1,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-    gap: Spacing.sm,
-  },
-  optionText: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-  },
-  dateDisplay: {
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
-  dateText: {
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
-  },
-  pickerContainer: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
   },
   footer: {
     paddingHorizontal: Spacing.lg,

@@ -7,6 +7,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { authService } from '@/services/auth';
 import { userApi } from '@/services/api/user';
+import { notificationService } from '@/services/notification';
 import { Spacing, BorderRadius, FontSizes } from '@/constants/theme';
 import type { AuthToken } from '@/types/auth';
 import { KakaoSymbol } from '@/components/ui/kakao-symbol';
@@ -32,6 +33,7 @@ export default function OnboardingWelcome() {
         const userData = await userApi.getMe();
         setUser(userData);
         completeOnboarding();
+        notificationService.registerPushTokenToServer();
         router.replace('/(tabs)');
         return;
       } catch {

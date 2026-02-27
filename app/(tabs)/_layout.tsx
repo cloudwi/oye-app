@@ -1,5 +1,5 @@
 import { Tabs, Redirect } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HapticTab } from '@/components/haptic-tab';
@@ -8,12 +8,19 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuthStore } from '@/stores/auth-store';
 import { useUserStore } from '@/stores/user-store';
+import { notificationService } from '@/services/notification';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { isAuthenticated } = useAuthStore();
   const { onboarding } = useUserStore();
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      notificationService.registerPushTokenToServer();
+    }
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return <Redirect href="/(onboarding)" />;

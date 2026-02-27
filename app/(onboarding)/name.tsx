@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
@@ -12,7 +11,8 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { BackHeader } from '@/components/ui/back-header';
 import { GradientButton } from '@/components/ui/gradient-button';
-import { BrandColors, Spacing, BorderRadius, FontSizes } from '@/constants/theme';
+import { NameForm } from '@/components/forms/NameForm';
+import { BrandColors, Spacing, FontSizes } from '@/constants/theme';
 
 // 25 x 22 x 25 = 13,750 조합
 const MOODS = [
@@ -50,7 +50,6 @@ export default function OnboardingName() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { user, updateUser } = useUserStore();
   const [name, setName] = useState(user?.name ?? '');
@@ -86,23 +85,12 @@ export default function OnboardingName() {
           예감에서 사용할 이름을 알려주세요
         </Text>
 
-        <TextInput
-          style={[
-            styles.input,
-            {
-              color: textColor,
-              backgroundColor: surfaceColor,
-              borderColor: trimmed ? BrandColors.primary : 'transparent',
-            },
-          ]}
-          defaultValue={name}
+        <NameForm
+          value={name}
           onChangeText={setName}
-          placeholder="이름을 입력해주세요"
-          placeholderTextColor={textSecondary}
-          autoFocus
-          maxLength={20}
-          returnKeyType="done"
           onSubmitEditing={handleNext}
+          activeBorderColor={BrandColors.primary}
+          inputStyle={{ fontSize: FontSizes.lg }}
         />
       </View>
 
@@ -137,13 +125,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FontSizes.md,
     marginBottom: Spacing.xxl,
-  },
-  input: {
-    fontSize: FontSizes.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 2,
   },
   footer: {
     paddingHorizontal: Spacing.lg,

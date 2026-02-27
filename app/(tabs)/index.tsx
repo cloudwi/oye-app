@@ -29,7 +29,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LottoBall } from '@/components/lotto/lotto-ball';
 import { FortuneCardSkeleton } from '@/components/ui/skeleton';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
@@ -356,7 +356,7 @@ export default function HomeScreen() {
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: textColor }]}>로또 번호</Text>
               <TouchableOpacity
-                onPress={() => router.push('/lotto' as any)}
+                onPress={() => router.push('/lotto' as Href)}
                 activeOpacity={0.7}
               >
                 <Text style={[styles.sectionMore, { color: tintColor }]}>추천받기</Text>
@@ -391,7 +391,7 @@ export default function HomeScreen() {
                   { backgroundColor: surfaceColor, borderColor: cardBorderColor },
                   Shadows.sm,
                 ]}
-                onPress={() => router.push('/lotto' as any)}
+                onPress={() => router.push('/lotto' as Href)}
                 activeOpacity={0.7}
               >
                 <IconSymbol name="dice.fill" size={20} color={tintColor} />

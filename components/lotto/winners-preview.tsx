@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { LottoBall } from './lotto-ball';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useThemeColor } from '@/hooks/use-theme-color';
@@ -51,7 +51,7 @@ export function LottoWinnersPreview() {
         </Text>
         <TouchableOpacity
           style={lottoStyles.sectionMore}
-          onPress={() => router.push('/lotto/winners' as any)}
+          onPress={() => router.push('/lotto/winners' as Href)}
           activeOpacity={0.7}
         >
           <Text style={[lottoStyles.sectionMoreText, { color: tintColor }]}>

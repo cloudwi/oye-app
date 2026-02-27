@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useUserStore } from '@/stores/user-store';
 import { authService } from '@/services/auth';
 import { userApi } from '@/services/api/user';
+import { notificationService } from '@/services/notification';
 import { BrandColors } from '@/constants/theme';
 
 export default function AuthCallback() {
@@ -34,6 +35,7 @@ export default function AuthCallback() {
           if (token.isNewUser === false) {
             // 기존 회원: 온보딩 스킵
             completeOnboarding();
+            notificationService.registerPushTokenToServer();
           }
           // 신규 회원: user 정보(이름 등)를 store에 저장 → 온보딩에서 활용
         } catch {

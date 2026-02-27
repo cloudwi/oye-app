@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
@@ -12,13 +11,13 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { BackHeader } from '@/components/ui/back-header';
 import { GradientButton } from '@/components/ui/gradient-button';
-import { BrandColors, Spacing, BorderRadius, FontSizes } from '@/constants/theme';
+import { InterestsForm } from '@/components/forms/InterestsForm';
+import { BrandColors, Spacing, FontSizes } from '@/constants/theme';
 
 export default function OnboardingInterests() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { updateUser } = useUserStore();
   const [interests, setInterests] = useState('');
@@ -46,23 +45,12 @@ export default function OnboardingInterests() {
           관심사나 취미를 알려주세요
         </Text>
 
-        <TextInput
-          style={[
-            styles.input,
-            {
-              color: textColor,
-              backgroundColor: surfaceColor,
-              borderColor: trimmed ? BrandColors.primary : 'transparent',
-            },
-          ]}
-          defaultValue={interests}
+        <InterestsForm
+          value={interests}
           onChangeText={setInterests}
-          placeholder="예: 독서, 요리, 운동, 여행"
-          placeholderTextColor={textSecondary}
-          autoFocus
-          maxLength={100}
-          returnKeyType="done"
           onSubmitEditing={handleNext}
+          activeBorderColor={BrandColors.primary}
+          inputStyle={{ fontSize: FontSizes.lg }}
         />
       </View>
 
@@ -97,13 +85,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FontSizes.md,
     marginBottom: Spacing.xxl,
-  },
-  input: {
-    fontSize: FontSizes.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 2,
   },
   footer: {
     paddingHorizontal: Spacing.lg,

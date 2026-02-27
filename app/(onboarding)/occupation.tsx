@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
@@ -12,13 +11,13 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useUserStore } from '@/stores/user-store';
 import { BackHeader } from '@/components/ui/back-header';
 import { GradientButton } from '@/components/ui/gradient-button';
-import { BrandColors, Spacing, BorderRadius, FontSizes } from '@/constants/theme';
+import { OccupationForm } from '@/components/forms/OccupationForm';
+import { BrandColors, Spacing, FontSizes } from '@/constants/theme';
 
 export default function OnboardingOccupation() {
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { updateUser } = useUserStore();
   const [occupation, setOccupation] = useState('');
@@ -46,23 +45,12 @@ export default function OnboardingOccupation() {
           맞춤 예감을 위해 알려주세요
         </Text>
 
-        <TextInput
-          style={[
-            styles.input,
-            {
-              color: textColor,
-              backgroundColor: surfaceColor,
-              borderColor: trimmed ? BrandColors.primary : 'transparent',
-            },
-          ]}
-          defaultValue={occupation}
+        <OccupationForm
+          value={occupation}
           onChangeText={setOccupation}
-          placeholder="예: 개발자, 학생, 디자이너"
-          placeholderTextColor={textSecondary}
-          autoFocus
-          maxLength={50}
-          returnKeyType="done"
           onSubmitEditing={handleNext}
+          activeBorderColor={BrandColors.primary}
+          inputStyle={{ fontSize: FontSizes.lg }}
         />
       </View>
 
@@ -97,13 +85,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FontSizes.md,
     marginBottom: Spacing.xxl,
-  },
-  input: {
-    fontSize: FontSizes.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 2,
   },
   footer: {
     paddingHorizontal: Spacing.lg,

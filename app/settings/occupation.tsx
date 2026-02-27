@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
-  TextInput,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,14 +12,13 @@ import { useUserStore } from '@/stores/user-store';
 import { useUpdateUser } from '@/hooks/queries/use-update-user';
 import { SettingsHeader } from '@/components/ui/settings-header';
 import { SaveButton } from '@/components/ui/save-button';
-import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
+import { OccupationForm } from '@/components/forms/OccupationForm';
+import { Spacing, Shadows } from '@/constants/theme';
+import { buildUpdatePayload } from '@/utils/user';
 
 export default function OccupationEditScreen() {
   const tintColor = useThemeColor({}, 'tint');
-  const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const textSecondary = useThemeColor({}, 'textSecondary');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { user } = useUserStore();
   const updateUserMutation = useUpdateUser();
@@ -33,17 +31,7 @@ export default function OccupationEditScreen() {
   const handleSave = () => {
     if (!hasChanged) return;
     updateUserMutation.mutate(
-      {
-        name: user?.name || '사용자',
-        birthDate: user?.birthDate || undefined,
-        birthTime: user?.birthTime || undefined,
-        gender: user?.gender || undefined,
-        calendarType: user?.calendarType || undefined,
-        occupation: trimmed || undefined,
-        mbti: user?.mbti || undefined,
-        bloodType: user?.bloodType || undefined,
-        interests: user?.interests || undefined,
-      },
+      buildUpdatePayload(user, { occupation: trimmed || undefined }),
       {
         onSuccess: () => {
           if (Platform.OS !== 'web') {
@@ -60,20 +48,11 @@ export default function OccupationEditScreen() {
       <SettingsHeader title="직업 수정" />
 
       <View style={styles.content}>
-        <TextInput
-          style={[
-            styles.input,
-            { color: textColor, backgroundColor: surfaceColor, borderColor: tintColor },
-            Shadows.sm,
-          ]}
-          defaultValue={occupation}
+        <OccupationForm
+          value={occupation}
           onChangeText={setOccupation}
-          placeholder="예: 개발자, 학생, 디자이너"
-          placeholderTextColor={textSecondary}
-          autoFocus
-          maxLength={50}
-          returnKeyType="done"
           onSubmitEditing={handleSave}
+          inputStyle={[{ borderColor: tintColor }, Shadows.sm]}
         />
       </View>
 
@@ -96,14 +75,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-  },
-  input: {
-    fontSize: FontSizes.md,
-    fontWeight: '500',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 2,
   },
   footer: {
     paddingHorizontal: Spacing.lg,

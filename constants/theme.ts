@@ -288,7 +288,6 @@ export const Shadows = {
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
-    // @ts-ignore - web only
     boxShadow: '0 1px 8px rgba(45, 36, 56, 0.06)',
   },
   sm: {
@@ -297,7 +296,6 @@ export const Shadows = {
     shadowOpacity: 0.04,
     shadowRadius: 2,
     elevation: 1,
-    // @ts-ignore - web only
     boxShadow: '0 1px 2px rgba(45, 36, 56, 0.04)',
   },
   md: {
@@ -306,7 +304,6 @@ export const Shadows = {
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
-    // @ts-ignore - web only
     boxShadow: '0 1px 8px rgba(45, 36, 56, 0.06)',
   },
   lg: {
@@ -315,7 +312,6 @@ export const Shadows = {
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 4,
-    // @ts-ignore - web only
     boxShadow: '0 4px 16px rgba(45, 36, 56, 0.08)',
   },
 };

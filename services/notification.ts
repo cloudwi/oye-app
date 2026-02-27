@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { storage } from './storage';
+import { userApi } from './api/user';
 
 // Only import expo-notifications on native platforms
 let Notifications: typeof import('expo-notifications') | null = null;
@@ -120,5 +121,24 @@ export const notificationService = {
       return null;
     }
     return Notifications.addNotificationResponseReceivedListener(handler);
+  },
+
+  async registerPushTokenToServer(): Promise<void> {
+    try {
+      const token = await this.getExpoPushToken();
+      if (token) {
+        await userApi.registerPushToken(token);
+      }
+    } catch (error) {
+      console.error('Error registering push token to server:', error);
+    }
+  },
+
+  async clearPushTokenFromServer(): Promise<void> {
+    try {
+      await userApi.registerPushToken(null);
+    } catch (error) {
+      console.error('Error clearing push token from server:', error);
+    }
   },
 };
