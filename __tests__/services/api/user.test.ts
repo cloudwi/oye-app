@@ -42,7 +42,7 @@ describe('userApi', () => {
 
       const result = await userApi.getMe();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/users/me');
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/users/me');
       expect(result).toEqual(mockUser);
     });
   });
@@ -59,7 +59,7 @@ describe('userApi', () => {
 
       const result = await userApi.updateMe(updateData);
 
-      expect(apiClient.put).toHaveBeenCalledWith('/api/users/me', updateData);
+      expect(apiClient.put).toHaveBeenCalledWith('/api/v1/users/me', updateData);
       expect(result).toEqual(updatedUser);
     });
   });
@@ -70,7 +70,7 @@ describe('userApi', () => {
 
       await userApi.deleteMe();
 
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/users/me');
+      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/users/me');
     });
   });
 });

@@ -3,20 +3,20 @@ import type { User, UserUpdateRequest } from '@/types/user';
 
 export const userApi = {
   async getMe(): Promise<User> {
-    const response = await apiClient.get<User>('/api/users/me');
+    const response = await apiClient.get<User>('/api/v1/users/me');
     return response.data;
   },
 
   async updateMe(data: UserUpdateRequest): Promise<User> {
-    const response = await apiClient.put<User>('/api/users/me', data);
+    const response = await apiClient.put<User>('/api/v1/users/me', data);
     return response.data;
   },
 
   async deleteMe(): Promise<void> {
-    await apiClient.delete('/api/users/me');
+    await apiClient.delete('/api/v1/users/me');
   },
 
   async registerPushToken(token: string | null): Promise<void> {
-    await apiClient.put('/api/users/push-token', { token });
+    await apiClient.put('/api/v1/users/push-token', { token });
   },
 };

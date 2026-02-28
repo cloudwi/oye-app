@@ -5,7 +5,7 @@ import type { PageResponse, PaginatedResult } from '@/types/api';
 export const compatibilityApi = {
   async getToday(connectionId: number): Promise<CompatibilityResult> {
     const response = await apiClient.get<CompatibilityResult>(
-      `/api/connections/${connectionId}/compatibility`
+      `/api/v1/connections/${connectionId}/compatibility`
     );
     return response.data;
   },
@@ -16,7 +16,7 @@ export const compatibilityApi = {
     size: number = 20
   ): Promise<PaginatedResult<CompatibilityResult>> {
     const response = await apiClient.get<PageResponse<CompatibilityResult>>(
-      `/api/connections/${connectionId}/compatibility/history`,
+      `/api/v1/connections/${connectionId}/compatibility/history`,
       { params: { page, size } }
     );
     return {

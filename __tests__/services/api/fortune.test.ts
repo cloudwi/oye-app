@@ -33,7 +33,7 @@ describe('fortuneApi', () => {
 
       const result = await fortuneApi.getToday();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/fortune/today');
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/fortune/today');
       expect(result).toEqual(mockFortune);
     });
   });
@@ -51,7 +51,7 @@ describe('fortuneApi', () => {
 
       const result = await fortuneApi.getHistory();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/fortune/history', {
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/fortune/history', {
         params: { page: 0, size: 20 },
       });
       expect(result).toEqual({
@@ -74,7 +74,7 @@ describe('fortuneApi', () => {
 
       const result = await fortuneApi.getHistory(2, 10);
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/fortune/history', {
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/fortune/history', {
         params: { page: 2, size: 10 },
       });
       expect(result).toEqual({

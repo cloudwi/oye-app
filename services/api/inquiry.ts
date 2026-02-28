@@ -4,12 +4,12 @@ import type { PageResponse, PaginatedResult } from '@/types/api';
 
 export const inquiryApi = {
   async create(data: InquiryCreateRequest): Promise<Inquiry> {
-    const response = await apiClient.post<Inquiry>('/api/inquiries', data);
+    const response = await apiClient.post<Inquiry>('/api/v1/inquiries', data);
     return response.data;
   },
 
   async getList(page: number = 0, size: number = 20): Promise<PaginatedResult<Inquiry>> {
-    const response = await apiClient.get<PageResponse<Inquiry>>('/api/inquiries', {
+    const response = await apiClient.get<PageResponse<Inquiry>>('/api/v1/inquiries', {
       params: { page, size },
     });
     return {
@@ -21,7 +21,7 @@ export const inquiryApi = {
   },
 
   async getDetail(id: number): Promise<Inquiry> {
-    const response = await apiClient.get<Inquiry>(`/api/inquiries/${id}`);
+    const response = await apiClient.get<Inquiry>(`/api/v1/inquiries/${id}`);
     return response.data;
   },
 };

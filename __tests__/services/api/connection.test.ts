@@ -36,7 +36,7 @@ describe('connectionApi', () => {
 
       const result = await connectionApi.getMyCode();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/connections/my-code');
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/connections/my-code');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -51,7 +51,7 @@ describe('connectionApi', () => {
 
       const result = await connectionApi.connect(request);
 
-      expect(apiClient.post).toHaveBeenCalledWith('/api/connections', request);
+      expect(apiClient.post).toHaveBeenCalledWith('/api/v1/connections', request);
       expect(result).toEqual(mockConnection);
     });
   });
@@ -63,7 +63,7 @@ describe('connectionApi', () => {
 
       const result = await connectionApi.getList();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/connections');
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/connections');
       expect(result).toEqual(connections);
     });
 
@@ -82,7 +82,7 @@ describe('connectionApi', () => {
 
       await connectionApi.deleteConnection(1);
 
-      expect(apiClient.delete).toHaveBeenCalledWith('/api/connections/1');
+      expect(apiClient.delete).toHaveBeenCalledWith('/api/v1/connections/1');
     });
   });
 });

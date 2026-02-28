@@ -4,12 +4,12 @@ import type { PageResponse, PaginatedResult } from '@/types/api';
 
 export const fortuneApi = {
   async getToday(): Promise<Fortune> {
-    const response = await apiClient.get<Fortune>('/api/fortune/today');
+    const response = await apiClient.get<Fortune>('/api/v1/fortune/today');
     return response.data;
   },
 
   async getHistory(page: number = 0, size: number = 20): Promise<PaginatedResult<Fortune>> {
-    const response = await apiClient.get<PageResponse<Fortune>>('/api/fortune/history', {
+    const response = await apiClient.get<PageResponse<Fortune>>('/api/v1/fortune/history', {
       params: { page, size },
     });
     return {

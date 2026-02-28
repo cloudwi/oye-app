@@ -60,7 +60,7 @@ describe('lottoApi', () => {
 
       const result = await lottoApi.getHistory();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/lotto/recommendations', {
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/lotto/recommendations', {
         params: { page: 0, size: 20 },
       });
       expect(result).toEqual(pageResponse);
@@ -78,7 +78,7 @@ describe('lottoApi', () => {
 
       const result = await lottoApi.getHistory(3, 5);
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/lotto/recommendations', {
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/lotto/recommendations', {
         params: { page: 3, size: 5 },
       });
     });
@@ -97,7 +97,7 @@ describe('lottoApi', () => {
 
       const result = await lottoApi.getWinners();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/lotto/winners', {
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/lotto/winners', {
         params: { page: 0, size: 20 },
       });
       expect(result).toEqual(pageResponse);
@@ -110,7 +110,7 @@ describe('lottoApi', () => {
 
       const result = await lottoApi.getRound(1100);
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/lotto/rounds/1100');
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/lotto/rounds/1100');
       expect(result).toEqual(mockRound);
     });
   });

@@ -31,7 +31,7 @@ describe('appApi', () => {
 
       const result = await appApi.checkUpdate('ios', '1.0.0');
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/app/check-update', {
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/app/check-update', {
         params: { platform: 'ios', version: '1.0.0' },
       });
       expect(result).toEqual(mockResponse);
@@ -60,7 +60,7 @@ describe('appApi', () => {
 
       const result = await appApi.checkUpdate('android', '1.0.0');
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/app/check-update', {
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/app/check-update', {
         params: { platform: 'android', version: '1.0.0' },
       });
       expect(result.forceUpdate).toBe(true);

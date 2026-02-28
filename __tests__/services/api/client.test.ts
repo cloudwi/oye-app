@@ -112,13 +112,13 @@ describe('apiClient', () => {
           headers: {},
           config: {
             headers: new AxiosHeaders(),
-            url: '/api/users/me',
+            url: '/api/v1/users/me',
           } as InternalAxiosRequestConfig,
         }
       );
       (error.config as any) = {
         headers: new AxiosHeaders(),
-        url: '/api/users/me',
+        url: '/api/v1/users/me',
         _retry: false,
       };
 
@@ -158,13 +158,13 @@ describe('apiClient', () => {
           headers: {},
           config: {
             headers: new AxiosHeaders(),
-            url: '/api/auth/refresh',
+            url: '/api/v1/auth/refresh',
           } as InternalAxiosRequestConfig,
         }
       );
       (error.config as any) = {
         headers: new AxiosHeaders(),
-        url: '/api/auth/refresh',
+        url: '/api/v1/auth/refresh',
       };
 
       await expect(responseInterceptor.rejected(error)).rejects.toEqual(error);
@@ -197,13 +197,13 @@ describe('apiClient', () => {
           headers: {},
           config: {
             headers: new AxiosHeaders(),
-            url: '/api/users/me',
+            url: '/api/v1/users/me',
           } as InternalAxiosRequestConfig,
         }
       );
       (error.config as any) = {
         headers: new AxiosHeaders(),
-        url: '/api/users/me',
+        url: '/api/v1/users/me',
         _retry: false,
       };
 
@@ -238,14 +238,14 @@ describe('apiClient', () => {
           headers: {},
           config: {
             headers: new AxiosHeaders(),
-            url: '/api/users/me',
+            url: '/api/v1/users/me',
             _retry: true,
           } as InternalAxiosRequestConfig,
         }
       );
       (error.config as any) = {
         headers: new AxiosHeaders(),
-        url: '/api/users/me',
+        url: '/api/v1/users/me',
         _retry: true,
       };
 
@@ -277,14 +277,14 @@ describe('apiClient', () => {
           headers: {},
           config: {
             headers: new AxiosHeaders(),
-            url: '/api/fortune/today',
+            url: '/api/v1/fortune/today',
             _retry: true,
           } as InternalAxiosRequestConfig,
         }
       );
       (error.config as any) = {
         headers: new AxiosHeaders(),
-        url: '/api/fortune/today',
+        url: '/api/v1/fortune/today',
         _retry: true,
       };
 

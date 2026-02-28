@@ -6,9 +6,9 @@ import { useAuthStore } from '@/stores/auth-store';
 import type { AuthToken } from '@/types/auth';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.yegam.today';
-const KAKAO_LOGIN_PATH = '/api/auth/login/kakao';
-const KAKAO_NATIVE_LOGIN_PATH = '/api/auth/login/kakao/native';
-const APPLE_LOGIN_PATH = '/api/auth/login/apple';
+const KAKAO_LOGIN_PATH = '/api/v1/auth/login/kakao';
+const KAKAO_NATIVE_LOGIN_PATH = '/api/v1/auth/login/kakao/native';
+const APPLE_LOGIN_PATH = '/api/v1/auth/login/apple';
 const NATIVE_CALLBACK_SCHEME = 'oyeapp://auth/callback';
 
 export const authService = {
@@ -224,7 +224,7 @@ export const authService = {
         return null;
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken: currentToken.refreshToken }),

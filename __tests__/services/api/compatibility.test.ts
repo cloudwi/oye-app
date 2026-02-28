@@ -34,7 +34,7 @@ describe('compatibilityApi', () => {
 
       const result = await compatibilityApi.getToday(5);
 
-      expect(apiClient.get).toHaveBeenCalledWith('/api/connections/5/compatibility');
+      expect(apiClient.get).toHaveBeenCalledWith('/api/v1/connections/5/compatibility');
       expect(result).toEqual(mockCompatibility);
     });
   });
@@ -53,7 +53,7 @@ describe('compatibilityApi', () => {
       const result = await compatibilityApi.getHistory(5);
 
       expect(apiClient.get).toHaveBeenCalledWith(
-        '/api/connections/5/compatibility/history',
+        '/api/v1/connections/5/compatibility/history',
         { params: { page: 0, size: 20 } }
       );
       expect(result).toEqual({
@@ -77,7 +77,7 @@ describe('compatibilityApi', () => {
       const result = await compatibilityApi.getHistory(3, 1, 10);
 
       expect(apiClient.get).toHaveBeenCalledWith(
-        '/api/connections/3/compatibility/history',
+        '/api/v1/connections/3/compatibility/history',
         { params: { page: 1, size: 10 } }
       );
       expect(result).toEqual({

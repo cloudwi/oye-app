@@ -80,7 +80,7 @@ apiClient.interceptors.response.use(
     // 401: 토큰 갱신 시도
     if (error.response?.status === 401 && !originalRequest._retry) {
       // 토큰 갱신 엔드포인트 자체의 실패는 바로 로그아웃
-      if (originalRequest.url?.includes('/api/auth/refresh')) {
+      if (originalRequest.url?.includes('/api/v1/auth/refresh')) {
         useAuthStore.getState().logout();
         return Promise.reject(error);
       }
