@@ -72,7 +72,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="lotto"
         options={{
-          href: null,
+          title: '로또',
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="dice.fill" color={color} />,
+          tabBarAccessibilityLabel: '로또 탭',
         }}
       />
       <Tabs.Screen

@@ -355,12 +355,6 @@ export default function HomeScreen() {
           >
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionTitle, { color: textColor }]}>로또 번호</Text>
-              <TouchableOpacity
-                onPress={() => router.push('/lotto' as Href)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.sectionMore, { color: tintColor }]}>추천받기</Text>
-              </TouchableOpacity>
             </View>
 
             {latestLotto ? (
