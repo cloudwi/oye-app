@@ -8,6 +8,8 @@ export interface LottoRecommendation {
   bonusMatch: boolean;
   evaluated: boolean;
   prizeAmount: number | null;
+  drawNumbers: number[] | null;
+  drawBonusNumber: number | null;
   createdAt: string;
 }
 

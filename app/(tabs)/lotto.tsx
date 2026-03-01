@@ -16,7 +16,6 @@ import { LottoBall } from '@/components/lotto/lotto-ball';
 import { LottoWinningNumbers } from '@/components/lotto/winning-numbers';
 import { LottoMatchResult } from '@/components/lotto/match-result';
 import { LottoWinnersPreview } from '@/components/lotto/winners-preview';
-import { useLottoRound } from '@/hooks/queries/use-lotto-round';
 import { useLottoHistory } from '@/hooks/queries/use-lotto-history';
 import { useLottoStats } from '@/hooks/queries/use-lotto-stats';
 import {
@@ -62,7 +61,17 @@ export default function LottoScreen() {
     return latestSets[0].round;
   }, [latestSets]);
 
-  const { data: roundData } = useLottoRound(latestRound);
+  const roundData = useMemo(() => {
+    const set = latestSets.find((s) => s.drawNumbers && s.drawBonusNumber != null);
+    if (!set || !set.drawNumbers || set.drawBonusNumber == null) return undefined;
+    return {
+      round: set.round,
+      numbers: set.drawNumbers,
+      bonusNumber: set.drawBonusNumber,
+      drawDate: set.createdAt,
+      firstPrizeAmount: null,
+    };
+  }, [latestSets]);
 
   const [refreshing, setRefreshing] = useState(false);
 
