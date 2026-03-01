@@ -48,5 +48,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         organization: 'cloudwi',
       },
     ],
+    [
+      'react-native-google-mobile-ads',
+      {
+        iosAppId: 'ca-app-pub-8460185175778038~3639846464',
+      },
+    ],
   ],
 });
