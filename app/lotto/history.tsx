@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LottoBall } from '@/components/lotto/lotto-ball';
@@ -39,6 +40,7 @@ export default function LottoHistoryScreen() {
   const surfaceColor = useThemeColor({}, 'surface');
   const cardBorderColor = useThemeColor({}, 'cardBorder');
   const tintColor = useThemeColor({}, 'tint');
+  const { contentStyle } = useResponsiveLayout();
 
   const [winOnly, setWinOnly] = useState(false);
   const [sortByAmount, setSortByAmount] = useState(false);
@@ -263,7 +265,7 @@ export default function LottoHistoryScreen() {
           data={roundGroups}
           keyExtractor={(item) => String(item.round)}
           renderItem={renderRoundCard}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, contentStyle]}
           showsVerticalScrollIndicator={false}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.3}

@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useConnect } from '@/hooks/queries/use-connect';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { router } from 'expo-router';
@@ -43,6 +44,8 @@ export default function ConnectScreen() {
   const inputBg = useThemeColor({}, 'inputBackground');
   const placeholderColor = useThemeColor({}, 'placeholder');
   const surfaceColor = useThemeColor({}, 'surface');
+
+  const { contentStyle } = useResponsiveLayout();
 
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState('');
@@ -97,7 +100,7 @@ export default function ConnectScreen() {
 
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={styles.formContent}
+          contentContainerStyle={[styles.formContent, contentStyle]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >

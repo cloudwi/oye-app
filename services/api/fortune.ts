@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import type { Fortune } from '@/types/fortune';
 import type { PageResponse, PaginatedResult } from '@/types/api';
+import type { ScoreTrendPoint } from '@/types/score-trend';
 
 export const fortuneApi = {
   async getToday(): Promise<Fortune> {
@@ -18,5 +19,19 @@ export const fortuneApi = {
       totalPages: response.data.totalPages,
       page: response.data.page,
     };
+  },
+
+  async getScoreTrend(days: number): Promise<ScoreTrendPoint[]> {
+    const response = await apiClient.get<ScoreTrendPoint[]>('/api/v1/fortune/score-trend', {
+      params: { days },
+    });
+    return response.data;
+  },
+
+  async getRecordDates(year: number, month: number): Promise<string[]> {
+    const response = await apiClient.get<string[]>('/api/v1/fortune/record-dates', {
+      params: { year, month },
+    });
+    return response.data;
   },
 };

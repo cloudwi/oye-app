@@ -1,12 +1,18 @@
 import React from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 
 interface WebContainerProps {
   children: React.ReactNode;
 }
 
+/**
+ * Constrains content width on wide screens (tablet, foldable, web).
+ * On phones (< 600px), renders children directly without wrapper.
+ */
 export function WebContainer({ children }: WebContainerProps) {
-  if (Platform.OS !== 'web') {
+  const { width } = useWindowDimensions();
+
+  if (width < 600) {
     return <>{children}</>;
   }
 
@@ -25,6 +31,6 @@ const styles = StyleSheet.create({
   inner: {
     flex: 1,
     width: '100%',
-    maxWidth: 480,
+    maxWidth: 500,
   },
 });

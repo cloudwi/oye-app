@@ -21,6 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useTodayFortune } from '@/hooks/queries/use-today-fortune';
 import { useConnections } from '@/hooks/queries/use-connections';
 import { useLottoHistory } from '@/hooks/queries/use-lotto-history';
@@ -67,6 +68,8 @@ export default function HomeScreen() {
   const surfaceColor = useThemeColor({}, 'surface');
   const cardBorderColor = useThemeColor({}, 'cardBorder');
   const tintColor = useThemeColor({}, 'tint');
+
+  const { contentStyle } = useResponsiveLayout();
 
   const { data: todayFortune, isLoading, refetch } = useTodayFortune();
   const { data: connections, refetch: refetchConnections } = useConnections();
@@ -159,7 +162,7 @@ export default function HomeScreen() {
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[styles.content, contentStyle]}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl

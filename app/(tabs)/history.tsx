@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -11,10 +11,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useFortuneHistory } from '@/hooks/queries/use-fortune-history';
+import { useFortuneScoreTrend } from '@/hooks/queries/use-fortune-score-trend';
+import { useFortuneRecordDates } from '@/hooks/queries/use-fortune-record-dates';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { HistoryListSkeleton } from '@/components/ui/skeleton';
+import { ScoreTrendChart } from '@/components/ui/score-trend-chart';
+import { MonthlyCalendar } from '@/components/ui/monthly-calendar';
 import { format, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
@@ -31,6 +36,7 @@ export default function HistoryScreen() {
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const surfaceColor = useThemeColor({}, 'surface');
+  const { contentStyle } = useResponsiveLayout();
 
   const {
     data,
@@ -41,11 +47,40 @@ export default function HistoryScreen() {
     refetch,
   } = useFortuneHistory();
 
+  const now = new Date();
+  const [calendarYear, setCalendarYear] = useState(now.getFullYear());
+  const [calendarMonth, setCalendarMonth] = useState(now.getMonth() + 1);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
+  const { data: scoreTrendData, isLoading: scoreTrendLoading } = useFortuneScoreTrend(30);
+  const { data: recordDatesData } = useFortuneRecordDates(calendarYear, calendarMonth);
+
+  const recordDatesSet = useMemo(
+    () => new Set(recordDatesData ?? []),
+    [recordDatesData]
+  );
+
+  const chartData = useMemo(
+    () =>
+      (scoreTrendData ?? []).map((p) => ({
+        date: format(parseISO(p.date), 'M/d'),
+        score: p.score,
+      })),
+    [scoreTrendData]
+  );
+
   const history = data?.pages.flatMap(page => page.content) ?? [];
   const totalCount = data?.pages[0]?.totalElements ?? 0;
+
+  const filteredHistory = useMemo(() => {
+    if (!selectedDate) return history;
+    return history.filter((item) => {
+      const dateStr = item.date || item.createdAt?.split('T')[0];
+      return dateStr === selectedDate;
+    });
+  }, [history, selectedDate]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -115,7 +150,7 @@ export default function HistoryScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: textColor }]}>히스토리</Text>
+          <Text style={[styles.title, { color: textColor }]}>예감 기록</Text>
         </View>
         <View style={styles.skeletonContainer}>
           <HistoryListSkeleton count={6} />
@@ -128,7 +163,7 @@ export default function HistoryScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <View style={styles.header}>
         <View style={styles.headerRow}>
-          <Text style={[styles.title, { color: textColor }]}>히스토리</Text>
+          <Text style={[styles.title, { color: textColor }]}>예감 기록</Text>
           {Platform.OS === 'web' && (
             <TouchableOpacity onPress={handleRefresh} style={styles.refreshButton}>
               <IconSymbol name="arrow.clockwise" size={18} color={tintColor} />
@@ -143,14 +178,46 @@ export default function HistoryScreen() {
       </View>
 
       <FlatList
-        data={history}
+        data={selectedDate ? filteredHistory : history}
         renderItem={renderItem}
         keyExtractor={(item, index) => String(item.id ?? index)}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, contentStyle]}
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View style={styles.listHeaderContainer}>
+            <ScoreTrendChart
+              data={chartData}
+              isLoading={scoreTrendLoading}
+              title="점수 추이"
+            />
+            <MonthlyCalendar
+              currentYear={calendarYear}
+              currentMonth={calendarMonth}
+              recordDates={recordDatesSet}
+              selectedDate={selectedDate}
+              onMonthChange={(y, m) => {
+                setCalendarYear(y);
+                setCalendarMonth(m);
+              }}
+              onDateSelect={(date) =>
+                setSelectedDate(selectedDate === date ? null : date)
+              }
+            />
+            {selectedDate && (
+              <TouchableOpacity
+                onPress={() => setSelectedDate(null)}
+                style={styles.clearFilter}
+              >
+                <Text style={[styles.clearFilterText, { color: tintColor }]}>
+                  필터 해제
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        }
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
-        onEndReached={handleEndReached}
+        onEndReached={selectedDate ? undefined : handleEndReached}
         onEndReachedThreshold={0.5}
         refreshControl={
           Platform.OS !== 'web' ? (
@@ -196,6 +263,18 @@ const styles = StyleSheet.create({
   },
   skeletonContainer: {
     paddingHorizontal: Spacing.lg,
+  },
+  listHeaderContainer: {
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  clearFilter: {
+    alignSelf: 'flex-start',
+    paddingVertical: Spacing.xs,
+  },
+  clearFilterText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
   },
   listContent: {
     paddingHorizontal: Spacing.lg,

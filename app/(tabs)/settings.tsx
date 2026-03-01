@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useUserStore } from '@/stores/user-store';
 import { useAuthStore } from '@/stores/auth-store';
 import { useSettingsStore } from '@/stores/settings-store';
@@ -94,6 +95,8 @@ export default function SettingsScreen() {
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const surfaceColor = useThemeColor({}, 'surface');
+
+  const { contentStyle } = useResponsiveLayout();
 
   const { user, reset: resetUser } = useUserStore();
   const { logout: authLogout } = useAuthStore();
@@ -201,7 +204,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={contentStyle} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: textColor }]}>마이</Text>
         </View>

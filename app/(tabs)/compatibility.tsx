@@ -14,6 +14,7 @@ import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useMyCode } from '@/hooks/queries/use-my-code';
 import { useConnections } from '@/hooks/queries/use-connections';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -36,6 +37,8 @@ export default function CompatibilityScreen() {
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const surfaceColor = useThemeColor({}, 'surface');
+
+  const { contentStyle } = useResponsiveLayout();
 
   const { data: myCode, isLoading: isCodeLoading, refetch: refetchCode } = useMyCode();
   const { data: connections, isLoading: isConnectionsLoading, refetch: refetchConnections } = useConnections();
@@ -107,7 +110,7 @@ export default function CompatibilityScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, contentStyle]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl

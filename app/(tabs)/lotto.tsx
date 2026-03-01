@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { LottoBall } from '@/components/lotto/lotto-ball';
 import { LottoWinningNumbers } from '@/components/lotto/winning-numbers';
@@ -50,6 +51,7 @@ export default function LottoScreen() {
   const textSecondary = useThemeColor({}, 'textSecondary');
   const surfaceColor = useThemeColor({}, 'surface');
   const tintColor = useThemeColor({}, 'tint');
+  const { contentStyle } = useResponsiveLayout();
 
   const { data: historyData, refetch: refetchHistory } = useLottoHistory();
   const { data: statsData } = useLottoStats();
@@ -98,7 +100,7 @@ export default function LottoScreen() {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, contentStyle]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl

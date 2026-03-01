@@ -3,7 +3,7 @@ import type { PropsWithChildren } from 'react';
 
 export default function Root({ children }: PropsWithChildren) {
   return (
-    <html lang="ko">
+    <html lang="ko" translate="no">
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
@@ -28,6 +28,9 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="twitter:description" content="매일 아침, AI가 전해주는 나만의 특별한 예감" />
         <meta name="twitter:image" content="/og-image.png" />
         <link rel="canonical" href="https://yegam.today" />
+        <meta name="google" content="notranslate" />
+        <meta httpEquiv="content-language" content="ko" />
+        <meta name="apple-itunes-app" content="app-id=6759439435" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="오늘의 예감" />
         <ScrollViewStyleReset />

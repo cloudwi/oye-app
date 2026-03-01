@@ -12,6 +12,7 @@ import { Colors } from '@/constants/theme';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { ForceUpdateModal } from '@/components/force-update-modal';
 import { OfflineBanner } from '@/components/offline-banner';
+import { AppDownloadBanner } from '@/components/web/app-download-banner';
 import { useForceUpdate } from '@/hooks/use-force-update';
 import { notificationService } from '@/services/notification';
 import { queryClient } from '@/services/query-client';
@@ -117,6 +118,7 @@ export default Sentry.wrap(function RootLayout() {
         />
       </Stack>
       {Platform.OS !== 'web' && <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />}
+      {Platform.OS === 'web' && <AppDownloadBanner />}
     </ThemeProvider>
   );
 

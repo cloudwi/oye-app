@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -11,11 +11,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useCompatibilityHistory } from '@/hooks/queries/use-compatibility-history';
+import { useCompatibilityScoreTrend } from '@/hooks/queries/use-compatibility-score-trend';
+import { useCompatibilityRecordDates } from '@/hooks/queries/use-compatibility-record-dates';
 import { useConnections } from '@/hooks/queries/use-connections';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { HistoryListSkeleton } from '@/components/ui/skeleton';
+import { ScoreTrendChart } from '@/components/ui/score-trend-chart';
+import { MonthlyCalendar } from '@/components/ui/monthly-calendar';
 import { format, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -37,6 +42,7 @@ export default function CompatibilityHistoryScreen() {
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const surfaceColor = useThemeColor({}, 'surface');
+  const { contentStyle } = useResponsiveLayout();
 
   const { data: connections } = useConnections();
   const {
@@ -48,12 +54,43 @@ export default function CompatibilityHistoryScreen() {
     refetch,
   } = useCompatibilityHistory(connectionId);
 
+  const now = new Date();
+  const [calendarYear, setCalendarYear] = useState(now.getFullYear());
+  const [calendarMonth, setCalendarMonth] = useState(now.getMonth() + 1);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const { data: scoreTrendData, isLoading: scoreTrendLoading } =
+    useCompatibilityScoreTrend(connectionId, 30);
+  const { data: recordDatesData } =
+    useCompatibilityRecordDates(connectionId, calendarYear, calendarMonth);
+
+  const recordDatesSet = useMemo(
+    () => new Set(recordDatesData ?? []),
+    [recordDatesData]
+  );
+
+  const chartData = useMemo(
+    () =>
+      (scoreTrendData ?? []).map((p) => ({
+        date: format(parseISO(p.date), 'M/d'),
+        score: p.score,
+      })),
+    [scoreTrendData]
+  );
 
   const connection = connections?.find((c) => c.id === connectionId);
   const history = data?.pages.flatMap((page) => page.content) ?? [];
   const totalCount = data?.pages[0]?.totalElements ?? 0;
+
+  const filteredHistory = useMemo(() => {
+    if (!selectedDate) return history;
+    return history.filter((item) => {
+      const dateStr = item.date || item.createdAt?.split('T')[0];
+      return dateStr === selectedDate;
+    });
+  }, [history, selectedDate]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -174,14 +211,46 @@ export default function CompatibilityHistoryScreen() {
       </View>
 
       <FlatList
-        data={history}
+        data={selectedDate ? filteredHistory : history}
         renderItem={renderItem}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, contentStyle]}
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View style={styles.listHeaderContainer}>
+            <ScoreTrendChart
+              data={chartData}
+              isLoading={scoreTrendLoading}
+              title="궁합 점수 추이"
+            />
+            <MonthlyCalendar
+              currentYear={calendarYear}
+              currentMonth={calendarMonth}
+              recordDates={recordDatesSet}
+              selectedDate={selectedDate}
+              onMonthChange={(y, m) => {
+                setCalendarYear(y);
+                setCalendarMonth(m);
+              }}
+              onDateSelect={(date) =>
+                setSelectedDate(selectedDate === date ? null : date)
+              }
+            />
+            {selectedDate && (
+              <TouchableOpacity
+                onPress={() => setSelectedDate(null)}
+                style={styles.clearFilter}
+              >
+                <Text style={[styles.clearFilterText, { color: tintColor }]}>
+                  필터 해제
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        }
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
-        onEndReached={handleEndReached}
+        onEndReached={selectedDate ? undefined : handleEndReached}
         onEndReachedThreshold={0.5}
         refreshControl={
           Platform.OS !== 'web' ? (
@@ -239,6 +308,18 @@ const styles = StyleSheet.create({
   },
   skeletonContainer: {
     paddingHorizontal: Spacing.lg,
+  },
+  listHeaderContainer: {
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  clearFilter: {
+    alignSelf: 'flex-start',
+    paddingVertical: Spacing.xs,
+  },
+  clearFilterText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
   },
   listContent: {
     paddingHorizontal: Spacing.lg,

@@ -22,6 +22,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useCompatibility } from '@/hooks/queries/use-compatibility';
 import { useConnections } from '@/hooks/queries/use-connections';
 import { useDeleteConnection } from '@/hooks/queries/use-delete-connection';
@@ -37,7 +38,9 @@ import {
   Shadows,
   RelationConfig,
 } from '@/constants/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getScoreColor } from '@/utils/score';
+import { useRewardedAd } from '@/hooks/use-rewarded-ad';
 import type { RelationType } from '@/types/connection';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -57,6 +60,8 @@ export default function ConnectionDetailScreen() {
   const textSecondary = useThemeColor({}, 'textSecondary');
   const surfaceColor = useThemeColor({}, 'surface');
 
+  const { contentStyle } = useResponsiveLayout();
+
   const { data: connections } = useConnections();
   const { data: compatibility, isLoading, refetch } = useCompatibility(connectionId);
   const deleteConnection = useDeleteConnection();
@@ -66,17 +71,42 @@ export default function ConnectionDetailScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
 
+  // Rewarded ad for unlocking compatibility
+  const { isLoaded: isAdLoaded, isEarned, show: showAd, reset: resetAd } = useRewardedAd();
+  const [isUnlocked, setIsUnlocked] = useState(Platform.OS === 'web');
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    AsyncStorage.getItem('compat_ad_unlocked').then((val) => {
+      const today = new Date().toISOString().split('T')[0];
+      if (val === today) setIsUnlocked(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isEarned) {
+      const today = new Date().toISOString().split('T')[0];
+      AsyncStorage.setItem('compat_ad_unlocked', today);
+      setIsUnlocked(true);
+      resetAd();
+    }
+  }, [isEarned, resetAd]);
+
+  const handleWatchAd = useCallback(() => {
+    if (isAdLoaded) showAd();
+  }, [isAdLoaded, showAd]);
+
   // Score animation
   const scoreProgress = useSharedValue(0);
 
   useEffect(() => {
-    if (compatibility?.score !== undefined) {
+    if (compatibility?.score !== undefined && isUnlocked) {
       scoreProgress.value = withSequence(
         withTiming(0, { duration: 0 }),
         withDelay(300, withTiming(compatibility.score / 100, { duration: 800 })),
       );
     }
-  }, [compatibility?.score]);
+  }, [compatibility?.score, isUnlocked]);
 
   const animatedCircleProps = useAnimatedProps(() => ({
     strokeDashoffset: CIRCUMFERENCE * (1 - scoreProgress.value),
@@ -182,7 +212,7 @@ export default function ConnectionDetailScreen() {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, contentStyle]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -220,72 +250,110 @@ export default function ConnectionDetailScreen() {
                     cx={GAUGE_SIZE / 2}
                     cy={GAUGE_SIZE / 2}
                     r={RADIUS}
-                    stroke={scoreColor + '20'}
+                    stroke={(isUnlocked ? scoreColor : tintColor) + '20'}
                     strokeWidth={STROKE_WIDTH}
                     fill="none"
                   />
-                  {/* Score circle */}
-                  <AnimatedCircle
-                    cx={GAUGE_SIZE / 2}
-                    cy={GAUGE_SIZE / 2}
-                    r={RADIUS}
-                    stroke={scoreColor}
-                    strokeWidth={STROKE_WIDTH}
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeDasharray={`${CIRCUMFERENCE}`}
-                    // @ts-ignore - animatedProps type mismatch between reanimated and react-native-svg
-                    animatedProps={animatedCircleProps}
-                    rotation={-90}
-                    origin={`${GAUGE_SIZE / 2}, ${GAUGE_SIZE / 2}`}
-                  />
+                  {/* Score circle - only when unlocked */}
+                  {isUnlocked && (
+                    <AnimatedCircle
+                      cx={GAUGE_SIZE / 2}
+                      cy={GAUGE_SIZE / 2}
+                      r={RADIUS}
+                      stroke={scoreColor}
+                      strokeWidth={STROKE_WIDTH}
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={`${CIRCUMFERENCE}`}
+                      // @ts-ignore - animatedProps type mismatch between reanimated and react-native-svg
+                      animatedProps={animatedCircleProps}
+                      rotation={-90}
+                      origin={`${GAUGE_SIZE / 2}, ${GAUGE_SIZE / 2}`}
+                    />
+                  )}
                 </Svg>
                 <View style={styles.scoreOverlay}>
-                  <Text style={[styles.scoreNumber, { color: scoreColor }]}>
-                    {compatibility.score}
+                  <Text style={[styles.scoreNumber, { color: isUnlocked ? scoreColor : tintColor }]}>
+                    {isUnlocked ? compatibility.score : '?'}
                   </Text>
-                  <Text style={[styles.scoreUnit, { color: textSecondary }]}>점</Text>
+                  {isUnlocked && (
+                    <Text style={[styles.scoreUnit, { color: textSecondary }]}>점</Text>
+                  )}
                 </View>
               </View>
             </Animated.View>
 
-            {/* Analysis Content */}
-            <Animated.View
-              style={[styles.analysisCard, { backgroundColor: surfaceColor }, Shadows.sm]}
-              entering={FadeInDown.duration(400).delay(200)}
-            >
-              <Text
-                style={[styles.analysisText, { color: textColor }]}
-                accessibilityLabel={`궁합 분석: ${compatibility.content}`}
-              >
-                {compatibility.content}
-              </Text>
-            </Animated.View>
+            {isUnlocked ? (
+              <>
+                {/* Analysis Content */}
+                <Animated.View
+                  style={[styles.analysisCard, { backgroundColor: surfaceColor }, Shadows.sm]}
+                  entering={FadeInDown.duration(400).delay(200)}
+                >
+                  <Text
+                    style={[styles.analysisText, { color: textColor }]}
+                    accessibilityLabel={`궁합 분석: ${compatibility.content}`}
+                  >
+                    {compatibility.content}
+                  </Text>
+                </Animated.View>
 
-            {/* Action Buttons */}
-            <Animated.View style={styles.actions} entering={FadeInDown.duration(400).delay(300)}>
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: tintColor }]}
-                onPress={handleShare}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="궁합 결과 공유하기"
-              >
-                <IconSymbol name="square.and.arrow.up" size={18} color="#FFF" />
-                <Text style={styles.actionButtonText}>공유하기</Text>
-              </TouchableOpacity>
+                {/* Action Buttons */}
+                <Animated.View style={styles.actions} entering={FadeInDown.duration(400).delay(300)}>
+                  <TouchableOpacity
+                    style={[styles.actionButton, { backgroundColor: tintColor }]}
+                    onPress={handleShare}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel="궁합 결과 공유하기"
+                  >
+                    <IconSymbol name="square.and.arrow.up" size={18} color="#FFF" />
+                    <Text style={styles.actionButtonText}>공유하기</Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.actionButton, styles.outlineButton, { borderColor: tintColor }]}
-                onPress={() => router.push({ pathname: '/connection/history/[id]', params: { id: connectionId } })}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="궁합 기록 보기"
-              >
-                <IconSymbol name="clock" size={18} color={tintColor} />
-                <Text style={[styles.actionButtonText, { color: tintColor }]}>기록 보기</Text>
-              </TouchableOpacity>
-            </Animated.View>
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.outlineButton, { borderColor: tintColor }]}
+                    onPress={() => router.push({ pathname: '/connection/history/[id]', params: { id: connectionId } })}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel="궁합 기록 보기"
+                  >
+                    <IconSymbol name="clock" size={18} color={tintColor} />
+                    <Text style={[styles.actionButtonText, { color: tintColor }]}>기록 보기</Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              </>
+            ) : (
+              <>
+                {/* Locked Analysis Teaser */}
+                <View
+                  style={[styles.analysisCard, { backgroundColor: surfaceColor, overflow: 'hidden' }, Shadows.sm]}
+                >
+                  <Text
+                    numberOfLines={3}
+                    style={[styles.analysisText, { color: textColor, opacity: 0.12 }]}
+                  >
+                    {compatibility.content}
+                  </Text>
+                </View>
+
+                {/* Ad CTA */}
+                <TouchableOpacity
+                  style={[styles.adButton, { backgroundColor: tintColor, opacity: isAdLoaded ? 1 : 0.5 }]}
+                  onPress={handleWatchAd}
+                  disabled={!isAdLoaded}
+                  activeOpacity={0.7}
+                >
+                  <IconSymbol name="sparkles" size={20} color="#FFF" />
+                  <Text style={styles.adButtonText}>
+                    {isAdLoaded ? '광고 보고 결과 확인하기' : '광고 준비 중...'}
+                  </Text>
+                </TouchableOpacity>
+                <Text style={[styles.adSubtext, { color: textSecondary }]}>
+                  짧은 광고 시청 후 오늘의 궁합 결과를 확인할 수 있어요
+                </Text>
+              </>
+            )}
           </>
         ) : (
           <EmptyState
@@ -418,5 +486,26 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: FontSizes.md,
     fontWeight: '600',
+  },
+
+  // Ad lock
+  adButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    height: 52,
+    marginBottom: Spacing.sm,
+  },
+  adButtonText: {
+    color: '#FFF',
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  adSubtext: {
+    fontSize: FontSizes.sm,
+    textAlign: 'center',
   },
 });

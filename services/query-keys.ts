@@ -3,6 +3,8 @@ export const queryKeys = {
     all: () => ['fortune'] as const,
     today: () => ['fortune', 'today'] as const,
     history: () => ['fortune', 'history'] as const,
+    scoreTrend: (days: number) => ['fortune', 'scoreTrend', days] as const,
+    recordDates: (year: number, month: number) => ['fortune', 'recordDates', year, month] as const,
   },
   inquiry: {
     all: () => ['inquiry'] as const,
@@ -18,6 +20,8 @@ export const queryKeys = {
     all: () => ['compatibility'] as const,
     today: (id: number) => ['compatibility', 'today', id] as const,
     history: (id: number) => ['compatibility', 'history', id] as const,
+    scoreTrend: (id: number, days: number) => ['compatibility', 'scoreTrend', id, days] as const,
+    recordDates: (id: number, year: number, month: number) => ['compatibility', 'recordDates', id, year, month] as const,
   },
   lotto: {
     all: () => ['lotto'] as const,
