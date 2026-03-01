@@ -27,7 +27,6 @@ export function ScoreTrendChart({ data, isLoading, title }: ScoreTrendChartProps
   const chartData = data.map((point) => ({
     value: point.score,
     label: point.date,
-    dataPointText: String(point.score),
   }));
 
   return (
@@ -74,8 +73,6 @@ export function ScoreTrendChart({ data, isLoading, title }: ScoreTrendChartProps
               thickness={2}
               dataPointsColor={tintColor}
               dataPointsRadius={4}
-              textColor={textSecondary}
-              textFontSize={10}
               yAxisTextStyle={{ color: textSecondary, fontSize: 10 }}
               xAxisLabelTextStyle={{ color: textSecondary, fontSize: 9 }}
               hideRules
@@ -87,6 +84,8 @@ export function ScoreTrendChart({ data, isLoading, title }: ScoreTrendChartProps
               areaChart
               isAnimated
               animationDuration={500}
+              scrollToEnd
+              endSpacing={16}
             />
           )}
         </View>
