@@ -15,7 +15,8 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationQueriesSchemes": ["kakaokompassauth", "kakaolink", "kakaoplus"],
-        "CFBundleURLTypes": []
+        "CFBundleURLTypes": [],
+        "GADApplicationIdentifier": "ca-app-pub-8460185175778038~3639846464"
       }
     },
     "android": {
