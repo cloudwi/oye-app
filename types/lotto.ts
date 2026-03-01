@@ -6,6 +6,8 @@ export interface LottoRecommendation {
   rank: string | null;
   matchCount: number;
   bonusMatch: boolean;
+  evaluated: boolean;
+  prizeAmount: number | null;
   createdAt: string;
 }
 
@@ -23,4 +25,5 @@ export interface LottoRound {
   numbers: number[];
   bonusNumber: number;
   drawDate: string;
+  firstPrizeAmount: number | null;
 }

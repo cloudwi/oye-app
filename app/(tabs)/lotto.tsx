@@ -54,8 +54,10 @@ export default function LottoScreen() {
   }, [refetchHistory]);
 
   const displaySets = useMemo(() => {
-    return [...latestSets].sort((a, b) => a.setNumber - b.setNumber);
-  }, [latestSets]);
+    return [...latestSets]
+      .filter((set) => set.round === latestRound)
+      .sort((a, b) => a.setNumber - b.setNumber);
+  }, [latestSets, latestRound]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>

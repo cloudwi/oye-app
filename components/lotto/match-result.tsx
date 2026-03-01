@@ -19,10 +19,21 @@ function getMatchColor(count: number): string {
   return '#9398A7';
 }
 
-function getMatchLabel(count: number, bonusMatch: boolean, rank: string | null): string {
-  if (rank) return rank;
-  if (bonusMatch) return `${count}개+보너스`;
-  return `${count}개 일치`;
+function formatPrize(amount: number): string {
+  if (amount >= 100_000_000) {
+    const eok = Math.floor(amount / 100_000_000);
+    const remainder = amount % 100_000_000;
+    if (remainder >= 10_000) {
+      const man = Math.floor(remainder / 10_000);
+      return `${eok}억 ${man.toLocaleString()}만원`;
+    }
+    return `${eok}억원`;
+  }
+  if (amount >= 10_000) {
+    const man = Math.floor(amount / 10_000);
+    return `${man.toLocaleString()}만원`;
+  }
+  return `${amount.toLocaleString()}원`;
 }
 
 export function LottoMatchResult({ sets, roundData }: Props) {
@@ -43,7 +54,8 @@ export function LottoMatchResult({ sets, roundData }: Props) {
 
       {sortedSets.map((set, idx) => {
         const matchCount = set.numbers.filter((n) => winningSet.has(n)).length;
-        const color = getMatchColor(matchCount);
+        const isWinner = !!set.rank;
+        const isEvaluated = set.evaluated;
 
         return (
           <View key={set.id} style={styles.setRow}>
@@ -61,14 +73,29 @@ export function LottoMatchResult({ sets, roundData }: Props) {
               ))}
             </View>
             <View style={styles.matchInfo}>
-              {set.rank && (
-                <View style={styles.rankBadge}>
-                  <Text style={styles.rankText}>{set.rank}</Text>
-                </View>
+              {isWinner ? (
+                <>
+                  <View style={styles.winBadge}>
+                    <Text style={styles.winBadgeText}>{set.rank}!</Text>
+                  </View>
+                  {set.prizeAmount != null && (
+                    <Text style={styles.prizeText}>{formatPrize(set.prizeAmount)}</Text>
+                  )}
+                </>
+              ) : isEvaluated ? (
+                <>
+                  <View style={styles.loseBadge}>
+                    <Text style={styles.loseBadgeText}>낙첨</Text>
+                  </View>
+                  <Text style={[lottoStyles.matchCountText, { color: getMatchColor(matchCount) }]}>
+                    {matchCount}개 일치
+                  </Text>
+                </>
+              ) : (
+                <Text style={[lottoStyles.matchCountText, { color: getMatchColor(matchCount) }]}>
+                  {matchCount}개 일치
+                </Text>
               )}
-              <Text style={[lottoStyles.matchCountText, { color }]}>
-                {getMatchLabel(matchCount, set.bonusMatch, set.rank)}
-              </Text>
             </View>
           </View>
         );
@@ -96,15 +123,31 @@ const styles = StyleSheet.create({
     gap: 4,
     marginLeft: 'auto',
   },
-  rankBadge: {
+  winBadge: {
     backgroundColor: '#FFD700',
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 8,
   },
-  rankText: {
+  winBadgeText: {
     fontSize: 10,
     fontWeight: '700',
     color: '#333',
+  },
+  loseBadge: {
+    backgroundColor: '#9398A7',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 8,
+  },
+  loseBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  prizeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#B8860B',
   },
 });

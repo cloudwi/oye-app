@@ -112,11 +112,15 @@ export default function LottoHistoryScreen() {
                 <LottoBall key={i} number={num} size={36} />
               ))}
             </View>
-            {set.rank && (
+            {set.rank ? (
               <View style={styles.rankBadge}>
                 <Text style={styles.rankText}>{set.rank}</Text>
               </View>
-            )}
+            ) : set.evaluated && !set.rank ? (
+              <View style={styles.loseBadge}>
+                <Text style={styles.loseBadgeText}>낙첨</Text>
+              </View>
+            ) : null}
           </View>
         ))}
       </View>
@@ -281,6 +285,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#333',
+  },
+  loseBadge: {
+    backgroundColor: '#9398A7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  loseBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#fff',
   },
   footerLoader: {
     paddingVertical: Spacing.lg,
