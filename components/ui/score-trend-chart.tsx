@@ -58,7 +58,7 @@ export function ScoreTrendChart({ data, isLoading, title }: ScoreTrendChartProps
           ) : chartData.length < 3 ? (
             <View style={styles.insufficientContainer}>
               <Text style={[styles.emptyText, { color: textSecondary }]}>
-                아직 데이터가 부족해요
+                3일 이상 기록이 쌓이면 추이 그래프가 그려져요
               </Text>
             </View>
           ) : (

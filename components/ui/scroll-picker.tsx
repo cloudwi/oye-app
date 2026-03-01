@@ -27,7 +27,7 @@ export function ScrollPicker({
   const surfaceColor = useThemeColor({}, 'surface');
 
   return (
-    <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm, maxHeight != null && { maxHeight }]}>
+    <View style={[styles.pickerWrapper, { backgroundColor: surfaceColor }, Shadows.sm, maxHeight != null && { height: maxHeight }]}>
       <Text style={[styles.pickerLabel, { color: textSecondary }]}>{label}</Text>
       <ScrollView
         style={styles.picker}
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: BorderRadius.lg,
     overflow: 'hidden',
-    maxHeight: 280,
+    height: 280,
   },
   pickerLabel: {
     fontSize: FontSizes.xs,

@@ -29,9 +29,9 @@ export const fortuneApi = {
   },
 
   async getRecordDates(year: number, month: number): Promise<string[]> {
-    const response = await apiClient.get<string[]>('/api/v1/fortune/record-dates', {
+    const response = await apiClient.get<{ yearMonth: string; dates: string[] }>('/api/v1/fortune/record-dates', {
       params: { year, month },
     });
-    return response.data;
+    return response.data.dates;
   },
 };

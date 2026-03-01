@@ -37,10 +37,10 @@ export const compatibilityApi = {
   },
 
   async getRecordDates(connectionId: number, year: number, month: number): Promise<string[]> {
-    const response = await apiClient.get<string[]>(
+    const response = await apiClient.get<{ yearMonth: string; dates: string[] }>(
       `/api/v1/connections/${connectionId}/compatibility/record-dates`,
       { params: { year, month } }
     );
-    return response.data;
+    return response.data.dates;
   },
 };
