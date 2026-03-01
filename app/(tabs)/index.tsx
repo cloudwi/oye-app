@@ -224,8 +224,8 @@ export default function HomeScreen() {
                 </Text>
               </Animated.View>
 
-              {/* Share Button */}
-              <Animated.View style={cardAnimStyle}>
+              {/* Action Buttons */}
+              <Animated.View style={[styles.actionRow, cardAnimStyle]}>
                 <TouchableOpacity
                   style={styles.shareButton}
                   onPress={handleShare}
@@ -242,6 +242,16 @@ export default function HomeScreen() {
                     <IconSymbol name="square.and.arrow.up" size={18} color="#FFF" />
                     <Text style={styles.shareText}>공유하기</Text>
                   </LinearGradient>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.historyButton, { borderColor: tintColor }]}
+                  onPress={() => router.push('/(tabs)/history')}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="예감 기록 보기"
+                >
+                  <IconSymbol name="clock" size={18} color={tintColor} />
+                  <Text style={[styles.historyButtonText, { color: tintColor }]}>기록 보기</Text>
                 </TouchableOpacity>
               </Animated.View>
             </>
@@ -486,9 +496,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Share Button
-  shareButton: {
+  // Action Buttons
+  actionRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
     marginTop: Spacing.md,
+  },
+  shareButton: {
+    flex: 1,
   },
   shareGradient: {
     flexDirection: 'row',
@@ -500,6 +515,20 @@ const styles = StyleSheet.create({
   },
   shareText: {
     color: '#FFF',
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  historyButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1.5,
+    gap: Spacing.sm,
+  },
+  historyButtonText: {
     fontSize: FontSizes.md,
     fontWeight: '600',
   },
