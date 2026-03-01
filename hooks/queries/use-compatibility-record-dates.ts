@@ -7,5 +7,6 @@ export function useCompatibilityRecordDates(connectionId: number, year: number, 
     queryKey: queryKeys.compatibility.recordDates(connectionId, year, month),
     queryFn: () => compatibilityApi.getRecordDates(connectionId, year, month),
     enabled: !!connectionId,
+    staleTime: 30 * 60 * 1000,
   });
 }

@@ -102,6 +102,13 @@ export default function CompatibilityHistoryScreen() {
     if (hasNextPage) fetchNextPage();
   }, [hasNextPage, fetchNextPage]);
 
+  const ITEM_HEIGHT = 76;
+  const getItemLayout = useCallback((_data: any, index: number) => ({
+    length: ITEM_HEIGHT,
+    offset: ITEM_HEIGHT * index,
+    index,
+  }), []);
+
   const renderItem = useCallback(
     ({ item }: { item: CompatibilityResult }) => {
       const dateStr = item.date || item.createdAt;
@@ -214,6 +221,10 @@ export default function CompatibilityHistoryScreen() {
         data={selectedDate ? filteredHistory : history}
         renderItem={renderItem}
         keyExtractor={(item) => String(item.id)}
+        getItemLayout={getItemLayout}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
         contentContainerStyle={[styles.listContent, contentStyle]}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={

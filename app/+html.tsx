@@ -33,6 +33,7 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-itunes-app" content="app-id=6759439435" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="오늘의 예감" />
+        <link rel="preconnect" href="https://api.yegam.today" />
         <ScrollViewStyleReset />
         <style dangerouslySetInnerHTML={{ __html: responsiveStyle }} />
       </head>

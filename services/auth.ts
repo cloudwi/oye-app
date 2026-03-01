@@ -64,14 +64,14 @@ export const authService = {
   },
 
   /**
-   * 네이티브 폴백: 브라우저로 OAuth 수행
+   * 네이티브 폴백: 브라우저로 OAuth 수행 (stateless, 세션 불필요)
    */
   async loginWithKakaoBrowser(): Promise<AuthToken | null> {
     try {
-      const redirectUri = NATIVE_CALLBACK_SCHEME;
-      const loginUrl = `${API_BASE_URL}${KAKAO_LOGIN_PATH}?redirect_uri=${encodeURIComponent(redirectUri)}&platform=native`;
+      const callbackUri = NATIVE_CALLBACK_SCHEME;
+      const loginUrl = `${API_BASE_URL}/api/v1/auth/login/kakao/browser?callback_uri=${encodeURIComponent(callbackUri)}`;
 
-      const result = await WebBrowser.openAuthSessionAsync(loginUrl, redirectUri);
+      const result = await WebBrowser.openAuthSessionAsync(loginUrl, callbackUri);
 
       if (result.type === 'success' && result.url) {
         const token = this.parseTokenFromUrl(result.url);

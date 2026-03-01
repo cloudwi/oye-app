@@ -99,6 +99,13 @@ export default function LottoHistoryScreen() {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  const CARD_HEIGHT = 260; // approximate: padding(32) + roundHeader(20) + 5 sets(~44ea) + gaps
+  const getItemLayout = useCallback((_data: any, index: number) => ({
+    length: CARD_HEIGHT,
+    offset: CARD_HEIGHT * index,
+    index,
+  }), []);
+
   const renderRoundCard = useCallback(
     ({ item }: { item: RoundGroup }) => (
       <View
@@ -265,6 +272,10 @@ export default function LottoHistoryScreen() {
           data={roundGroups}
           keyExtractor={(item) => String(item.round)}
           renderItem={renderRoundCard}
+          getItemLayout={getItemLayout}
+          initialNumToRender={8}
+          maxToRenderPerBatch={8}
+          windowSize={5}
           contentContainerStyle={[styles.listContent, contentStyle]}
           showsVerticalScrollIndicator={false}
           onEndReached={handleEndReached}

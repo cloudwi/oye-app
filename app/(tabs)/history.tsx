@@ -92,6 +92,13 @@ export default function HistoryScreen() {
     if (hasNextPage) fetchNextPage();
   }, [hasNextPage, fetchNextPage]);
 
+  const ITEM_HEIGHT = 76; // historyItem padding(16*2) + dateDay(18lineH) + dateDayOfWeek(13lineH+2mt) + gap(8)
+  const getItemLayout = useCallback((_data: any, index: number) => ({
+    length: ITEM_HEIGHT,
+    offset: ITEM_HEIGHT * index,
+    index,
+  }), []);
+
   const renderItem = useCallback(({ item, index }: { item: Fortune; index: number }) => {
     const dateStr = item.date || item.createdAt;
     const date = dateStr ? parseISO(dateStr) : new Date();
@@ -181,6 +188,10 @@ export default function HistoryScreen() {
         data={selectedDate ? filteredHistory : history}
         renderItem={renderItem}
         keyExtractor={(item, index) => String(item.id ?? index)}
+        getItemLayout={getItemLayout}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
         contentContainerStyle={[styles.listContent, contentStyle]}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={

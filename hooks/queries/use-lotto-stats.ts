@@ -6,5 +6,6 @@ export function useLottoStats() {
   return useQuery({
     queryKey: queryKeys.lotto.stats(),
     queryFn: () => lottoApi.getMyStats(),
+    staleTime: 60 * 60 * 1000,
   });
 }

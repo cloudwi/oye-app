@@ -6,5 +6,6 @@ export function useMyCode() {
   return useQuery({
     queryKey: queryKeys.connection.myCode(),
     queryFn: () => connectionApi.getMyCode(),
+    staleTime: Infinity,
   });
 }

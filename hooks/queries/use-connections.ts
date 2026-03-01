@@ -6,5 +6,6 @@ export function useConnections() {
   return useQuery({
     queryKey: queryKeys.connection.list(),
     queryFn: () => connectionApi.getList(),
+    staleTime: 5 * 60 * 1000,
   });
 }

@@ -154,10 +154,10 @@ export const Colors = {
     surfaceSecondary: '#222430',
 
     // Interactive
-    tint:             Accent[200],
+    tint:             Accent[300],
     icon:             '#7A7E8C',
     tabIconDefault:   '#4A4D58',
-    tabIconSelected:  Accent[200],
+    tabIconSelected:  Accent[300],
 
     // Components
     card:             '#1A1C26',
@@ -167,7 +167,7 @@ export const Colors = {
     divider:          '#222430',
 
     // Accent
-    accent:      Accent[200],
+    accent:      Accent[300],
     accentLight: Accent[400],
 
     // Fortune Card

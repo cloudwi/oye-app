@@ -55,10 +55,12 @@ export function ScoreTrendChart({ data, isLoading, title }: ScoreTrendChartProps
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="small" color={tintColor} />
             </View>
-          ) : chartData.length === 0 ? (
-            <Text style={[styles.emptyText, { color: textSecondary }]}>
-              아직 데이터가 부족해요
-            </Text>
+          ) : chartData.length < 3 ? (
+            <View style={styles.insufficientContainer}>
+              <Text style={[styles.emptyText, { color: textSecondary }]}>
+                아직 데이터가 부족해요
+              </Text>
+            </View>
           ) : (
             <LineChart
               data={chartData}
@@ -124,9 +126,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  insufficientContainer: {
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyText: {
     textAlign: 'center',
-    paddingVertical: Spacing.lg,
     fontSize: FontSizes.sm,
   },
 });

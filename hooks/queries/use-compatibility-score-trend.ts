@@ -7,5 +7,6 @@ export function useCompatibilityScoreTrend(connectionId: number, days: number = 
     queryKey: queryKeys.compatibility.scoreTrend(connectionId, days),
     queryFn: () => compatibilityApi.getScoreTrend(connectionId, days),
     enabled: !!connectionId,
+    staleTime: 30 * 60 * 1000,
   });
 }
