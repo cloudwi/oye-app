@@ -21,7 +21,8 @@ export const queryKeys = {
   },
   lotto: {
     all: () => ['lotto'] as const,
-    history: () => ['lotto', 'history'] as const,
+    stats: () => ['lotto', 'stats'] as const,
+    history: (winOnly?: boolean) => ['lotto', 'history', { winOnly }] as const,
     winners: () => ['lotto', 'winners'] as const,
     round: (round: number) => ['lotto', 'round', round] as const,
   },

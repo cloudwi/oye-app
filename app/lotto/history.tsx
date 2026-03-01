@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -40,6 +40,9 @@ export default function LottoHistoryScreen() {
   const cardBorderColor = useThemeColor({}, 'cardBorder');
   const tintColor = useThemeColor({}, 'tint');
 
+  const [winOnly, setWinOnly] = useState(false);
+  const [sortByAmount, setSortByAmount] = useState(false);
+
   const {
     data: historyData,
     fetchNextPage,
@@ -47,7 +50,7 @@ export default function LottoHistoryScreen() {
     isFetchingNextPage,
     refetch,
     isLoading,
-  } = useLottoHistory();
+  } = useLottoHistory(winOnly || undefined);
 
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,13 +60,13 @@ export default function LottoHistoryScreen() {
 
   const allHistory = historyData?.pages.flatMap((p) => p.content) ?? [];
 
-  const roundGroups: RoundGroup[] = (() => {
+  const roundGroups: RoundGroup[] = useMemo(() => {
     const grouped: Record<number, LottoRecommendation[]> = {};
     for (const item of allHistory) {
       if (!grouped[item.round]) grouped[item.round] = [];
       grouped[item.round].push(item);
     }
-    return Object.keys(grouped)
+    const groups = Object.keys(grouped)
       .map(Number)
       .sort((a, b) => b - a)
       .filter((round) => !searchQuery || String(round).includes(searchQuery))
@@ -72,7 +75,15 @@ export default function LottoHistoryScreen() {
         sets: grouped[round].sort((a, b) => a.setNumber - b.setNumber),
         date: format(new Date(grouped[round][0].createdAt), 'yyyy.MM.dd', { locale: ko }),
       }));
-  })();
+    if (sortByAmount) {
+      groups.sort((a, b) => {
+        const sumA = a.sets.reduce((s, set) => s + (set.prizeAmount ?? 0), 0);
+        const sumB = b.sets.reduce((s, set) => s + (set.prizeAmount ?? 0), 0);
+        return sumB - sumA;
+      });
+    }
+    return groups;
+  }, [allHistory, searchQuery, sortByAmount]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -162,14 +173,84 @@ export default function LottoHistoryScreen() {
         )}
       </View>
 
+      {/* Filter & Sort */}
+      <View style={styles.filterRow}>
+        <View style={styles.filterChips}>
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              !winOnly
+                ? { backgroundColor: tintColor }
+                : { borderColor: cardBorderColor, borderWidth: 1 },
+            ]}
+            onPress={() => setWinOnly(false)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.chipText, { color: !winOnly ? '#fff' : textSecondary }]}>
+              전체
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              winOnly
+                ? { backgroundColor: tintColor }
+                : { borderColor: cardBorderColor, borderWidth: 1 },
+            ]}
+            onPress={() => setWinOnly(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.chipText, { color: winOnly ? '#fff' : textSecondary }]}>
+              당첨
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.filterChips}>
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              !sortByAmount
+                ? { backgroundColor: tintColor }
+                : { borderColor: cardBorderColor, borderWidth: 1 },
+            ]}
+            onPress={() => setSortByAmount(false)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.chipText, { color: !sortByAmount ? '#fff' : textSecondary }]}>
+              최신순
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.chip,
+              sortByAmount
+                ? { backgroundColor: tintColor }
+                : { borderColor: cardBorderColor, borderWidth: 1 },
+            ]}
+            onPress={() => setSortByAmount(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.chipText, { color: sortByAmount ? '#fff' : textSecondary }]}>
+              금액순
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* Content */}
       {isLoading ? (
         <ActivityIndicator style={styles.loader} color={tintColor} />
-      ) : roundGroups.length === 0 && !searchQuery ? (
+      ) : roundGroups.length === 0 && !searchQuery && !winOnly ? (
         <EmptyState
           icon="ticket"
           title="아직 추천 기록이 없어요"
           message="번호를 생성하면 기록이 쌓입니다"
+        />
+      ) : roundGroups.length === 0 && !searchQuery && winOnly ? (
+        <EmptyState
+          icon="ticket"
+          title="당첨 기록이 없어요"
+          message="당첨되면 여기에 표시됩니다"
         />
       ) : roundGroups.length === 0 && searchQuery ? (
         <EmptyState
@@ -251,6 +332,26 @@ const styles = StyleSheet.create({
   loader: {
     flex: 1,
     justifyContent: 'center',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+  filterChips: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+  },
+  chip: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
+  },
+  chipText: {
+    fontSize: FontSizes.xs,
+    fontWeight: '600',
   },
   listContent: {
     paddingHorizontal: Spacing.lg,

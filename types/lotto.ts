@@ -27,3 +27,8 @@ export interface LottoRound {
   drawDate: string;
   firstPrizeAmount: number | null;
 }
+
+export interface LottoMyStats {
+  totalPrize: number;
+  winCount: number;
+}

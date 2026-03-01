@@ -1,12 +1,17 @@
 import { apiClient } from './client';
 import type { PageResponse } from '@/types/api';
-import type { LottoRecommendation, LottoWinner, LottoRound } from '@/types/lotto';
+import type { LottoRecommendation, LottoWinner, LottoRound, LottoMyStats } from '@/types/lotto';
 
 export const lottoApi = {
-  async getHistory(page: number = 0, size: number = 20): Promise<PageResponse<LottoRecommendation>> {
+  async getHistory(page: number = 0, size: number = 20, winOnly?: boolean): Promise<PageResponse<LottoRecommendation>> {
     const response = await apiClient.get<PageResponse<LottoRecommendation>>('/api/v1/lotto/recommendations', {
-      params: { page, size },
+      params: { page, size, ...(winOnly ? { winOnly: true } : {}) },
     });
+    return response.data;
+  },
+
+  async getMyStats(): Promise<LottoMyStats> {
+    const response = await apiClient.get<LottoMyStats>('/api/v1/lotto/my-stats');
     return response.data;
   },
 

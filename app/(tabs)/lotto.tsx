@@ -18,6 +18,7 @@ import { LottoMatchResult } from '@/components/lotto/match-result';
 import { LottoWinnersPreview } from '@/components/lotto/winners-preview';
 import { useLottoRound } from '@/hooks/queries/use-lotto-round';
 import { useLottoHistory } from '@/hooks/queries/use-lotto-history';
+import { useLottoStats } from '@/hooks/queries/use-lotto-stats';
 import {
   Spacing,
   BorderRadius,
@@ -27,6 +28,23 @@ import {
 } from '@/constants/theme';
 import { lottoStyles } from '@/components/lotto/styles';
 
+function formatPrize(amount: number): string {
+  if (amount >= 100_000_000) {
+    const eok = Math.floor(amount / 100_000_000);
+    const remainder = amount % 100_000_000;
+    if (remainder >= 10_000) {
+      const man = Math.floor(remainder / 10_000);
+      return `${eok}억 ${man.toLocaleString()}만원`;
+    }
+    return `${eok}억원`;
+  }
+  if (amount >= 10_000) {
+    const man = Math.floor(amount / 10_000);
+    return `${man.toLocaleString()}만원`;
+  }
+  return `${amount.toLocaleString()}원`;
+}
+
 export default function LottoScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -35,6 +53,7 @@ export default function LottoScreen() {
   const tintColor = useThemeColor({}, 'tint');
 
   const { data: historyData, refetch: refetchHistory } = useLottoHistory();
+  const { data: statsData } = useLottoStats();
 
   const latestSets = historyData?.pages[0]?.content ?? [];
 
@@ -123,8 +142,36 @@ export default function LottoScreen() {
           <LottoWinnersPreview />
         </Animated.View>
 
+        {/* Stats Card */}
+        {statsData && (
+          <Animated.View entering={FadeInDown.duration(400).delay(600)}>
+            <View style={[styles.statsCard, { backgroundColor: surfaceColor }]}>
+              <View style={styles.statsRow}>
+                <Text style={[styles.statsLabel, { color: textSecondary }]}>
+                  누적 당첨 금액
+                </Text>
+                <Text style={[styles.statsValue, { color: tintColor }]}>
+                  {statsData.totalPrize > 0
+                    ? formatPrize(statsData.totalPrize)
+                    : '아직 당첨 내역이 없어요'}
+                </Text>
+              </View>
+              {statsData.winCount > 0 && (
+                <View style={styles.statsRow}>
+                  <Text style={[styles.statsLabel, { color: textSecondary }]}>
+                    당첨 횟수
+                  </Text>
+                  <Text style={[styles.statsValue, { color: tintColor }]}>
+                    {statsData.winCount}회
+                  </Text>
+                </View>
+              )}
+            </View>
+          </Animated.View>
+        )}
+
         {/* History Button */}
-        <Animated.View entering={FadeInDown.duration(400).delay(600)}>
+        <Animated.View entering={FadeInDown.duration(400).delay(700)}>
           <TouchableOpacity
             style={[styles.historyButton, { backgroundColor: surfaceColor }]}
             onPress={() => router.push('/lotto/history')}
@@ -179,6 +226,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: Spacing.xs,
     color: LottoColors.title,
+  },
+  statsCard: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statsLabel: {
+    fontSize: FontSizes.sm,
+  },
+  statsValue: {
+    fontSize: FontSizes.md,
+    fontWeight: '700',
   },
   historyButton: {
     flexDirection: 'row',
