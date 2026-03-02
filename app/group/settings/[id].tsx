@@ -20,6 +20,7 @@ import { useKickMember } from '@/hooks/queries/use-kick-member';
 import { useUserStore } from '@/stores/user-store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ScreenHeader } from '@/components/ui/screen-header';
 import { router, useLocalSearchParams } from 'expo-router';
 import {
   Spacing,
@@ -142,13 +143,7 @@ export default function GroupSettingsScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-            <IconSymbol name="chevron.left" size={20} color={textColor} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>그룹 설정</Text>
-          <View style={styles.headerButton} />
-        </View>
+        <ScreenHeader title="그룹 설정" />
         <View style={styles.skeletonContainer}>
           <Skeleton height={60} borderRadius={BorderRadius.lg} />
           <View style={{ marginTop: Spacing.lg, gap: Spacing.sm }}>
@@ -164,19 +159,7 @@ export default function GroupSettingsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.headerButton}
-          accessibilityRole="button"
-          accessibilityLabel="뒤로 가기"
-        >
-          <IconSymbol name="chevron.left" size={20} color={textColor} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>그룹 설정</Text>
-        <View style={styles.headerButton} />
-      </View>
+      <ScreenHeader title="그룹 설정" />
 
       <ScrollView
         style={styles.scrollView}
@@ -252,26 +235,6 @@ export default function GroupSettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-    gap: Spacing.md,
-  },
-  headerButton: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: FontSizes.xl,
-    fontWeight: '700',
-    textAlign: 'center',
   },
   scrollView: {
     flex: 1,

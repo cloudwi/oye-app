@@ -17,7 +17,7 @@ import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useCreateGroup } from '@/hooks/queries/use-create-group';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { ScreenHeader } from '@/components/ui/screen-header';
 import { router } from 'expo-router';
 import { showAlert } from '@/utils/alert';
 import {
@@ -85,19 +85,7 @@ export default function CreateGroupScreen() {
         style={styles.flex}
         {...wrapperProps}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-            accessibilityRole="button"
-            accessibilityLabel="뒤로 가기"
-          >
-            <IconSymbol name="chevron.left" size={20} color={textColor} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>그룹 만들기</Text>
-          <View style={styles.backButton} />
-        </View>
+        <ScreenHeader title="그룹 만들기" />
 
         <ScrollView
           style={styles.flex}
@@ -212,26 +200,6 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-    gap: Spacing.md,
-  },
-  backButton: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: FontSizes.xl,
-    fontWeight: '700',
-    textAlign: 'center',
   },
   formContent: {
     padding: Spacing.lg,

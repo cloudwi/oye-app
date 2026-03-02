@@ -27,9 +27,11 @@ import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useCompatibility } from '@/hooks/queries/use-compatibility';
 import { useConnections } from '@/hooks/queries/use-connections';
 import { useDeleteConnection } from '@/hooks/queries/use-delete-connection';
+import { useRefresh } from '@/hooks/use-refresh';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ScreenHeader } from '@/components/ui/screen-header';
 import { router, useLocalSearchParams } from 'expo-router';
 import {
   BrandColors,
@@ -70,7 +72,7 @@ export default function ConnectionDetailScreen() {
   const connection = connections?.find((c) => c.id === connectionId);
   const config = connection ? RelationConfig[connection.relationType] : null;
 
-  const [refreshing, setRefreshing] = useState(false);
+  const { refreshing, onRefresh } = useRefresh(refetch);
 
   // Rewarded ad for unlocking compatibility
   const { isLoaded: isAdLoaded, isEarned, show: showAd, reset: resetAd } = useRewardedAd();
@@ -112,12 +114,6 @@ export default function ConnectionDetailScreen() {
   const animatedCircleProps = useAnimatedProps(() => ({
     strokeDashoffset: CIRCUMFERENCE * (1 - scoreProgress.value),
   }));
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  }, [refetch]);
 
   const handleShare = useCallback(async () => {
     if (!compatibility || !connection) return;
@@ -183,13 +179,7 @@ export default function ConnectionDetailScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <IconSymbol name="chevron.left" size={20} color={textColor} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>궁합 결과</Text>
-          <View style={styles.backButton} />
-        </View>
+        <ScreenHeader title="궁합 결과" />
         <View style={styles.skeletonContainer}>
           <Skeleton height={40} width={200} borderRadius={BorderRadius.sm} style={{ alignSelf: 'center' }} />
           <Skeleton height={GAUGE_SIZE} width={GAUGE_SIZE} borderRadius={GAUGE_SIZE / 2} style={{ alignSelf: 'center', marginTop: Spacing.xl }} />
@@ -207,26 +197,19 @@ export default function ConnectionDetailScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-          accessibilityRole="button"
-          accessibilityLabel="뒤로 가기"
-        >
-          <IconSymbol name="chevron.left" size={20} color={textColor} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]}>궁합 결과</Text>
-        <TouchableOpacity
-          onPress={handleMore}
-          style={styles.backButton}
-          accessibilityRole="button"
-          accessibilityLabel="더보기"
-        >
-          <IconSymbol name="ellipsis" size={20} color={textColor} />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        title="궁합 결과"
+        rightAction={
+          <TouchableOpacity
+            onPress={handleMore}
+            style={styles.headerButton}
+            accessibilityRole="button"
+            accessibilityLabel="더보기"
+          >
+            <IconSymbol name="ellipsis" size={20} color={textColor} />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView
         style={styles.scrollView}
@@ -235,7 +218,7 @@ export default function ConnectionDetailScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={handleRefresh}
+            onRefresh={onRefresh}
             tintColor={tintColor}
           />
         }
@@ -391,25 +374,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-    gap: Spacing.md,
-  },
-  backButton: {
+  headerButton: {
     width: 32,
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: FontSizes.xl,
-    fontWeight: '700',
-    textAlign: 'center',
   },
   scrollView: {
     flex: 1,

@@ -66,9 +66,10 @@ export function ScoreTrendChart({ data, isLoading, title }: ScoreTrendChartProps
               width={280}
               height={160}
               spacing={chartData.length > 1 ? 280 / (chartData.length - 1) : 280}
-              maxValue={100}
-              noOfSections={4}
+              maxValue={105}
+              noOfSections={7}
               yAxisOffset={0}
+              formatYLabel={(label: string) => (label === '0' || label === '105') ? '' : label}
               color={tintColor}
               thickness={2}
               dataPointsColor={tintColor}

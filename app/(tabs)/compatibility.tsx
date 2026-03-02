@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,21 +6,19 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import * as Clipboard from 'expo-clipboard';
-import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useMyCode } from '@/hooks/queries/use-my-code';
 import { useConnections } from '@/hooks/queries/use-connections';
 import { useGroups } from '@/hooks/queries/use-groups';
+import { useRefresh } from '@/hooks/use-refresh';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { InviteCodeCard } from '@/components/ui/invite-code-card';
 import { router } from 'expo-router';
 import {
   Spacing,
@@ -28,7 +26,6 @@ import {
   FontSizes,
   Shadows,
   RelationConfig,
-  Gradients,
 } from '@/constants/theme';
 import { getScoreColor } from '@/utils/score';
 import type { Connection } from '@/types/connection';
@@ -47,44 +44,7 @@ export default function CompatibilityScreen() {
   const { data: connections, isLoading: isConnectionsLoading, refetch: refetchConnections } = useConnections();
   const { data: groups, isLoading: isGroupsLoading, refetch: refetchGroups } = useGroups();
 
-  const [refreshing, setRefreshing] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await Promise.all([refetchCode(), refetchConnections(), refetchGroups()]);
-    setRefreshing(false);
-  }, [refetchCode, refetchConnections, refetchGroups]);
-
-  const handleCopyCode = useCallback(async () => {
-    if (!myCode?.code) return;
-    await Clipboard.setStringAsync(myCode.code);
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [myCode]);
-
-  const handleShareCode = useCallback(async () => {
-    if (!myCode?.code) return;
-    const message = `[오늘의 예감] 궁합 초대 코드\n\n내 코드: ${myCode.code}\n\n오늘의 예감 앱에서 코드를 입력하고 궁합을 확인해보세요!`;
-
-    try {
-      if (Platform.OS === 'web') {
-        if (navigator.share) {
-          await navigator.share({ title: '오늘의 예감 - 궁합 초대', text: message });
-        } else {
-          await navigator.clipboard.writeText(message);
-        }
-      } else {
-        const { Share } = require('react-native');
-        await Share.share({ message, title: '오늘의 예감 - 궁합 초대' });
-      }
-    } catch {
-      // User cancelled
-    }
-  }, [myCode]);
+  const { refreshing, onRefresh } = useRefresh(refetchCode, refetchConnections, refetchGroups);
 
   const handleConnectionPress = useCallback((connection: Connection) => {
     router.push({ pathname: '/connection/[id]', params: { id: connection.id } });
@@ -126,7 +86,7 @@ export default function CompatibilityScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={handleRefresh}
+            onRefresh={onRefresh}
             tintColor={tintColor}
           />
         }
@@ -137,55 +97,12 @@ export default function CompatibilityScreen() {
         </Animated.View>
 
         {/* My Code Card */}
-        <Animated.View
-          entering={FadeInDown.duration(400).delay(100)}
-          style={[styles.codeCard, { backgroundColor: surfaceColor }, Shadows.lg]}
-        >
-          <View style={styles.codeCardHeader}>
-            <View style={[styles.codeIconBg, { backgroundColor: tintColor + '15' }]}>
-              <IconSymbol name="link" size={18} color={tintColor} />
-            </View>
-            <Text style={[styles.codeLabel, { color: textSecondary }]}>내 초대 코드</Text>
-          </View>
-
-          <Text
-            style={[styles.codeText, { color: textColor }]}
-            accessibilityLabel={`내 초대 코드: ${myCode?.code || ''}`}
-          >
-            {myCode?.code || '------'}
-          </Text>
-
-          <View style={styles.codeActions}>
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={handleCopyCode}
-              activeOpacity={0.9}
-              accessibilityRole="button"
-              accessibilityLabel="초대 코드 복사"
-            >
-              <LinearGradient
-                colors={Gradients.accent}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.codeButton}
-              >
-                <IconSymbol name="doc.on.doc" size={16} color="#FFF" />
-                <Text style={styles.codeButtonText}>{copied ? '복사됨!' : '복사'}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.codeButton, styles.shareCodeButton, { borderColor: tintColor }]}
-              onPress={handleShareCode}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="초대 코드 공유"
-            >
-              <IconSymbol name="square.and.arrow.up" size={16} color={tintColor} />
-              <Text style={[styles.codeButtonText, { color: tintColor }]}>공유</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+        <InviteCodeCard
+          code={myCode?.code ?? ''}
+          label="내 초대 코드"
+          shareTitle="오늘의 예감 - 궁합 초대"
+          shareMessage={`[오늘의 예감] 궁합 초대 코드\n\n내 코드: ${myCode?.code ?? ''}\n\n오늘의 예감 앱에서 코드를 입력하고 궁합을 확인해보세요!`}
+        />
 
         {/* ── 연인 궁합 Section ── */}
         <Animated.View entering={FadeInDown.duration(400).delay(200)}>
@@ -363,59 +280,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FontSizes.xxl,
     fontWeight: '700',
-  },
-
-  // Code Card
-  codeCard: {
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-  },
-  codeCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  codeIconBg: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  codeLabel: {
-    fontSize: FontSizes.sm,
-    fontWeight: '500',
-  },
-  codeText: {
-    fontSize: 28,
-    fontWeight: '700',
-    letterSpacing: 4,
-    textAlign: 'center',
-    marginBottom: Spacing.lg,
-  },
-  codeActions: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  codeButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm + 2,
-    borderRadius: BorderRadius.md,
-  },
-  shareCodeButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-  },
-  codeButtonText: {
-    color: '#FFF',
-    fontSize: FontSizes.md,
-    fontWeight: '600',
   },
 
   // Add Button

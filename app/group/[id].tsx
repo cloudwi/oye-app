@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -6,27 +6,25 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import * as Clipboard from 'expo-clipboard';
-import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useGroupDetail } from '@/hooks/queries/use-group-detail';
 import { useGroupCompatibility } from '@/hooks/queries/use-group-compatibility';
+import { useRefresh } from '@/hooks/use-refresh';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { InviteCodeCard } from '@/components/ui/invite-code-card';
+import { ScreenHeader } from '@/components/ui/screen-header';
 import { router, useLocalSearchParams } from 'expo-router';
 import {
   Spacing,
   BorderRadius,
   FontSizes,
   Shadows,
-  Gradients,
 } from '@/constants/theme';
 import { getScoreColor } from '@/utils/score';
 
@@ -45,55 +43,12 @@ export default function GroupDetailScreen() {
   const { data: group, isLoading: isGroupLoading, refetch: refetchGroup } = useGroupDetail(groupId);
   const { data: compatibility, refetch: refetchCompatibility } = useGroupCompatibility(groupId);
 
-  const [refreshing, setRefreshing] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await Promise.all([refetchGroup(), refetchCompatibility()]);
-    setRefreshing(false);
-  }, [refetchGroup, refetchCompatibility]);
-
-  const handleCopyCode = useCallback(async () => {
-    if (!group?.inviteCode) return;
-    await Clipboard.setStringAsync(group.inviteCode);
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [group]);
-
-  const handleShareCode = useCallback(async () => {
-    if (!group?.inviteCode) return;
-    const message = `[오늘의 예감] 그룹 초대\n\n"${group.name}" 그룹에 초대합니다!\n초대 코드: ${group.inviteCode}\n\n오늘의 예감 앱에서 코드를 입력하고 그룹 궁합을 확인해보세요!`;
-
-    try {
-      if (Platform.OS === 'web') {
-        if (navigator.share) {
-          await navigator.share({ title: '오늘의 예감 - 그룹 초대', text: message });
-        } else {
-          await navigator.clipboard.writeText(message);
-        }
-      } else {
-        const { Share } = require('react-native');
-        await Share.share({ message, title: '오늘의 예감 - 그룹 초대' });
-      }
-    } catch {
-      // User cancelled
-    }
-  }, [group]);
+  const { refreshing, onRefresh } = useRefresh(refetchGroup, refetchCompatibility);
 
   if (isGroupLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-            <IconSymbol name="chevron.left" size={20} color={textColor} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>그룹</Text>
-          <View style={styles.headerButton} />
-        </View>
+        <ScreenHeader title="그룹" />
         <View style={styles.skeletonContainer}>
           <Skeleton height={120} borderRadius={BorderRadius.xl} />
           <View style={{ marginTop: Spacing.lg, gap: Spacing.sm }}>
@@ -108,13 +63,7 @@ export default function GroupDetailScreen() {
   if (!group) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
-            <IconSymbol name="chevron.left" size={20} color={textColor} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>그룹</Text>
-          <View style={styles.headerButton} />
-        </View>
+        <ScreenHeader title="그룹" />
         <EmptyState
           icon="person.2.fill"
           title="그룹을 찾을 수 없어요"
@@ -126,28 +75,19 @@ export default function GroupDetailScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.headerButton}
-          accessibilityRole="button"
-          accessibilityLabel="뒤로 가기"
-        >
-          <IconSymbol name="chevron.left" size={20} color={textColor} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textColor }]} numberOfLines={1}>
-          {group.name}
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.push({ pathname: '/group/settings/[id]', params: { id: groupId } })}
-          style={styles.headerButton}
-          accessibilityRole="button"
-          accessibilityLabel="그룹 설정"
-        >
-          <IconSymbol name="gearshape.fill" size={20} color={textColor} />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        title={group.name}
+        rightAction={
+          <TouchableOpacity
+            onPress={() => router.push({ pathname: '/group/settings/[id]', params: { id: groupId } })}
+            style={styles.headerButton}
+            accessibilityRole="button"
+            accessibilityLabel="그룹 설정"
+          >
+            <IconSymbol name="gearshape.fill" size={20} color={textColor} />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView
         style={styles.scrollView}
@@ -156,58 +96,18 @@ export default function GroupDetailScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={handleRefresh}
+            onRefresh={onRefresh}
             tintColor={tintColor}
           />
         }
       >
         {/* Invite Code Card */}
-        <Animated.View
-          entering={FadeInDown.duration(400).delay(100)}
-          style={[styles.codeCard, { backgroundColor: surfaceColor }, Shadows.lg]}
-        >
-          <View style={styles.codeCardHeader}>
-            <View style={[styles.codeIconBg, { backgroundColor: tintColor + '15' }]}>
-              <IconSymbol name="link" size={18} color={tintColor} />
-            </View>
-            <Text style={[styles.codeLabel, { color: textSecondary }]}>그룹 초대 코드</Text>
-          </View>
-
-          <Text style={[styles.codeText, { color: textColor }]}>
-            {group.inviteCode}
-          </Text>
-
-          <View style={styles.codeActions}>
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={handleCopyCode}
-              activeOpacity={0.9}
-              accessibilityRole="button"
-              accessibilityLabel="초대 코드 복사"
-            >
-              <LinearGradient
-                colors={Gradients.accent}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.codeButton}
-              >
-                <IconSymbol name="doc.on.doc" size={16} color="#FFF" />
-                <Text style={styles.codeButtonText}>{copied ? '복사됨!' : '복사'}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.codeButton, styles.shareCodeButton, { borderColor: tintColor }]}
-              onPress={handleShareCode}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="초대 코드 공유"
-            >
-              <IconSymbol name="square.and.arrow.up" size={16} color={tintColor} />
-              <Text style={[styles.codeButtonText, { color: tintColor }]}>공유</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+        <InviteCodeCard
+          code={group.inviteCode}
+          label="그룹 초대 코드"
+          shareTitle="오늘의 예감 - 그룹 초대"
+          shareMessage={`[오늘의 예감] 그룹 초대\n\n"${group.name}" 그룹에 초대합니다!\n초대 코드: ${group.inviteCode}\n\n오늘의 예감 앱에서 코드를 입력하고 그룹 궁합을 확인해보세요!`}
+        />
 
         {/* Members Section */}
         <Animated.View entering={FadeInDown.duration(400).delay(200)}>
@@ -289,25 +189,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-    gap: Spacing.md,
-  },
   headerButton: {
     width: 32,
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: FontSizes.xl,
-    fontWeight: '700',
-    textAlign: 'center',
   },
   scrollView: {
     flex: 1,
@@ -318,59 +204,6 @@ const styles = StyleSheet.create({
   },
   skeletonContainer: {
     paddingHorizontal: Spacing.lg,
-  },
-
-  // Code Card
-  codeCard: {
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
-  },
-  codeCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  codeIconBg: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  codeLabel: {
-    fontSize: FontSizes.sm,
-    fontWeight: '500',
-  },
-  codeText: {
-    fontSize: 28,
-    fontWeight: '700',
-    letterSpacing: 4,
-    textAlign: 'center',
-    marginBottom: Spacing.lg,
-  },
-  codeActions: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  codeButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.sm + 2,
-    borderRadius: BorderRadius.md,
-  },
-  shareCodeButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-  },
-  codeButtonText: {
-    color: '#FFF',
-    fontSize: FontSizes.md,
-    fontWeight: '600',
   },
 
   // Section

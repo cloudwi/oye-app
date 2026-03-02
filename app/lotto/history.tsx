@@ -189,13 +189,13 @@ export default function LottoHistoryScreen() {
             style={[
               styles.chip,
               !winOnly
-                ? { backgroundColor: tintColor }
+                ? { backgroundColor: tintColor + '15' }
                 : { borderColor: cardBorderColor, borderWidth: 1 },
             ]}
             onPress={() => setWinOnly(false)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.chipText, { color: !winOnly ? '#fff' : textSecondary }]}>
+            <Text style={[styles.chipText, { color: !winOnly ? tintColor : textSecondary }]}>
               전체
             </Text>
           </TouchableOpacity>
@@ -203,13 +203,13 @@ export default function LottoHistoryScreen() {
             style={[
               styles.chip,
               winOnly
-                ? { backgroundColor: tintColor }
+                ? { backgroundColor: tintColor + '15' }
                 : { borderColor: cardBorderColor, borderWidth: 1 },
             ]}
             onPress={() => setWinOnly(true)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.chipText, { color: winOnly ? '#fff' : textSecondary }]}>
+            <Text style={[styles.chipText, { color: winOnly ? tintColor : textSecondary }]}>
               당첨
             </Text>
           </TouchableOpacity>
@@ -219,13 +219,13 @@ export default function LottoHistoryScreen() {
             style={[
               styles.chip,
               !sortByAmount
-                ? { backgroundColor: tintColor }
+                ? { backgroundColor: tintColor + '15' }
                 : { borderColor: cardBorderColor, borderWidth: 1 },
             ]}
             onPress={() => setSortByAmount(false)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.chipText, { color: !sortByAmount ? '#fff' : textSecondary }]}>
+            <Text style={[styles.chipText, { color: !sortByAmount ? tintColor : textSecondary }]}>
               최신순
             </Text>
           </TouchableOpacity>
@@ -233,13 +233,13 @@ export default function LottoHistoryScreen() {
             style={[
               styles.chip,
               sortByAmount
-                ? { backgroundColor: tintColor }
+                ? { backgroundColor: tintColor + '15' }
                 : { borderColor: cardBorderColor, borderWidth: 1 },
             ]}
             onPress={() => setSortByAmount(true)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.chipText, { color: sortByAmount ? '#fff' : textSecondary }]}>
+            <Text style={[styles.chipText, { color: sortByAmount ? tintColor : textSecondary }]}>
               금액순
             </Text>
           </TouchableOpacity>
