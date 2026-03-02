@@ -9,6 +9,7 @@ import {
   Alert,
   Platform,
   Share,
+  ActionSheetIOS,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
@@ -162,6 +163,23 @@ export default function ConnectionDetailScreen() {
     );
   }, [connectionId, deleteConnection]);
 
+  const handleMore = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['취소', '연결 삭제'],
+          destructiveButtonIndex: 1,
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) handleDelete();
+        },
+      );
+    } else {
+      handleDelete();
+    }
+  }, [handleDelete]);
+
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -201,12 +219,12 @@ export default function ConnectionDetailScreen() {
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: textColor }]}>궁합 결과</Text>
         <TouchableOpacity
-          onPress={handleDelete}
+          onPress={handleMore}
           style={styles.backButton}
           accessibilityRole="button"
-          accessibilityLabel="연결 삭제"
+          accessibilityLabel="더보기"
         >
-          <IconSymbol name="trash.fill" size={18} color={BrandColors.error} />
+          <IconSymbol name="ellipsis" size={20} color={textColor} />
         </TouchableOpacity>
       </View>
 

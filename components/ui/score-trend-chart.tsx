@@ -79,9 +79,11 @@ export function ScoreTrendChart({ data, isLoading, title }: ScoreTrendChartProps
               yAxisColor="transparent"
               xAxisColor={dividerColor}
               curved
-              startFillColor={tintColor + '20'}
-              endFillColor={tintColor + '05'}
               areaChart
+              startFillColor={tintColor}
+              endFillColor={tintColor}
+              startOpacity={0.15}
+              endOpacity={0.01}
               isAnimated
               animationDuration={500}
               scrollToEnd
