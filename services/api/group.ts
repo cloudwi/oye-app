@@ -3,7 +3,6 @@ import type {
   GroupSummary,
   GroupDetail,
   GroupTodayCompatibility,
-  GroupCompatibilityResult,
   CreateGroupRequest,
   JoinGroupRequest,
   UpdateGroupRequest,
@@ -49,11 +48,6 @@ export const groupApi = {
 
   async getTodayCompatibility(id: number): Promise<GroupTodayCompatibility> {
     const response = await apiClient.get<GroupTodayCompatibility>(`/api/v1/groups/${id}/compatibility`);
-    return response.data;
-  },
-
-  async getPairCompatibility(id: number, userId: number): Promise<GroupCompatibilityResult> {
-    const response = await apiClient.get<GroupCompatibilityResult>(`/api/v1/groups/${id}/compatibility/${userId}`);
     return response.data;
   },
 };

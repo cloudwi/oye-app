@@ -28,10 +28,6 @@ export interface GroupDetail {
 }
 
 export interface GroupCompatibilityResult {
-  userAId: number;
-  userAName: string | null;
-  userBId: number;
-  userBName: string | null;
   score: number;
   content: string;
   date: string;
@@ -41,7 +37,7 @@ export interface GroupTodayCompatibility {
   groupId: number;
   date: string;
   members: Record<number, string | null>;
-  compatibilities: GroupCompatibilityResult[];
+  compatibility: GroupCompatibilityResult | null;
 }
 
 export interface CreateGroupRequest {

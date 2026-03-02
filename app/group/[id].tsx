@@ -141,37 +141,19 @@ export default function GroupDetailScreen() {
         <Animated.View entering={FadeInDown.duration(400).delay(300)}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: textColor }]}>오늘의 궁합</Text>
-            {compatibility && compatibility.compatibilities.length > 0 && (() => {
-              const avg = Math.round(
-                compatibility.compatibilities.reduce((sum, c) => sum + c.score, 0) / compatibility.compatibilities.length
-              );
-              return (
-                <Text style={[styles.averageScore, { color: getScoreColor(avg) }]}>
-                  평균 {avg}점
-                </Text>
-              );
-            })()}
+            {compatibility?.compatibility && (
+              <Text style={[styles.compatibilityScore, { color: getScoreColor(compatibility.compatibility.score) }]}>
+                {compatibility.compatibility.score}점
+              </Text>
+            )}
           </View>
 
-          {compatibility && compatibility.compatibilities.length > 0 ? (
-            compatibility.compatibilities.map((pair, index) => (
-              <View
-                key={index}
-                style={[styles.pairCard, { backgroundColor: surfaceColor }, Shadows.sm]}
-              >
-                <View style={styles.pairHeader}>
-                  <Text style={[styles.pairNames, { color: textColor }]}>
-                    {pair.userAName ?? '?'} & {pair.userBName ?? '?'}
-                  </Text>
-                  <Text style={[styles.pairScore, { color: getScoreColor(pair.score) }]}>
-                    {pair.score}점
-                  </Text>
-                </View>
-                <Text style={[styles.pairContent, { color: textSecondary }]} numberOfLines={2}>
-                  {pair.content}
-                </Text>
-              </View>
-            ))
+          {compatibility?.compatibility ? (
+            <View style={[styles.compatibilityCard, { backgroundColor: surfaceColor }, Shadows.sm]}>
+              <Text style={[styles.compatibilityContent, { color: textSecondary }]}>
+                {compatibility.compatibility.content}
+              </Text>
+            </View>
           ) : (
             <EmptyState
               icon="heart"
@@ -221,7 +203,7 @@ const styles = StyleSheet.create({
   sectionCount: {
     fontSize: FontSizes.sm,
   },
-  averageScore: {
+  compatibilityScore: {
     fontSize: FontSizes.sm,
     fontWeight: '600',
   },
@@ -254,27 +236,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Pair Card
-  pairCard: {
+  // Compatibility Card
+  compatibilityCard: {
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
   },
-  pairHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.xs,
-  },
-  pairNames: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-  },
-  pairScore: {
-    fontSize: FontSizes.md,
-    fontWeight: '700',
-  },
-  pairContent: {
+  compatibilityContent: {
     fontSize: FontSizes.sm,
     lineHeight: 20,
   },
