@@ -16,7 +16,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
-import { useConnect } from '@/hooks/queries/use-connect';
+import { useJoinGroup } from '@/hooks/queries/use-join-group';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { router } from 'expo-router';
 import { showAlert } from '@/utils/alert';
@@ -24,32 +24,30 @@ import {
   Spacing,
   BorderRadius,
   FontSizes,
-  RelationConfig,
 } from '@/constants/theme';
 import { getUserFriendlyError } from '@/services/api/client';
 
 const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 const wrapperProps = Platform.OS === 'ios' ? { behavior: 'padding' as const } : {};
 
-export default function ConnectScreen() {
+export default function JoinGroupScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const inputBg = useThemeColor({}, 'inputBackground');
   const placeholderColor = useThemeColor({}, 'placeholder');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { contentStyle } = useResponsiveLayout();
 
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState('');
-  const connect = useConnect();
+  const joinGroup = useJoinGroup();
 
   const isValid = code.trim().length === 6 && !codeError;
 
   const handleSubmit = () => {
-    if (!isValid || connect.isPending) return;
+    if (!isValid || joinGroup.isPending) return;
 
     Keyboard.dismiss();
 
@@ -57,16 +55,16 @@ export default function ConnectScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
-    connect.mutate(
-      { code: code.trim().toUpperCase(), relationType: 'LOVER' },
+    joinGroup.mutate(
+      { code: code.trim().toUpperCase() },
       {
         onSuccess: () => {
-          showAlert('완료', '연결되었습니다!');
+          showAlert('완료', '그룹에 참여했습니다!');
           router.back();
         },
         onError: (error) => {
-          const msg = getUserFriendlyError(error) || '연결에 실패했습니다. 코드를 다시 확인해주세요.';
-          showAlert('연결 실패', msg);
+          const msg = getUserFriendlyError(error) || '그룹 참여에 실패했습니다. 코드를 다시 확인해주세요.';
+          showAlert('참여 실패', msg);
         },
       }
     );
@@ -88,7 +86,7 @@ export default function ConnectScreen() {
           >
             <IconSymbol name="chevron.left" size={20} color={textColor} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>연인 연결하기</Text>
+          <Text style={[styles.headerTitle, { color: textColor }]}>그룹 참여</Text>
           <View style={styles.backButton} />
         </View>
 
@@ -100,7 +98,7 @@ export default function ConnectScreen() {
         >
           {/* Code Input */}
           <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(100)}>
-            <Text style={[styles.label, { color: textSecondary }]}>상대방의 초대 코드</Text>
+            <Text style={[styles.label, { color: textSecondary }]}>그룹 초대 코드</Text>
             <TextInput
               style={[
                 styles.codeInput,
@@ -129,28 +127,10 @@ export default function ConnectScreen() {
             ) : null}
           </Animated.View>
 
-          {/* Relation Info */}
-          <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(200)}>
-            <View style={[styles.relationInfo, { backgroundColor: surfaceColor }]}>
-              <View style={[styles.relationDot, { backgroundColor: RelationConfig.LOVER.color }]} />
-              <Text style={[styles.relationLabel, { color: textColor }]}>
-                연인 궁합으로 연결됩니다
-              </Text>
-            </View>
+          <Animated.View entering={FadeInDown.duration(400).delay(200)}>
             <Text style={[styles.hint, { color: textSecondary }]}>
-              친구, 가족, 동료와 궁합을 보려면 그룹을 이용해주세요.
+              그룹 관리자에게 받은 6자리 초대 코드를 입력해주세요.
             </Text>
-            <TouchableOpacity
-              onPress={() => {
-                router.back();
-                setTimeout(() => router.push('/group/create'), 300);
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.groupLink, { color: tintColor }]}>
-                그룹 만들기 &rarr;
-              </Text>
-            </TouchableOpacity>
           </Animated.View>
         </ScrollView>
 
@@ -166,12 +146,12 @@ export default function ConnectScreen() {
               },
             ]}
             onPress={handleSubmit}
-            disabled={!isValid || connect.isPending}
+            disabled={!isValid || joinGroup.isPending}
             activeOpacity={0.7}
             accessibilityRole="button"
-            accessibilityLabel="연결하기"
+            accessibilityLabel="그룹 참여하기"
           >
-            {connect.isPending ? (
+            {joinGroup.isPending ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <Text
@@ -180,7 +160,7 @@ export default function ConnectScreen() {
                   !isValid && { color: textSecondary + '80' },
                 ]}
               >
-                연결하기
+                참여하기
               </Text>
             )}
           </TouchableOpacity>
@@ -242,37 +222,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: Spacing.xs,
   },
-
-  // Relation Info
-  relationInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-  },
-  relationDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  relationLabel: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
-  },
   hint: {
     fontSize: FontSizes.sm,
     lineHeight: 20,
     marginLeft: Spacing.xs,
   },
-  groupLink: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-    marginLeft: Spacing.xs,
-    marginTop: Spacing.xs,
-  },
-
-  // Bottom
   bottomContainer: {
     padding: Spacing.lg,
     paddingBottom: Spacing.md,

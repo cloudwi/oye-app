@@ -6,17 +6,18 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
-  Alert,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useMyCode } from '@/hooks/queries/use-my-code';
 import { useConnections } from '@/hooks/queries/use-connections';
+import { useGroups } from '@/hooks/queries/use-groups';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,9 +28,11 @@ import {
   FontSizes,
   Shadows,
   RelationConfig,
+  Gradients,
 } from '@/constants/theme';
 import { getScoreColor } from '@/utils/score';
-import type { Connection, RelationType } from '@/types/connection';
+import type { Connection } from '@/types/connection';
+import type { GroupSummary } from '@/types/group';
 
 export default function CompatibilityScreen() {
   const tintColor = useThemeColor({}, 'tint');
@@ -42,15 +45,16 @@ export default function CompatibilityScreen() {
 
   const { data: myCode, isLoading: isCodeLoading, refetch: refetchCode } = useMyCode();
   const { data: connections, isLoading: isConnectionsLoading, refetch: refetchConnections } = useConnections();
+  const { data: groups, isLoading: isGroupsLoading, refetch: refetchGroups } = useGroups();
 
   const [refreshing, setRefreshing] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refetchCode(), refetchConnections()]);
+    await Promise.all([refetchCode(), refetchConnections(), refetchGroups()]);
     setRefreshing(false);
-  }, [refetchCode, refetchConnections]);
+  }, [refetchCode, refetchConnections, refetchGroups]);
 
   const handleCopyCode = useCallback(async () => {
     if (!myCode?.code) return;
@@ -86,9 +90,13 @@ export default function CompatibilityScreen() {
     router.push({ pathname: '/connection/[id]', params: { id: connection.id } });
   }, []);
 
-  const isLoading = isCodeLoading || isConnectionsLoading;
+  const handleGroupPress = useCallback((group: GroupSummary) => {
+    router.push({ pathname: '/group/[id]', params: { id: group.id } });
+  }, []);
 
-  if (isLoading && !myCode && !connections) {
+  const isLoading = isCodeLoading || isConnectionsLoading || isGroupsLoading;
+
+  if (isLoading && !myCode && !connections && !groups) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
         <View style={styles.header}>
@@ -105,6 +113,9 @@ export default function CompatibilityScreen() {
       </SafeAreaView>
     );
   }
+
+  // Filter connections to only show LOVER type in the 1:1 section
+  const loverConnections = connections?.filter((c) => c.relationType === 'LOVER') ?? [];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -146,14 +157,21 @@ export default function CompatibilityScreen() {
 
           <View style={styles.codeActions}>
             <TouchableOpacity
-              style={[styles.codeButton, { backgroundColor: tintColor }]}
+              style={{ flex: 1 }}
               onPress={handleCopyCode}
-              activeOpacity={0.7}
+              activeOpacity={0.9}
               accessibilityRole="button"
               accessibilityLabel="초대 코드 복사"
             >
-              <IconSymbol name="doc.on.doc" size={16} color="#FFF" />
-              <Text style={styles.codeButtonText}>{copied ? '복사됨!' : '복사'}</Text>
+              <LinearGradient
+                colors={Gradients.accent}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.codeButton}
+              >
+                <IconSymbol name="doc.on.doc" size={16} color="#FFF" />
+                <Text style={styles.codeButtonText}>{copied ? '복사됨!' : '복사'}</Text>
+              </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -169,78 +187,154 @@ export default function CompatibilityScreen() {
           </View>
         </Animated.View>
 
-        {/* Add Connection Button */}
+        {/* ── 연인 궁합 Section ── */}
         <Animated.View entering={FadeInDown.duration(400).delay(200)}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>연인 궁합</Text>
+            {loverConnections.length > 0 && (
+              <Text style={[styles.sectionCount, { color: textSecondary }]}>
+                {loverConnections.length}명
+              </Text>
+            )}
+          </View>
+
+          {/* Add Connection Button */}
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: tintColor + '10' }]}
             onPress={() => router.push('/connection/connect')}
             activeOpacity={0.7}
             accessibilityRole="button"
-            accessibilityLabel="상대방 코드로 연결하기"
+            accessibilityLabel="연인 코드로 연결하기"
           >
             <IconSymbol name="plus" size={18} color={tintColor} />
-            <Text style={[styles.addButtonText, { color: tintColor }]}>상대방 코드로 연결하기</Text>
+            <Text style={[styles.addButtonText, { color: tintColor }]}>연인 코드로 연결하기</Text>
           </TouchableOpacity>
+
+          {loverConnections.length > 0 ? (
+            loverConnections.map((connection, index) => {
+              const config = RelationConfig[connection.relationType];
+              return (
+                <Animated.View
+                  key={connection.id}
+                  entering={FadeInDown.duration(400).delay(300 + index * 80)}
+                >
+                  <TouchableOpacity
+                    style={[styles.connectionItem, { backgroundColor: surfaceColor }, Shadows.sm]}
+                    onPress={() => handleConnectionPress(connection)}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${connection.partnerName}, ${config.label}, 궁합 확인하기`}
+                  >
+                    <View style={styles.connectionInfo}>
+                      <View style={styles.connectionNameRow}>
+                        <Text style={[styles.connectionName, { color: textColor }]}>
+                          {connection.partnerName}
+                        </Text>
+                        <View style={[styles.relationBadge, { backgroundColor: config.color + '15' }]}>
+                          <Text style={[styles.relationText, { color: config.color }]}>
+                            {config.label}
+                          </Text>
+                        </View>
+                      </View>
+                      {connection.latestScore !== null ? (
+                        <Text style={[styles.latestScore, { color: getScoreColor(connection.latestScore) }]}>
+                          최근 궁합 {connection.latestScore}점
+                        </Text>
+                      ) : (
+                        <Text style={[styles.latestScore, { color: textSecondary }]}>
+                          아직 궁합을 확인하지 않았어요
+                        </Text>
+                      )}
+                    </View>
+                    <IconSymbol name="chevron.right" size={14} color={textSecondary} />
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })
+          ) : (
+            <EmptyState
+              icon="heart.fill"
+              title="아직 연인 궁합이 없어요"
+              message="초대 코드를 공유하거나 상대방의 코드를 입력해보세요"
+            />
+          )}
         </Animated.View>
 
-        {/* Connections Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: textColor }]}>연결된 사람</Text>
-          {connections && connections.length > 0 && (
-            <Text style={[styles.sectionCount, { color: textSecondary }]}>
-              {connections.length}명
-            </Text>
-          )}
-        </View>
+        {/* ── 그룹 궁합 Section ── */}
+        <Animated.View entering={FadeInDown.duration(400).delay(400)}>
+          <View style={[styles.sectionHeader, { marginTop: Spacing.xl }]}>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>그룹 궁합</Text>
+            {groups && groups.length > 0 && (
+              <Text style={[styles.sectionCount, { color: textSecondary }]}>
+                {groups.length}개
+              </Text>
+            )}
+          </View>
 
-        {connections && connections.length > 0 ? (
-          connections.map((connection, index) => {
-            const config = RelationConfig[connection.relationType];
-            return (
+          {/* Group Action Buttons */}
+          <View style={styles.groupActions}>
+            <TouchableOpacity
+              style={[styles.groupActionButton, { backgroundColor: tintColor + '10' }]}
+              onPress={() => router.push('/group/create')}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="그룹 만들기"
+            >
+              <IconSymbol name="plus" size={18} color={tintColor} />
+              <Text style={[styles.addButtonText, { color: tintColor }]}>만들기</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.groupActionButton, { backgroundColor: tintColor + '10' }]}
+              onPress={() => router.push('/group/join')}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="그룹 참여하기"
+            >
+              <IconSymbol name="person.2.fill" size={18} color={tintColor} />
+              <Text style={[styles.addButtonText, { color: tintColor }]}>참여하기</Text>
+            </TouchableOpacity>
+          </View>
+
+          {groups && groups.length > 0 ? (
+            groups.map((group, index) => (
               <Animated.View
-                key={connection.id}
-                entering={FadeInDown.duration(400).delay(300 + index * 80)}
+                key={group.id}
+                entering={FadeInDown.duration(400).delay(500 + index * 80)}
               >
                 <TouchableOpacity
                   style={[styles.connectionItem, { backgroundColor: surfaceColor }, Shadows.sm]}
-                  onPress={() => handleConnectionPress(connection)}
+                  onPress={() => handleGroupPress(group)}
                   activeOpacity={0.7}
                   accessibilityRole="button"
-                  accessibilityLabel={`${connection.partnerName}, ${config.label}, 궁합 확인하기`}
+                  accessibilityLabel={`${group.name} 그룹, 궁합 확인하기`}
                 >
                   <View style={styles.connectionInfo}>
                     <View style={styles.connectionNameRow}>
                       <Text style={[styles.connectionName, { color: textColor }]}>
-                        {connection.partnerName}
+                        {group.name}
                       </Text>
-                      <View style={[styles.relationBadge, { backgroundColor: config.color + '15' }]}>
-                        <Text style={[styles.relationText, { color: config.color }]}>
-                          {config.label}
+                      <View style={[styles.relationBadge, { backgroundColor: tintColor + '15' }]}>
+                        <Text style={[styles.relationText, { color: tintColor }]}>
+                          {group.memberCount}명
                         </Text>
                       </View>
                     </View>
-                    {connection.latestScore !== null ? (
-                      <Text style={[styles.latestScore, { color: getScoreColor(connection.latestScore) }]}>
-                        최근 궁합 {connection.latestScore}점
-                      </Text>
-                    ) : (
-                      <Text style={[styles.latestScore, { color: textSecondary }]}>
-                        아직 궁합을 확인하지 않았어요
-                      </Text>
-                    )}
+                    <Text style={[styles.latestScore, { color: textSecondary }]}>
+                      {group.isOwner ? '내가 관리' : RelationConfig[group.relationType]?.label ?? '그룹'}
+                    </Text>
                   </View>
                   <IconSymbol name="chevron.right" size={14} color={textSecondary} />
                 </TouchableOpacity>
               </Animated.View>
-            );
-          })
-        ) : (
-          <EmptyState
-            icon="person.2.fill"
-            title="아직 연결된 사람이 없어요"
-            message="초대 코드를 공유하거나 상대방의 코드를 입력해보세요"
-          />
-        )}
+            ))
+          ) : (
+            <EmptyState
+              icon="person.2.fill"
+              title="아직 그룹이 없어요"
+              message="그룹을 만들거나 초대 코드로 참여해보세요"
+            />
+          )}
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -332,11 +426,27 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
   },
   addButtonText: {
     fontSize: FontSizes.md,
     fontWeight: '600',
+  },
+
+  // Group Actions
+  groupActions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  groupActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
   },
 
   // Section

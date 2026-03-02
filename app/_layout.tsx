@@ -116,6 +116,10 @@ export default Sentry.wrap(function RootLayout() {
           name="lotto"
           options={{ animation: 'slide_from_right' }}
         />
+        <Stack.Screen
+          name="group"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack>
       {Platform.OS !== 'web' && <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />}
       {Platform.OS === 'web' && <AppDownloadBanner />}

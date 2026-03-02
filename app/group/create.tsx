@@ -16,7 +16,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
-import { useConnect } from '@/hooks/queries/use-connect';
+import { useCreateGroup } from '@/hooks/queries/use-create-group';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { router } from 'expo-router';
 import { showAlert } from '@/utils/alert';
@@ -27,11 +27,18 @@ import {
   RelationConfig,
 } from '@/constants/theme';
 import { getUserFriendlyError } from '@/services/api/client';
+import type { RelationType } from '@/types/connection';
 
 const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 const wrapperProps = Platform.OS === 'ios' ? { behavior: 'padding' as const } : {};
 
-export default function ConnectScreen() {
+const GROUP_RELATION_OPTIONS = (
+  Object.entries(RelationConfig) as [RelationType, typeof RelationConfig[keyof typeof RelationConfig]][]
+)
+  .filter(([type]) => type !== 'LOVER')
+  .map(([type, config]) => ({ type, ...config }));
+
+export default function CreateGroupScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -42,14 +49,14 @@ export default function ConnectScreen() {
 
   const { contentStyle } = useResponsiveLayout();
 
-  const [code, setCode] = useState('');
-  const [codeError, setCodeError] = useState('');
-  const connect = useConnect();
+  const [name, setName] = useState('');
+  const [relationType, setRelationType] = useState<RelationType | null>(null);
+  const createGroup = useCreateGroup();
 
-  const isValid = code.trim().length === 6 && !codeError;
+  const isValid = name.trim().length >= 2 && name.trim().length <= 20 && relationType !== null;
 
   const handleSubmit = () => {
-    if (!isValid || connect.isPending) return;
+    if (!isValid || createGroup.isPending || !relationType) return;
 
     Keyboard.dismiss();
 
@@ -57,16 +64,16 @@ export default function ConnectScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
-    connect.mutate(
-      { code: code.trim().toUpperCase(), relationType: 'LOVER' },
+    createGroup.mutate(
+      { name: name.trim(), relationType },
       {
         onSuccess: () => {
-          showAlert('완료', '연결되었습니다!');
+          showAlert('완료', '그룹이 생성되었습니다!');
           router.back();
         },
         onError: (error) => {
-          const msg = getUserFriendlyError(error) || '연결에 실패했습니다. 코드를 다시 확인해주세요.';
-          showAlert('연결 실패', msg);
+          const msg = getUserFriendlyError(error) || '그룹 생성에 실패했습니다.';
+          showAlert('생성 실패', msg);
         },
       }
     );
@@ -88,7 +95,7 @@ export default function ConnectScreen() {
           >
             <IconSymbol name="chevron.left" size={20} color={textColor} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>연인 연결하기</Text>
+          <Text style={[styles.headerTitle, { color: textColor }]}>그룹 만들기</Text>
           <View style={styles.backButton} />
         </View>
 
@@ -98,59 +105,68 @@ export default function ConnectScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Code Input */}
+          {/* Group Name Input */}
           <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(100)}>
-            <Text style={[styles.label, { color: textSecondary }]}>상대방의 초대 코드</Text>
+            <Text style={[styles.label, { color: textSecondary }]}>그룹 이름</Text>
             <TextInput
-              style={[
-                styles.codeInput,
-                { backgroundColor: inputBg, color: textColor },
-                codeError && { borderColor: '#EF4444', borderWidth: 2 },
-              ]}
-              placeholder="6자리 코드 입력"
+              style={[styles.nameInput, { backgroundColor: inputBg, color: textColor }]}
+              placeholder="2~20자 그룹 이름"
               placeholderTextColor={placeholderColor}
-              value={code}
-              onChangeText={(text) => {
-                const filtered = text.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6);
-                setCode(filtered);
-                if (text !== filtered) {
-                  setCodeError('영문 대문자와 숫자만 입력 가능합니다');
-                } else {
-                  setCodeError('');
-                }
-              }}
-              maxLength={6}
-              autoCapitalize="characters"
+              value={name}
+              onChangeText={(text) => setName(text.slice(0, 20))}
+              maxLength={20}
               autoCorrect={false}
               returnKeyType="done"
             />
-            {codeError ? (
-              <Text style={[styles.errorText, { color: '#EF4444' }]}>{codeError}</Text>
-            ) : null}
+            <Text style={[styles.charCount, { color: textSecondary }]}>
+              {name.length}/20
+            </Text>
           </Animated.View>
 
-          {/* Relation Info */}
+          {/* Relation Type Selection */}
           <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(200)}>
-            <View style={[styles.relationInfo, { backgroundColor: surfaceColor }]}>
-              <View style={[styles.relationDot, { backgroundColor: RelationConfig.LOVER.color }]} />
-              <Text style={[styles.relationLabel, { color: textColor }]}>
-                연인 궁합으로 연결됩니다
-              </Text>
+            <Text style={[styles.label, { color: textSecondary }]}>관계 유형</Text>
+            <View style={styles.relationGrid}>
+              {GROUP_RELATION_OPTIONS.map((option) => {
+                const isSelected = relationType === option.type;
+                return (
+                  <TouchableOpacity
+                    key={option.type}
+                    style={[
+                      styles.relationOption,
+                      { backgroundColor: surfaceColor },
+                      isSelected && { backgroundColor: option.color + '15', borderColor: option.color, borderWidth: 2 },
+                      !isSelected && { borderWidth: 2, borderColor: 'transparent' },
+                    ]}
+                    onPress={() => {
+                      setRelationType(option.type);
+                      if (Platform.OS !== 'web') {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }
+                    }}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${option.label} 선택${isSelected ? ', 선택됨' : ''}`}
+                  >
+                    <Text
+                      style={[
+                        styles.relationLabel,
+                        { color: isSelected ? option.color : textColor },
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.duration(400).delay(300)}>
             <Text style={[styles.hint, { color: textSecondary }]}>
-              친구, 가족, 동료와 궁합을 보려면 그룹을 이용해주세요.
+              그룹을 만들면 초대 코드가 자동으로 생성됩니다.{'\n'}
+              초대 코드를 공유해서 친구, 가족, 동료를 초대해보세요.
             </Text>
-            <TouchableOpacity
-              onPress={() => {
-                router.back();
-                setTimeout(() => router.push('/group/create'), 300);
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.groupLink, { color: tintColor }]}>
-                그룹 만들기 &rarr;
-              </Text>
-            </TouchableOpacity>
           </Animated.View>
         </ScrollView>
 
@@ -166,12 +182,12 @@ export default function ConnectScreen() {
               },
             ]}
             onPress={handleSubmit}
-            disabled={!isValid || connect.isPending}
+            disabled={!isValid || createGroup.isPending}
             activeOpacity={0.7}
             accessibilityRole="button"
-            accessibilityLabel="연결하기"
+            accessibilityLabel="그룹 만들기"
           >
-            {connect.isPending ? (
+            {createGroup.isPending ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <Text
@@ -180,7 +196,7 @@ export default function ConnectScreen() {
                   !isValid && { color: textSecondary + '80' },
                 ]}
               >
-                연결하기
+                만들기
               </Text>
             )}
           </TouchableOpacity>
@@ -229,50 +245,40 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: Spacing.xs,
   },
-  codeInput: {
+  nameInput: {
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
-    fontSize: 24,
-    fontWeight: '700',
-    letterSpacing: 6,
-    textAlign: 'center',
-  },
-  errorText: {
-    fontSize: FontSizes.sm,
-    fontWeight: '500',
-    marginLeft: Spacing.xs,
-  },
-
-  // Relation Info
-  relationInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-  },
-  relationDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  relationLabel: {
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.lg,
     fontWeight: '600',
+  },
+  charCount: {
+    fontSize: FontSizes.xs,
+    textAlign: 'right',
+    marginRight: Spacing.xs,
   },
   hint: {
     fontSize: FontSizes.sm,
     lineHeight: 20,
     marginLeft: Spacing.xs,
   },
-  groupLink: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-    marginLeft: Spacing.xs,
-    marginTop: Spacing.xs,
+  relationGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
   },
-
-  // Bottom
+  relationOption: {
+    width: '48%',
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    gap: Spacing.xs,
+  },
+  relationLabel: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
   bottomContainer: {
     padding: Spacing.lg,
     paddingBottom: Spacing.md,
