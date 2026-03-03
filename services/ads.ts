@@ -10,12 +10,6 @@ export function isAdsInitialized() {
 export function initializeMobileAds(): Promise<void> {
   if (_initPromise) return _initPromise;
 
-  if (Platform.OS === 'web') {
-    _initialized = true;
-    _initPromise = Promise.resolve();
-    return _initPromise;
-  }
-
   _initPromise = (async () => {
     try {
       const { default: mobileAds } = require('react-native-google-mobile-ads');

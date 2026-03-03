@@ -38,42 +38,31 @@ export function AdBanner() {
 
     let cancelled = false;
 
-    function pushAd() {
-      if (pushed.current || cancelled) return;
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        pushed.current = true;
-      } catch {
-        // AdSense not ready
-      }
-
-      setTimeout(() => {
-        if (cancelled) return;
-        const ins = container?.querySelector('ins');
-        const status = ins?.getAttribute('data-ad-status');
-        if (ins && ins.offsetHeight > 0 && status !== 'unfilled') {
-          setVisible(true);
+    loadAdSenseScript()
+      .then(() => {
+        if (pushed.current || cancelled) return;
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          pushed.current = true;
+        } catch {
+          // AdSense not ready
         }
-      }, 3000);
-    }
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !pushed.current) {
-          loadAdSenseScript().then(pushAd).catch(() => {
-            // AdSense load failed, stay hidden
-          });
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(container);
+        setTimeout(() => {
+          if (cancelled) return;
+          const ins = container?.querySelector('ins');
+          const status = ins?.getAttribute('data-ad-status');
+          if (ins && ins.offsetHeight > 0 && status !== 'unfilled') {
+            setVisible(true);
+          }
+        }, 3000);
+      })
+      .catch(() => {
+        // AdSense load failed
+      });
 
     return () => {
       cancelled = true;
-      observer.disconnect();
     };
   }, []);
 
@@ -82,11 +71,12 @@ export function AdBanner() {
       ref={containerRef}
       style={{
         textAlign: 'center',
-        overflow: 'hidden',
         width: '100%',
-        height: visible ? 'auto' : 0,
+        maxHeight: visible ? 300 : 0,
         margin: visible ? '8px 0' : 0,
-        transition: 'height 0.3s ease, margin 0.3s ease',
+        opacity: visible ? 1 : 0,
+        overflow: 'hidden',
+        transition: 'max-height 0.3s ease, margin 0.3s ease, opacity 0.3s ease',
       }}
     >
       <ins
