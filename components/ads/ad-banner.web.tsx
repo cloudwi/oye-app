@@ -67,15 +67,15 @@ export function AdBanner() {
         textAlign: 'center',
         margin: '8px 0',
         overflow: 'hidden',
-        height: filled ? 'auto' : 0,
+        maxHeight: filled ? 120 : 0,
       }}
     >
       <ins
         className="adsbygoogle"
-        style={{ display: 'block' }}
+        style={{ display: 'block', maxHeight: 100 }}
         data-ad-client={ADSENSE_CLIENT_ID}
         data-ad-slot={ADSENSE_SLOT_ID}
-        data-ad-format="auto"
+        data-ad-format="horizontal"
         data-full-width-responsive="true"
       />
     </div>
