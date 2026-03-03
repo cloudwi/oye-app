@@ -505,6 +505,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.sm,
     marginTop: Spacing.md,
+    marginBottom: Spacing.md,
   },
   shareButton: {
     flex: 1,
@@ -539,7 +540,7 @@ const styles = StyleSheet.create({
 
   // Sections
   section: {
-    marginTop: Spacing.xl,
+    marginTop: Spacing.md,
   },
   sectionHeader: {
     flexDirection: 'row',

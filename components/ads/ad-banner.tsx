@@ -76,7 +76,7 @@ export function AdBanner() {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginVertical: Spacing.lg,
+    marginVertical: Spacing.md,
   },
   hidden: {
     height: 0,

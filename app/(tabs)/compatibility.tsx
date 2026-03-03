@@ -109,7 +109,7 @@ export default function CompatibilityScreen() {
         <AdBanner />
 
         {/* ── 연인 궁합 Section ── */}
-        <Animated.View entering={FadeInDown.duration(400).delay(200)}>
+        <Animated.View entering={FadeInDown.duration(400).delay(200)} style={{ marginTop: Spacing.md }}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: textColor }]}>연인 궁합</Text>
             {loverConnections.length > 0 && (
