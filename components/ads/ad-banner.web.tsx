@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const ADSENSE_CLIENT_ID = 'ca-pub-8460185175778038';
 const ADSENSE_SLOT_ID = 'YYYYYYYYYY';
@@ -10,34 +10,66 @@ declare global {
   }
 }
 
-function loadAdSenseScript() {
-  if (document.querySelector(`script[src*="adsbygoogle"]`)) return;
+function loadAdSenseScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src*="adsbygoogle"]`)) {
+      resolve();
+      return;
+    }
 
-  const script = document.createElement('script');
-  script.src = `${ADSENSE_SCRIPT_URL}?client=${ADSENSE_CLIENT_ID}`;
-  script.async = true;
-  script.crossOrigin = 'anonymous';
-  document.head.appendChild(script);
+    const script = document.createElement('script');
+    script.src = `${ADSENSE_SCRIPT_URL}?client=${ADSENSE_CLIENT_ID}`;
+    script.async = true;
+    script.crossOrigin = 'anonymous';
+    script.onload = () => resolve();
+    script.onerror = () => reject();
+    document.head.appendChild(script);
+  });
 }
 
 export function AdBanner() {
   const pushed = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [filled, setFilled] = useState(false);
 
   useEffect(() => {
-    loadAdSenseScript();
+    loadAdSenseScript()
+      .then(() => {
+        if (!pushed.current) {
+          try {
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+            pushed.current = true;
+          } catch {
+            // AdSense not ready
+          }
+        }
 
-    if (!pushed.current) {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        pushed.current = true;
-      } catch {
-        // AdSense not ready yet
-      }
-    }
+        // Check if the ad actually rendered content
+        setTimeout(() => {
+          const container = containerRef.current;
+          if (container) {
+            const ins = container.querySelector('ins');
+            if (ins && ins.offsetHeight > 0) {
+              setFilled(true);
+            }
+          }
+        }, 2000);
+      })
+      .catch(() => {
+        // Script load failed (ad blocker, etc.)
+      });
   }, []);
 
   return (
-    <div style={{ textAlign: 'center', margin: '8px 0' }}>
+    <div
+      ref={containerRef}
+      style={{
+        textAlign: 'center',
+        margin: '8px 0',
+        overflow: 'hidden',
+        height: filled ? 'auto' : 0,
+      }}
+    >
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
