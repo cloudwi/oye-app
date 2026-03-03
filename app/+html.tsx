@@ -37,15 +37,9 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-title" content="오늘의 예감" />
         <link rel="preconnect" href="https://api.yegam.today" />
         <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              var s = document.createElement('script');
-              s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8460185175778038';
-              s.async = true;
-              s.crossOrigin = 'anonymous';
-              document.head.appendChild(s);
-            `,
-          }}
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8460185175778038"
+          crossOrigin="anonymous"
         />
         <script
           type="application/ld+json"
