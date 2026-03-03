@@ -16,7 +16,10 @@ try {
 }
 
 const BANNER_AD_UNIT_ID = 'ca-app-pub-8460185175778038/9147968218';
-const adUnitId = __DEV__ ? (TestIds?.ADAPTIVE_BANNER ?? BANNER_AD_UNIT_ID) : BANNER_AD_UNIT_ID;
+
+// TODO: 앱스토어 게시 후 아래 줄을 원래대로 변경
+// const adUnitId = __DEV__ ? (TestIds?.ADAPTIVE_BANNER ?? BANNER_AD_UNIT_ID) : BANNER_AD_UNIT_ID;
+const adUnitId = TestIds?.ADAPTIVE_BANNER ?? BANNER_AD_UNIT_ID; // TestFlight 테스트용 (항상 테스트 광고)
 
 export function AdBanner() {
   const [failed, setFailed] = useState(false);
