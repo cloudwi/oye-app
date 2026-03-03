@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { LayoutAnimation, Platform, UIManager, View, StyleSheet } from 'react-native';
 import { Spacing } from '@/constants/theme';
+import { initializeMobileAds, isAdsInitialized } from '@/services/ads';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 let BannerAd: any = null;
 let BannerAdSize: any = null;
@@ -22,8 +27,17 @@ const BANNER_AD_UNIT_ID = 'ca-app-pub-8460185175778038/9147968218';
 const adUnitId = TestIds?.ADAPTIVE_BANNER ?? BANNER_AD_UNIT_ID; // TestFlight 테스트용 (항상 테스트 광고)
 
 export function AdBanner() {
+  const [sdkReady, setSdkReady] = useState(isAdsInitialized());
+  const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+
+  // SDK 초기화 대기
+  useEffect(() => {
+    if (!sdkReady) {
+      initializeMobileAds().then(() => setSdkReady(true));
+    }
+  }, [sdkReady]);
 
   // 실패 시 10초 후 재시도 (최대 3회)
   useEffect(() => {
@@ -36,15 +50,19 @@ export function AdBanner() {
     }
   }, [failed, retryCount]);
 
-  if (!BannerAd || failed) return null;
+  if (!BannerAd || !sdkReady || failed) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={loaded ? styles.container : styles.hidden}>
       <BannerAd
         unitId={adUnitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
         requestOptions={{
           requestNonPersonalizedAdsOnly: false,
+        }}
+        onAdLoaded={() => {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setLoaded(true);
         }}
         onAdFailedToLoad={(error: any) => {
           console.warn('[AdBanner] Failed to load:', error);
@@ -59,5 +77,9 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     marginVertical: Spacing.sm,
+  },
+  hidden: {
+    height: 0,
+    overflow: 'hidden',
   },
 });

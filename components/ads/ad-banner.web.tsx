@@ -30,7 +30,7 @@ function loadAdSenseScript(): Promise<void> {
 export function AdBanner() {
   const pushed = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hidden, setHidden] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -51,8 +51,8 @@ export function AdBanner() {
         if (cancelled) return;
         const ins = container?.querySelector('ins');
         const status = ins?.getAttribute('data-ad-status');
-        if (!ins || ins.offsetHeight === 0 || status === 'unfilled') {
-          setHidden(true);
+        if (ins && ins.offsetHeight > 0 && status !== 'unfilled') {
+          setVisible(true);
         }
       }, 3000);
     }
@@ -61,7 +61,7 @@ export function AdBanner() {
       ([entry]) => {
         if (entry.isIntersecting && !pushed.current) {
           loadAdSenseScript().then(pushAd).catch(() => {
-            if (!cancelled) setHidden(true);
+            // AdSense load failed, stay hidden
           });
           observer.disconnect();
         }
@@ -77,16 +77,16 @@ export function AdBanner() {
     };
   }, []);
 
-  if (hidden) return null;
-
   return (
     <div
       ref={containerRef}
       style={{
         textAlign: 'center',
-        margin: '8px 0',
         overflow: 'hidden',
         width: '100%',
+        height: visible ? 'auto' : 0,
+        margin: visible ? '8px 0' : 0,
+        transition: 'height 0.3s ease, margin 0.3s ease',
       }}
     >
       <ins

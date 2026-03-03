@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
+import { initializeMobileAds } from '@/services/ads';
 
 let RewardedAd: typeof import('react-native-google-mobile-ads').RewardedAd | null = null;
 let RewardedAdEventType: typeof import('react-native-google-mobile-ads').RewardedAdEventType | null = null;
@@ -38,42 +39,48 @@ export function useRewardedAd() {
   const loadAd = useCallback(() => {
     if (Platform.OS === 'web' || !RewardedAd || !RewardedAdEventType || !AdEventType) return;
 
-    const ad = RewardedAd.createForAdRequest(adUnitId);
+    // SDK 초기화 완료 후 광고 로드
+    initializeMobileAds().then(() => {
+      if (!RewardedAd || !RewardedAdEventType || !AdEventType) return;
 
-    const unsubLoaded = ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
-      setIsLoaded(true);
-    });
+      const ad = RewardedAd.createForAdRequest(adUnitId);
 
-    const unsubEarned = ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
-      setIsEarned(true);
-    });
+      const unsubLoaded = ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
+        setIsLoaded(true);
+      });
 
-    const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
-      // Reload for next use
-      setIsLoaded(false);
+      const unsubEarned = ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+        setIsEarned(true);
+      });
+
+      const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
+        // Reload for next use
+        setIsLoaded(false);
+        ad.load();
+      });
+
+      const unsubError = ad.addAdEventListener(AdEventType.ERROR, () => {
+        setIsLoaded(false);
+        // Retry after delay
+        setTimeout(() => ad.load(), 5000);
+      });
+
+      adRef.current = ad;
+      adRef.current._cleanup = () => {
+        unsubLoaded();
+        unsubEarned();
+        unsubClosed();
+        unsubError();
+      };
       ad.load();
     });
-
-    const unsubError = ad.addAdEventListener(AdEventType.ERROR, () => {
-      setIsLoaded(false);
-      // Retry after delay
-      setTimeout(() => ad.load(), 5000);
-    });
-
-    adRef.current = ad;
-    ad.load();
-
-    return () => {
-      unsubLoaded();
-      unsubEarned();
-      unsubClosed();
-      unsubError();
-    };
   }, []);
 
   useEffect(() => {
-    const cleanup = loadAd();
-    return cleanup;
+    loadAd();
+    return () => {
+      adRef.current?._cleanup?.();
+    };
   }, [loadAd]);
 
   const show = useCallback(() => {
