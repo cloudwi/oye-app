@@ -15,8 +15,8 @@ try {
   // Native module not available
 }
 
-// TODO: 실제 배너 Ad Unit ID로 교체
-const adUnitId = TestIds?.ADAPTIVE_BANNER ?? 'ca-app-pub-8460185175778038/BANNER_ID';
+const BANNER_AD_UNIT_ID = 'ca-app-pub-8460185175778038/9147968218';
+const adUnitId = __DEV__ ? (TestIds?.ADAPTIVE_BANNER ?? BANNER_AD_UNIT_ID) : BANNER_AD_UNIT_ID;
 
 export function AdBanner() {
   const [failed, setFailed] = useState(false);

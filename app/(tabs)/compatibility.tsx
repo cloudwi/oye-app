@@ -27,6 +27,7 @@ import {
   Shadows,
   RelationConfig,
 } from '@/constants/theme';
+import { AdBanner } from '@/components/ads/ad-banner';
 import { getScoreColor } from '@/utils/score';
 import type { Connection } from '@/types/connection';
 import type { GroupSummary } from '@/types/group';
@@ -176,6 +177,9 @@ export default function CompatibilityScreen() {
             />
           )}
         </Animated.View>
+
+        {/* Banner Ad */}
+        <AdBanner />
 
         {/* ── 그룹 궁합 Section ── */}
         <Animated.View entering={FadeInDown.duration(400).delay(400)}>
