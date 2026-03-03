@@ -32,31 +32,46 @@ export function AdBanner() {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
+    function tryPush() {
+      const container = containerRef.current;
+      if (!container || container.offsetWidth === 0) {
+        // Container not laid out yet, retry
+        requestAnimationFrame(tryPush);
+        return;
+      }
+
+      if (!pushed.current) {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          pushed.current = true;
+        } catch {
+          // AdSense not ready
+        }
+      }
+
+      // Check if the ad actually rendered content
+      setTimeout(() => {
+        if (cancelled) return;
+        const ins = container.querySelector('ins');
+        if (!ins || ins.offsetHeight === 0) {
+          setHidden(true);
+        }
+      }, 3000);
+    }
+
     loadAdSenseScript()
       .then(() => {
-        if (!pushed.current) {
-          try {
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
-            pushed.current = true;
-          } catch {
-            // AdSense not ready
-          }
-        }
-
-        // Check if the ad actually rendered content
-        setTimeout(() => {
-          const container = containerRef.current;
-          if (container) {
-            const ins = container.querySelector('ins');
-            if (!ins || ins.offsetHeight === 0) {
-              setHidden(true);
-            }
-          }
-        }, 3000);
+        if (!cancelled) requestAnimationFrame(tryPush);
       })
       .catch(() => {
-        setHidden(true);
+        if (!cancelled) setHidden(true);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (hidden) return null;
@@ -68,12 +83,13 @@ export function AdBanner() {
         textAlign: 'center',
         margin: '8px 0',
         overflow: 'hidden',
+        width: '100%',
         minHeight: 50,
       }}
     >
       <ins
         className="adsbygoogle"
-        style={{ display: 'block' }}
+        style={{ display: 'block', width: '100%' }}
         data-ad-client={ADSENSE_CLIENT_ID}
         data-ad-format="auto"
         data-full-width-responsive="true"
