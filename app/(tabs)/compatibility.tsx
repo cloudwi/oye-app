@@ -105,6 +105,9 @@ export default function CompatibilityScreen() {
           shareMessage={`[오늘의 예감] 궁합 초대 코드\n\n내 코드: ${myCode?.code ?? ''}\n\n오늘의 예감 앱에서 코드를 입력하고 궁합을 확인해보세요!`}
         />
 
+        {/* Banner Ad */}
+        <AdBanner />
+
         {/* ── 연인 궁합 Section ── */}
         <Animated.View entering={FadeInDown.duration(400).delay(200)}>
           <View style={styles.sectionHeader}>
@@ -177,9 +180,6 @@ export default function CompatibilityScreen() {
             />
           )}
         </Animated.View>
-
-        {/* Banner Ad */}
-        <AdBanner />
 
         {/* ── 그룹 궁합 Section ── */}
         <Animated.View entering={FadeInDown.duration(400).delay(400)}>
