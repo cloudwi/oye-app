@@ -39,6 +39,7 @@ export default function Root({ children }: PropsWithChildren) {
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8460185175778038"
           crossOrigin="anonymous"
+          dangerouslySetInnerHTML={{ __html: '' }}
         />
         <script
           type="application/ld+json"
