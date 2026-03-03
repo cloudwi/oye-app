@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 const ADSENSE_CLIENT_ID = 'ca-pub-8460185175778038';
-const ADSENSE_SLOT_ID = 'YOUR_AD_SLOT_ID'; // TODO: AdSense 콘솔에서 웹용 광고 유닛 슬롯 ID로 교체
+const ADSENSE_SLOT_ID = '2220761508';
 const ADSENSE_SCRIPT_URL = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
 
 declare global {
