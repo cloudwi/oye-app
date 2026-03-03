@@ -28,7 +28,10 @@ export function AdBanner() {
       <BannerAd
         unitId={adUnitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        onAdFailedToLoad={() => setFailed(true)}
+        onAdFailedToLoad={(error: any) => {
+          console.warn('[AdBanner] Failed to load:', error);
+          setFailed(true);
+        }}
       />
     </View>
   );

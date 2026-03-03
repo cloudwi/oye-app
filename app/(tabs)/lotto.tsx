@@ -215,6 +215,9 @@ export default function LottoScreen() {
           <LottoWinnersPreview />
         </Animated.View>
 
+        {/* Banner Ad */}
+        <AdBanner />
+
         {/* Stats Card */}
         {statsData && (
           <Animated.View entering={FadeInDown.duration(400).delay(600)}>
@@ -242,9 +245,6 @@ export default function LottoScreen() {
             </View>
           </Animated.View>
         )}
-
-        {/* Banner Ad */}
-        <AdBanner />
 
         {/* History Button */}
         <Animated.View entering={FadeInDown.duration(400).delay(700)}>
