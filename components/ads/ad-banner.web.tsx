@@ -50,7 +50,8 @@ export function AdBanner() {
       setTimeout(() => {
         if (cancelled) return;
         const ins = container?.querySelector('ins');
-        if (!ins || ins.offsetHeight === 0) {
+        const status = ins?.getAttribute('data-ad-status');
+        if (!ins || ins.offsetHeight === 0 || status === 'unfilled') {
           setHidden(true);
         }
       }, 3000);
@@ -86,7 +87,6 @@ export function AdBanner() {
         margin: '8px 0',
         overflow: 'hidden',
         width: '100%',
-        minHeight: 50,
       }}
     >
       <ins
