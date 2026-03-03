@@ -18,13 +18,31 @@ import { notificationService } from '@/services/notification';
 import { queryClient } from '@/services/query-client';
 import * as Sentry from '@sentry/react-native';
 
-// Initialize Google Mobile Ads SDK
+// Initialize Google Mobile Ads SDK with ATT consent
 if (Platform.OS !== 'web') {
   try {
     const { default: mobileAds } = require('react-native-google-mobile-ads');
-    mobileAds().initialize();
+    const { requestTrackingPermissionsAsync } = require('expo-tracking-transparency');
+
+    requestTrackingPermissionsAsync().then((status: { granted: boolean }) => {
+      if (!status.granted) {
+        mobileAds().setRequestConfiguration({
+          testDeviceIdentifiers: __DEV__ ? ['EMULATOR'] : [],
+        });
+      }
+      mobileAds().initialize();
+    }).catch(() => {
+      // ATT not available, initialize anyway
+      mobileAds().initialize();
+    });
   } catch {
     // Native module not available
+    try {
+      const { default: mobileAds } = require('react-native-google-mobile-ads');
+      mobileAds().initialize();
+    } catch {
+      // Completely unavailable
+    }
   }
 }
 

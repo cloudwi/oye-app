@@ -54,5 +54,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         iosAppId: 'ca-app-pub-8460185175778038~3639846464',
       },
     ],
+    'expo-tracking-transparency',
   ],
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Spacing } from '@/constants/theme';
 
@@ -20,6 +20,18 @@ const adUnitId = __DEV__ ? (TestIds?.ADAPTIVE_BANNER ?? BANNER_AD_UNIT_ID) : BAN
 
 export function AdBanner() {
   const [failed, setFailed] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // 실패 시 10초 후 재시도 (최대 3회)
+  useEffect(() => {
+    if (failed && retryCount < 3) {
+      const timer = setTimeout(() => {
+        setFailed(false);
+        setRetryCount((c) => c + 1);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [failed, retryCount]);
 
   if (!BannerAd || failed) return null;
 
@@ -28,6 +40,9 @@ export function AdBanner() {
       <BannerAd
         unitId={adUnitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+        requestOptions={{
+          requestNonPersonalizedAdsOnly: false,
+        }}
         onAdFailedToLoad={(error: any) => {
           console.warn('[AdBanner] Failed to load:', error);
           setFailed(true);

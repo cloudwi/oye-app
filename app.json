@@ -16,7 +16,8 @@
         "ITSAppUsesNonExemptEncryption": false,
         "LSApplicationQueriesSchemes": ["kakaokompassauth", "kakaolink", "kakaoplus"],
         "CFBundleURLTypes": [],
-        "GADApplicationIdentifier": "ca-app-pub-8460185175778038~3639846464"
+        "GADApplicationIdentifier": "ca-app-pub-8460185175778038~3639846464",
+        "NSUserTrackingUsageDescription": "맞춤형 광고를 제공하기 위해 사용됩니다."
       }
     },
     "android": {
