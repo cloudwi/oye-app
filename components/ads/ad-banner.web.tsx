@@ -32,45 +32,46 @@ export function AdBanner() {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
     let cancelled = false;
 
-    function tryPush() {
-      const container = containerRef.current;
-      if (!container || container.offsetWidth === 0) {
-        // Container not laid out yet, retry
-        requestAnimationFrame(tryPush);
-        return;
+    function pushAd() {
+      if (pushed.current || cancelled) return;
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        pushed.current = true;
+      } catch {
+        // AdSense not ready
       }
 
-      if (!pushed.current) {
-        try {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-          pushed.current = true;
-        } catch {
-          // AdSense not ready
-        }
-      }
-
-      // Check if the ad actually rendered content
       setTimeout(() => {
         if (cancelled) return;
-        const ins = container.querySelector('ins');
+        const ins = container?.querySelector('ins');
         if (!ins || ins.offsetHeight === 0) {
           setHidden(true);
         }
       }, 3000);
     }
 
-    loadAdSenseScript()
-      .then(() => {
-        if (!cancelled) requestAnimationFrame(tryPush);
-      })
-      .catch(() => {
-        if (!cancelled) setHidden(true);
-      });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !pushed.current) {
+          loadAdSenseScript().then(pushAd).catch(() => {
+            if (!cancelled) setHidden(true);
+          });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(container);
 
     return () => {
       cancelled = true;
+      observer.disconnect();
     };
   }, []);
 
