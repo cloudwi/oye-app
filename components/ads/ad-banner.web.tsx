@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 const ADSENSE_CLIENT_ID = 'ca-pub-8460185175778038';
-const ADSENSE_SLOT_ID = 'YYYYYYYYYY';
 const ADSENSE_SCRIPT_URL = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
 
 declare global {
@@ -30,7 +29,7 @@ function loadAdSenseScript(): Promise<void> {
 export function AdBanner() {
   const pushed = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [filled, setFilled] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     loadAdSenseScript()
@@ -49,16 +48,18 @@ export function AdBanner() {
           const container = containerRef.current;
           if (container) {
             const ins = container.querySelector('ins');
-            if (ins && ins.offsetHeight > 0) {
-              setFilled(true);
+            if (!ins || ins.offsetHeight === 0) {
+              setHidden(true);
             }
           }
-        }, 2000);
+        }, 3000);
       })
       .catch(() => {
-        // Script load failed (ad blocker, etc.)
+        setHidden(true);
       });
   }, []);
+
+  if (hidden) return null;
 
   return (
     <div
@@ -67,15 +68,14 @@ export function AdBanner() {
         textAlign: 'center',
         margin: '8px 0',
         overflow: 'hidden',
-        maxHeight: filled ? 120 : 0,
+        minHeight: 50,
       }}
     >
       <ins
         className="adsbygoogle"
-        style={{ display: 'block', maxHeight: 100 }}
+        style={{ display: 'block' }}
         data-ad-client={ADSENSE_CLIENT_ID}
-        data-ad-slot={ADSENSE_SLOT_ID}
-        data-ad-format="horizontal"
+        data-ad-format="auto"
         data-full-width-responsive="true"
       />
     </div>
