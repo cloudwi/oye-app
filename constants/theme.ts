@@ -90,10 +90,10 @@ export const CategoryIcons = {
 
 // ─── 6. Relation Config ─────────────────────────────────────────
 export const RelationConfig = {
-  LOVER:     { label: '연인',     color: '#D47C9A' },
-  FRIEND:    { label: '친구',     color: '#5B8EC9' },
-  FAMILY:    { label: '가족',     color: '#4CAF82' },
-  COLLEAGUE: { label: '직장동료', color: Accent[400] },
+  LOVER:     { label: '연인',     color: '#D47C9A', fortuneLabel: '애정운' },
+  FRIEND:    { label: '친구',     color: '#5B8EC9', fortuneLabel: '우정운' },
+  FAMILY:    { label: '가족',     color: '#4CAF82', fortuneLabel: '가족운' },
+  COLLEAGUE: { label: '직장동료', color: Accent[400], fortuneLabel: '직장운' },
 } as const;
 
 // ─── 7. Gradients ───────────────────────────────────────────────

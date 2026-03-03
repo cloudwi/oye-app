@@ -33,6 +33,7 @@ const defaultUser: User = {
   bloodType: null,
   interests: null,
   role: 'USER',
+  fortuneScheduleHour: 6,
   createdAt: new Date().toISOString(),
 };
 

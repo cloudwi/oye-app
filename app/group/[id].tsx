@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -27,6 +28,8 @@ import {
   Shadows,
 } from '@/constants/theme';
 import { getScoreColor } from '@/utils/score';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRewardedAd } from '@/hooks/use-rewarded-ad';
 
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -44,6 +47,31 @@ export default function GroupDetailScreen() {
   const { data: compatibility, refetch: refetchCompatibility } = useGroupCompatibility(groupId);
 
   const { refreshing, onRefresh } = useRefresh(refetchGroup, refetchCompatibility);
+
+  // Rewarded ad for unlocking group compatibility
+  const { isLoaded: isAdLoaded, isEarned, show: showAd, reset: resetAd } = useRewardedAd();
+  const [isUnlocked, setIsUnlocked] = useState(Platform.OS === 'web');
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    AsyncStorage.getItem('group_compat_ad_unlocked').then((val) => {
+      const today = new Date().toISOString().split('T')[0];
+      if (val === today) setIsUnlocked(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isEarned) {
+      const today = new Date().toISOString().split('T')[0];
+      AsyncStorage.setItem('group_compat_ad_unlocked', today);
+      setIsUnlocked(true);
+      resetAd();
+    }
+  }, [isEarned, resetAd]);
+
+  const handleWatchAd = useCallback(() => {
+    if (isAdLoaded) showAd();
+  }, [isAdLoaded, showAd]);
 
   if (isGroupLoading) {
     return (
@@ -141,7 +169,7 @@ export default function GroupDetailScreen() {
         <Animated.View entering={FadeInDown.duration(400).delay(300)}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: textColor }]}>오늘의 궁합</Text>
-            {compatibility?.compatibility && (
+            {compatibility?.compatibility && isUnlocked && (
               <Text style={[styles.compatibilityScore, { color: getScoreColor(compatibility.compatibility.score) }]}>
                 {compatibility.compatibility.score}점
               </Text>
@@ -149,11 +177,38 @@ export default function GroupDetailScreen() {
           </View>
 
           {compatibility?.compatibility ? (
-            <View style={[styles.compatibilityCard, { backgroundColor: surfaceColor }, Shadows.sm]}>
-              <Text style={[styles.compatibilityContent, { color: textSecondary }]}>
-                {compatibility.compatibility.content}
-              </Text>
-            </View>
+            isUnlocked ? (
+              <View style={[styles.compatibilityCard, { backgroundColor: surfaceColor }, Shadows.sm]}>
+                <Text style={[styles.compatibilityContent, { color: textSecondary }]}>
+                  {compatibility.compatibility.content}
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={[styles.compatibilityCard, { backgroundColor: surfaceColor, overflow: 'hidden' }, Shadows.sm]}>
+                  <Text
+                    numberOfLines={3}
+                    style={[styles.compatibilityContent, { color: textSecondary, opacity: 0.12 }]}
+                  >
+                    {compatibility.compatibility.content}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.adButton, { backgroundColor: tintColor, opacity: isAdLoaded ? 1 : 0.5 }]}
+                  onPress={handleWatchAd}
+                  disabled={!isAdLoaded}
+                  activeOpacity={0.7}
+                >
+                  <IconSymbol name="sparkles" size={20} color="#FFF" />
+                  <Text style={styles.adButtonText}>
+                    {isAdLoaded ? '광고 보고 결과 확인하기' : '광고 준비 중...'}
+                  </Text>
+                </TouchableOpacity>
+                <Text style={[styles.adSubtext, { color: textSecondary }]}>
+                  짧은 광고 시청 후 오늘의 궁합 결과를 확인할 수 있어요
+                </Text>
+              </>
+            )
           ) : (
             <EmptyState
               icon="heart"
@@ -245,5 +300,26 @@ const styles = StyleSheet.create({
   compatibilityContent: {
     fontSize: FontSizes.sm,
     lineHeight: 20,
+  },
+
+  // Ad lock
+  adButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    height: 52,
+    marginBottom: Spacing.sm,
+  },
+  adButtonText: {
+    color: '#FFF',
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  adSubtext: {
+    fontSize: FontSizes.sm,
+    textAlign: 'center',
   },
 });

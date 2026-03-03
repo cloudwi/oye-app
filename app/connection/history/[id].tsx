@@ -29,9 +29,11 @@ import {
   BorderRadius,
   FontSizes,
   Shadows,
+  RelationConfig,
 } from '@/constants/theme';
 import { getScoreColor } from '@/utils/score';
 import type { CompatibilityResult } from '@/types/compatibility';
+import type { RelationType } from '@/types/connection';
 
 export default function CompatibilityHistoryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -81,6 +83,7 @@ export default function CompatibilityHistoryScreen() {
   );
 
   const connection = connections?.find((c) => c.id === connectionId);
+  const relationConfig = connection ? RelationConfig[connection.relationType as RelationType] : null;
   const history = data?.pages.flatMap((page) => page.content) ?? [];
   const totalCount = data?.pages[0]?.totalElements ?? 0;
 
@@ -145,12 +148,22 @@ export default function CompatibilityHistoryScreen() {
             <View style={styles.expandedContent}>
               <View style={[styles.divider, { backgroundColor: textSecondary + '20' }]} />
               <Text style={[styles.contentText, { color: textColor }]}>{item.content}</Text>
+              {item.relationFortune && relationConfig && (
+                <View style={[styles.relationFortuneRow, { backgroundColor: relationConfig.color + '1F' }]}>
+                  <Text style={[styles.relationFortuneLabel, { color: relationConfig.color }]}>
+                    {relationConfig.fortuneLabel}
+                  </Text>
+                  <Text style={[styles.relationFortuneText, { color: textColor }]}>
+                    {item.relationFortune}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
         </TouchableOpacity>
       );
     },
-    [expandedId, surfaceColor, textColor, textSecondary]
+    [expandedId, surfaceColor, textColor, textSecondary, relationConfig]
   );
 
   const renderEmpty = () => (
@@ -382,5 +395,19 @@ const styles = StyleSheet.create({
   contentText: {
     fontSize: FontSizes.md,
     lineHeight: 24,
+  },
+  relationFortuneRow: {
+    marginTop: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+  },
+  relationFortuneLabel: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+  },
+  relationFortuneText: {
+    fontSize: FontSizes.md,
+    lineHeight: 22,
   },
 });

@@ -18,6 +18,7 @@ export interface User {
   bloodType: BloodType | null;
   interests: string | null;
   role: UserRole;
+  fortuneScheduleHour: number;
   createdAt: string; // ISO datetime
 }
 

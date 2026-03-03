@@ -11,22 +11,23 @@ export default function Root({ children }: PropsWithChildren) {
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1, user-scalable=no"
         />
-        <title>오늘의 예감</title>
-        <meta name="description" content="매일 아침, AI가 전해주는 나만의 특별한 예감" />
+        <title>오늘의 예감 - AI 운세, 궁합, 로또 번호 추천</title>
+        <meta name="description" content="매일 아침 AI가 전해주는 나만의 운세, 연인/친구 궁합, 로또 번호 추천까지. 오늘의 예감으로 하루를 시작하세요." />
+        <meta name="keywords" content="운세,오늘의운세,궁합,로또,로또번호추천,AI운세,오늘의예감,무료운세,매일운세,연인궁합,친구궁합" />
         <meta name="theme-color" content="#6366F1" />
-        <meta property="og:title" content="오늘의 예감" />
-        <meta property="og:description" content="매일 아침, AI가 전해주는 나만의 특별한 예감" />
+        <meta property="og:title" content="오늘의 예감 - AI 운세, 궁합, 로또" />
+        <meta property="og:description" content="매일 아침 AI가 전해주는 나만의 운세, 연인/친구 궁합, 로또 번호 추천까지. 오늘의 예감으로 하루를 시작하세요." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://yegam.today" />
-        <meta property="og:image" content="/og-image.png" />
+        <meta property="og:image" content="https://yegam.today/og-image.png" />
         <meta property="og:image:width" content="1024" />
         <meta property="og:image:height" content="1024" />
         <meta property="og:locale" content="ko_KR" />
         <meta property="og:site_name" content="오늘의 예감" />
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="오늘의 예감" />
-        <meta name="twitter:description" content="매일 아침, AI가 전해주는 나만의 특별한 예감" />
-        <meta name="twitter:image" content="/og-image.png" />
+        <meta name="twitter:title" content="오늘의 예감 - AI 운세, 궁합, 로또" />
+        <meta name="twitter:description" content="매일 아침 AI가 전해주는 나만의 운세, 연인/친구 궁합, 로또 번호 추천까지." />
+        <meta name="twitter:image" content="https://yegam.today/og-image.png" />
         <link rel="canonical" href="https://yegam.today" />
         <meta name="google" content="notranslate" />
         <meta httpEquiv="content-language" content="ko" />
@@ -34,6 +35,14 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="오늘의 예감" />
         <link rel="preconnect" href="https://api.yegam.today" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdApp) }}
+        />
         <ScrollViewStyleReset />
         <style dangerouslySetInnerHTML={{ __html: responsiveStyle }} />
       </head>
@@ -41,6 +50,36 @@ export default function Root({ children }: PropsWithChildren) {
     </html>
   );
 }
+
+const jsonLdWebSite = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: '오늘의 예감',
+  url: 'https://yegam.today',
+  description: '매일 아침 AI가 전해주는 나만의 운세, 궁합, 로또 번호 추천',
+  inLanguage: 'ko',
+};
+
+const jsonLdApp = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: '오늘의 예감',
+  description: '매일 아침 AI가 전해주는 나만의 운세, 연인/친구 궁합, 로또 번호 추천',
+  operatingSystem: 'iOS',
+  applicationCategory: 'LifestyleApplication',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'KRW',
+  },
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '5.0',
+    ratingCount: '1',
+    bestRating: '5',
+    worstRating: '1',
+  },
+};
 
 const responsiveStyle = `
   html, body {

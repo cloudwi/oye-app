@@ -46,6 +46,10 @@ export const groupApi = {
     await apiClient.delete(`/api/v1/groups/${id}/members/${userId}`);
   },
 
+  async updateSchedule(id: number, hour: number): Promise<void> {
+    await apiClient.put(`/api/v1/groups/${id}/schedule`, { hour });
+  },
+
   async getTodayCompatibility(id: number): Promise<GroupTodayCompatibility> {
     const response = await apiClient.get<GroupTodayCompatibility>(`/api/v1/groups/${id}/compatibility`);
     return response.data;

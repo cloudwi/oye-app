@@ -45,6 +45,7 @@ import {
 } from '@/constants/theme';
 import { lottoStyles } from '@/components/lotto/styles';
 import { getScoreColor } from '@/utils/score';
+import { AdBanner } from '@/components/ads/ad-banner';
 import type { Connection } from '@/types/connection';
 
 type TimePeriod = 'morning' | 'afternoon' | 'evening' | 'night';
@@ -254,6 +255,9 @@ export default function HomeScreen() {
                   <Text style={[styles.historyButtonText, { color: tintColor }]}>기록 보기</Text>
                 </TouchableOpacity>
               </Animated.View>
+
+              {/* Banner Ad */}
+              <AdBanner />
             </>
           ) : (
             <EmptyState

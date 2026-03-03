@@ -90,15 +90,9 @@ export function AppDownloadBanner() {
       <Text style={desktopStyles.title}>📱 앱으로 이용하기</Text>
       <Text style={desktopStyles.subtitle}>QR코드를 스캔하여{'\n'}앱을 설치해보세요</Text>
       <Image source={{ uri: qrUrl }} style={desktopStyles.qrImage} />
-      <View style={desktopStyles.storeLinks}>
-        <TouchableOpacity onPress={() => Linking.openURL(IOS_STORE)} activeOpacity={0.7}>
-          <Text style={desktopStyles.storeLink}>App Store</Text>
-        </TouchableOpacity>
-        <Text style={desktopStyles.divider}>|</Text>
-        <TouchableOpacity onPress={() => Linking.openURL(ANDROID_STORE)} activeOpacity={0.7}>
-          <Text style={desktopStyles.storeLink}>Google Play</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity onPress={() => Linking.openURL(IOS_STORE)} activeOpacity={0.7}>
+        <Text style={desktopStyles.storeLink}>App Store에서 다운로드</Text>
+      </TouchableOpacity>
     </View>
   );
 }

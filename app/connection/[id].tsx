@@ -299,6 +299,24 @@ export default function ConnectionDetailScreen() {
                   </Text>
                 </Animated.View>
 
+                {/* Relation Fortune */}
+                {compatibility.relationFortune && config && (
+                  <Animated.View
+                    style={[
+                      styles.relationFortuneCard,
+                      { backgroundColor: config.color + '1F' },
+                    ]}
+                    entering={FadeInDown.duration(400).delay(250)}
+                  >
+                    <Text style={[styles.relationFortuneLabel, { color: config.color }]}>
+                      {config.fortuneLabel}
+                    </Text>
+                    <Text style={[styles.relationFortuneText, { color: textColor }]}>
+                      {compatibility.relationFortune}
+                    </Text>
+                  </Animated.View>
+                )}
+
                 {/* Action Buttons */}
                 <Animated.View style={styles.actions} entering={FadeInDown.duration(400).delay(300)}>
                   <TouchableOpacity
@@ -450,6 +468,22 @@ const styles = StyleSheet.create({
   analysisText: {
     fontSize: FontSizes.md,
     lineHeight: 26,
+  },
+
+  // Relation Fortune
+  relationFortuneCard: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.lg,
+  },
+  relationFortuneLabel: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+  },
+  relationFortuneText: {
+    fontSize: FontSizes.md,
+    lineHeight: 24,
   },
 
   // Actions

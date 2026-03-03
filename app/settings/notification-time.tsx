@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useSettingsStore } from '@/stores/settings-store';
 import { notificationService } from '@/services/notification';
+import { userApi } from '@/services/api/user';
 import { SettingsHeader } from '@/components/ui/settings-header';
 import { ScrollPicker } from '@/components/ui/scroll-picker';
 import { Spacing, BorderRadius, FontSizes, Shadows } from '@/constants/theme';
@@ -19,22 +20,22 @@ const padTwo = (n: number) => String(n).padStart(2, '0');
 export default function NotificationTimeScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const textColor = useThemeColor({}, 'text');
+  const textSecondary = useThemeColor({}, 'textSecondary');
   const backgroundColor = useThemeColor({}, 'background');
   const surfaceColor = useThemeColor({}, 'surface');
 
   const { notificationTime, setNotificationTime } = useSettingsStore();
-  const [hour, minute] = notificationTime.split(':').map(Number);
+  const [hour] = notificationTime.split(':').map(Number);
 
   const [selectedHour, setSelectedHour] = useState(hour);
-  const [selectedMinute, setSelectedMinute] = useState(minute);
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
-  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
 
   const handleSave = async () => {
-    const timeStr = `${padTwo(selectedHour)}:${padTwo(selectedMinute)}`;
+    const timeStr = `${padTwo(selectedHour)}:00`;
     setNotificationTime(timeStr);
-    await notificationService.scheduleDailyNotification(selectedHour, selectedMinute);
+    await userApi.updateSchedule(selectedHour);
+    await notificationService.scheduleDailyNotification(selectedHour, 0);
     router.back();
   };
 
@@ -43,12 +44,15 @@ export default function NotificationTimeScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <SettingsHeader title="알림 시간" />
+      <SettingsHeader title="예감 생성 시간" />
 
       <View style={styles.content}>
         <View style={[styles.timeDisplay, { backgroundColor: surfaceColor }, Shadows.sm]}>
           <Text style={[styles.timeText, { color: textColor }]}>
-            {period} {displayHour}시 {padTwo(selectedMinute)}분
+            {period} {displayHour}시
+          </Text>
+          <Text style={[styles.timeDescription, { color: textSecondary }]}>
+            매일 이 시간에 예감이 생성되고 알림이 전송됩니다
           </Text>
         </View>
 
@@ -58,14 +62,6 @@ export default function NotificationTimeScreen() {
             selected={selectedHour}
             onSelect={setSelectedHour}
             label="시"
-            formatter={padTwo}
-            maxHeight={300}
-          />
-          <ScrollPicker
-            data={minutes}
-            selected={selectedMinute}
-            onSelect={setSelectedMinute}
-            label="분"
             formatter={padTwo}
             maxHeight={300}
           />
@@ -103,6 +99,10 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: FontSizes.xxl,
     fontWeight: '700',
+  },
+  timeDescription: {
+    fontSize: FontSizes.sm,
+    marginTop: Spacing.xs,
   },
   pickerContainer: {
     flexDirection: 'row',

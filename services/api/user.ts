@@ -16,6 +16,11 @@ export const userApi = {
     await apiClient.delete('/api/v1/users/me');
   },
 
+  async updateSchedule(hour: number): Promise<User> {
+    const response = await apiClient.put<User>('/api/v1/users/schedule', { hour });
+    return response.data;
+  },
+
   async registerPushToken(token: string | null): Promise<void> {
     await apiClient.put('/api/v1/users/push-token', { token });
   },

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -21,7 +21,9 @@ import { useUserStore } from '@/stores/user-store';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScreenHeader } from '@/components/ui/screen-header';
+import { ScrollPicker } from '@/components/ui/scroll-picker';
 import { router, useLocalSearchParams } from 'expo-router';
+import { groupApi } from '@/services/api/group';
 import {
   Spacing,
   BorderRadius,
@@ -29,6 +31,8 @@ import {
   Shadows,
   Semantic,
 } from '@/constants/theme';
+
+const padTwo = (n: number) => String(n).padStart(2, '0');
 
 export default function GroupSettingsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -49,6 +53,22 @@ export default function GroupSettingsScreen() {
 
   const currentUserId = useUserStore((s) => s.user?.id);
   const isOwner = group ? group.ownerId === currentUserId : false;
+
+  const [scheduleHour, setScheduleHour] = useState(group?.scheduleHour ?? 6);
+  const [isSavingSchedule, setIsSavingSchedule] = useState(false);
+  const scheduleHours = Array.from({ length: 24 }, (_, i) => i);
+
+  const handleSaveSchedule = useCallback(async (hour: number) => {
+    setScheduleHour(hour);
+    setIsSavingSchedule(true);
+    try {
+      await groupApi.updateSchedule(groupId, hour);
+    } catch {
+      Alert.alert('오류', '시간 변경에 실패했습니다.');
+    } finally {
+      setIsSavingSchedule(false);
+    }
+  }, [groupId]);
 
   const handleKickMember = useCallback((userId: number, name: string) => {
     const doKick = () => {
@@ -177,6 +197,28 @@ export default function GroupSettingsScreen() {
           </Text>
         </Animated.View>
 
+        {/* Schedule (Owner only) */}
+        {isOwner && (
+          <Animated.View entering={FadeInDown.duration(400).delay(150)}>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>궁합 생성 시간</Text>
+            <View style={[styles.scheduleCard, { backgroundColor: surfaceColor }, Shadows.sm]}>
+              <Text style={[styles.scheduleDescription, { color: textSecondary }]}>
+                매일 이 시간에 그룹 궁합이 생성됩니다
+              </Text>
+              <View style={styles.schedulePickerRow}>
+                <ScrollPicker
+                  data={scheduleHours}
+                  selected={scheduleHour}
+                  onSelect={handleSaveSchedule}
+                  label="시"
+                  formatter={padTwo}
+                  maxHeight={200}
+                />
+              </View>
+            </View>
+          </Animated.View>
+        )}
+
         {/* Members */}
         <Animated.View entering={FadeInDown.duration(400).delay(200)}>
           <Text style={[styles.sectionTitle, { color: textColor }]}>멤버 관리</Text>
@@ -260,6 +302,20 @@ const styles = StyleSheet.create({
   },
   groupMeta: {
     fontSize: FontSizes.sm,
+  },
+
+  // Schedule
+  scheduleCard: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.lg,
+  },
+  scheduleDescription: {
+    fontSize: FontSizes.sm,
+    marginBottom: Spacing.md,
+  },
+  schedulePickerRow: {
+    flexDirection: 'row',
   },
 
   // Section

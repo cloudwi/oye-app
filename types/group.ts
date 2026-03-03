@@ -24,6 +24,7 @@ export interface GroupDetail {
   ownerId: number;
   ownerName: string | null;
   members: GroupMember[];
+  scheduleHour?: number;
   createdAt: string;
 }
 

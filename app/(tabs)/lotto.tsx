@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
@@ -27,6 +28,8 @@ import {
   LottoColors,
 } from '@/constants/theme';
 import { lottoStyles } from '@/components/lotto/styles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRewardedAd } from '@/hooks/use-rewarded-ad';
 
 function formatPrize(amount: number): string {
   if (amount >= 100_000_000) {
@@ -89,6 +92,31 @@ export default function LottoScreen() {
       .sort((a, b) => a.setNumber - b.setNumber);
   }, [latestSets, latestRound]);
 
+  // Rewarded ad for unlocking lotto numbers
+  const { isLoaded: isAdLoaded, isEarned, show: showAd, reset: resetAd } = useRewardedAd();
+  const [isUnlocked, setIsUnlocked] = useState(Platform.OS === 'web');
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    AsyncStorage.getItem('lotto_ad_unlocked').then((val) => {
+      const today = new Date().toISOString().split('T')[0];
+      if (val === today) setIsUnlocked(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isEarned) {
+      const today = new Date().toISOString().split('T')[0];
+      AsyncStorage.setItem('lotto_ad_unlocked', today);
+      setIsUnlocked(true);
+      resetAd();
+    }
+  }, [isEarned, resetAd]);
+
+  const handleWatchAd = useCallback(() => {
+    if (isAdLoaded) showAd();
+  }, [isAdLoaded, showAd]);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
@@ -119,18 +147,51 @@ export default function LottoScreen() {
             <Text style={styles.resultTitle}>
               이번 회차 추천 번호
             </Text>
-            {displaySets.map((set, idx) => (
-              <View key={set.id} style={lottoStyles.numberSetRow}>
-                <Text style={[lottoStyles.setLabelBase, { color: LottoColors.setLabel }]}>
-                  {String.fromCharCode(65 + idx)}
-                </Text>
-                <View style={lottoStyles.ballRow}>
-                  {set.numbers.map((num, i) => (
-                    <LottoBall key={i} number={num} size={36} />
-                  ))}
+            {isUnlocked ? (
+              displaySets.map((set, idx) => (
+                <View key={set.id} style={lottoStyles.numberSetRow}>
+                  <Text style={[lottoStyles.setLabelBase, { color: LottoColors.setLabel }]}>
+                    {String.fromCharCode(65 + idx)}
+                  </Text>
+                  <View style={lottoStyles.ballRow}>
+                    {set.numbers.map((num, i) => (
+                      <LottoBall key={i} number={num} size={36} />
+                    ))}
+                  </View>
                 </View>
-              </View>
-            ))}
+              ))
+            ) : (
+              <>
+                {displaySets.map((_, idx) => (
+                  <View key={idx} style={lottoStyles.numberSetRow}>
+                    <Text style={[lottoStyles.setLabelBase, { color: LottoColors.setLabel }]}>
+                      {String.fromCharCode(65 + idx)}
+                    </Text>
+                    <View style={lottoStyles.ballRow}>
+                      {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <View key={i} style={styles.lockedBall}>
+                          <Text style={styles.lockedBallText}>?</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                ))}
+                <TouchableOpacity
+                  style={[styles.adButton, { backgroundColor: tintColor, opacity: isAdLoaded ? 1 : 0.5 }]}
+                  onPress={handleWatchAd}
+                  disabled={!isAdLoaded}
+                  activeOpacity={0.7}
+                >
+                  <IconSymbol name="sparkles" size={20} color="#FFF" />
+                  <Text style={styles.adButtonText}>
+                    {isAdLoaded ? '광고 보고 번호 확인하기' : '광고 준비 중...'}
+                  </Text>
+                </TouchableOpacity>
+                <Text style={styles.adSubtext}>
+                  짧은 광고 시청 후 추천 번호를 확인할 수 있어요
+                </Text>
+              </>
+            )}
           </Animated.View>
         )}
 
@@ -267,5 +328,41 @@ const styles = StyleSheet.create({
   historyButtonText: {
     fontSize: FontSizes.md,
     fontWeight: '600',
+  },
+
+  // Locked lotto balls
+  lockedBall: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lockedBallText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.4)',
+  },
+
+  // Ad lock
+  adButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    height: 52,
+  },
+  adButtonText: {
+    color: '#FFF',
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+  adSubtext: {
+    fontSize: FontSizes.sm,
+    textAlign: 'center',
+    color: 'rgba(255,255,255,0.5)',
   },
 });
