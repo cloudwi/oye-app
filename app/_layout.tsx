@@ -18,6 +18,16 @@ import { notificationService } from '@/services/notification';
 import { queryClient } from '@/services/query-client';
 import * as Sentry from '@sentry/react-native';
 
+// Initialize Google Mobile Ads SDK
+if (Platform.OS !== 'web') {
+  try {
+    const { default: mobileAds } = require('react-native-google-mobile-ads');
+    mobileAds().initialize();
+  } catch {
+    // Native module not available
+  }
+}
+
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   enabled: !__DEV__,
