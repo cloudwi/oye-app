@@ -25,7 +25,8 @@ export function ScoreTrendChart({ data, isLoading, title }: ScoreTrendChartProps
   const dividerColor = useThemeColor({}, 'divider');
   const { width: screenWidth } = useWindowDimensions();
 
-  const chartWidth = Math.min(screenWidth - 48 - 32 - 35 - 5, 500);
+  // 카드 내부 실제 차트 영역 너비: 화면 - FlatList패딩(48) - 카드패딩(32) - Y축라벨(28)
+  const chartWidth = Math.min(screenWidth - 48 - 32 - 28, 500);
 
   const chartData = useMemo(() => {
     return data.map((point) => ({ value: point.score }));
@@ -67,6 +68,7 @@ export function ScoreTrendChart({ data, isLoading, title }: ScoreTrendChartProps
               data={chartData}
               width={chartWidth}
               height={160}
+              initialSpacing={0}
               spacing={chartData.length > 1 ? chartWidth / (chartData.length - 1) : chartWidth}
               maxValue={100}
               noOfSections={5}
@@ -94,7 +96,7 @@ export function ScoreTrendChart({ data, isLoading, title }: ScoreTrendChartProps
               isAnimated
               animationDuration={600}
               disableScroll
-              endSpacing={16}
+              endSpacing={0}
             />
           )}
         </View>
@@ -124,6 +126,7 @@ const styles = StyleSheet.create({
   },
   chartContainer: {
     marginTop: Spacing.sm,
+    overflow: 'hidden',
   },
   divider: {
     height: 1,
