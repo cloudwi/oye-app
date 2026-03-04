@@ -55,11 +55,21 @@ function getFortuneIcon(score: number | null | undefined): {
   gradient: readonly [string, string];
 } {
   if (score == null) return { name: 'sparkles', gradient: ['#A78BFA', '#7C5CBF'] };
-  if (score >= 80) return { name: 'sun.max.fill', gradient: ['#F59E0B', '#EF6C00'] };
-  if (score >= 60) return { name: 'cloud.sun.fill', gradient: ['#60A5FA', '#3B82F6'] };
-  if (score >= 40) return { name: 'cloud.fill', gradient: ['#94A3B8', '#64748B'] };
-  if (score >= 20) return { name: 'cloud.rain.fill', gradient: ['#6B7280', '#4B5563'] };
-  return { name: 'cloud.bolt.rain.fill', gradient: ['#4B5563', '#374151'] };
+  if (score >= 85) return { name: 'sun.max.fill', gradient: ['#F59E0B', '#EF6C00'] };
+  if (score >= 70) return { name: 'cloud.sun.fill', gradient: ['#60A5FA', '#3B82F6'] };
+  if (score >= 55) return { name: 'cloud.fill', gradient: ['#94A3B8', '#64748B'] };
+  return { name: 'cloud.rain.fill', gradient: ['#6B7280', '#4B5563'] };
+}
+
+function getScoreGradient(
+  score: number | null | undefined,
+  isDark: boolean,
+): readonly [string, string] {
+  if (score == null) return isDark ? ['#1C1828', '#0F0F14'] : ['#F5F0FB', '#F5F5F5'];
+  if (score >= 85) return isDark ? ['#1A1810', '#0F0F14'] : ['#FFF8E8', '#F5F5F5'];
+  if (score >= 70) return isDark ? ['#10181E', '#0F0F14'] : ['#EDF5FF', '#F5F5F5'];
+  if (score >= 55) return isDark ? ['#161618', '#0F0F14'] : ['#F2F2F5', '#F5F5F5'];
+  return isDark ? ['#141416', '#0F0F14'] : ['#EDEDF0', '#F5F5F5'];
 }
 
 function getTimePeriod(): TimePeriod {
@@ -101,7 +111,8 @@ export default function HomeScreen() {
 
   const timePeriod = useMemo(() => getTimePeriod(), []);
   const timeConfig = TimeTheme[timePeriod];
-  const gradientColors = isDark ? timeConfig.gradient.dark : timeConfig.gradient.light;
+  const scoreGradient = getScoreGradient(todayFortune?.score, isDark);
+  const gradientColors = todayFortune?.score != null ? scoreGradient : (isDark ? timeConfig.gradient.dark : timeConfig.gradient.light);
 
   const cardOpacity = useSharedValue(0);
   const cardScale = useSharedValue(0.95);
