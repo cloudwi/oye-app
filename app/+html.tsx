@@ -15,7 +15,6 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="description" content="매일 아침 AI가 전해주는 나만의 운세, 연인/친구 궁합, 로또 번호 추천까지. 오늘의 예감으로 하루를 시작하세요." />
         <meta name="keywords" content="운세,오늘의운세,궁합,로또,로또번호추천,AI운세,오늘의예감,무료운세,매일운세,연인궁합,친구궁합" />
         <meta name="theme-color" content="#6366F1" />
-        <meta name="google-adsense-account" content="ca-pub-8460185175778038" />
         <meta property="og:title" content="오늘의 예감 - AI 운세, 궁합, 로또" />
         <meta property="og:description" content="매일 아침 AI가 전해주는 나만의 운세, 연인/친구 궁합, 로또 번호 추천까지. 오늘의 예감으로 하루를 시작하세요." />
         <meta property="og:type" content="website" />
@@ -36,11 +35,6 @@ export default function Root({ children }: PropsWithChildren) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="오늘의 예감" />
         <link rel="preconnect" href="https://api.yegam.today" />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8460185175778038"
-          crossOrigin="anonymous"
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }}
