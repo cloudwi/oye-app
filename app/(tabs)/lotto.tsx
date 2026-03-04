@@ -28,7 +28,6 @@ import {
   LottoColors,
 } from '@/constants/theme';
 import { lottoStyles } from '@/components/lotto/styles';
-import { AdBanner } from '@/components/ads/ad-banner';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRewardedAd } from '@/hooks/use-rewarded-ad';
 
@@ -214,9 +213,6 @@ export default function LottoScreen() {
         <Animated.View entering={FadeInDown.duration(400).delay(500)}>
           <LottoWinnersPreview />
         </Animated.View>
-
-        {/* Banner Ad */}
-        <AdBanner />
 
         {/* Stats Card */}
         {statsData && (

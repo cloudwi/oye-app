@@ -54,7 +54,7 @@ export default function GroupDetailScreen() {
 
   useEffect(() => {
     if (Platform.OS === 'web') return;
-    AsyncStorage.getItem('group_compat_ad_unlocked').then((val) => {
+    AsyncStorage.getItem('compat_ad_unlocked').then((val) => {
       const today = new Date().toISOString().split('T')[0];
       if (val === today) setIsUnlocked(true);
     });
@@ -63,7 +63,7 @@ export default function GroupDetailScreen() {
   useEffect(() => {
     if (isEarned) {
       const today = new Date().toISOString().split('T')[0];
-      AsyncStorage.setItem('group_compat_ad_unlocked', today);
+      AsyncStorage.setItem('compat_ad_unlocked', today);
       setIsUnlocked(true);
       resetAd();
     }

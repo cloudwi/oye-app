@@ -27,7 +27,6 @@ import {
   Shadows,
   RelationConfig,
 } from '@/constants/theme';
-import { AdBanner } from '@/components/ads/ad-banner';
 import { getScoreColor } from '@/utils/score';
 import type { Connection } from '@/types/connection';
 import type { GroupSummary } from '@/types/group';
@@ -104,9 +103,6 @@ export default function CompatibilityScreen() {
           shareTitle="오늘의 예감 - 궁합 초대"
           shareMessage={`[오늘의 예감] 궁합 초대 코드\n\n내 코드: ${myCode?.code ?? ''}\n\n오늘의 예감 앱에서 코드를 입력하고 궁합을 확인해보세요!`}
         />
-
-        {/* Banner Ad */}
-        <AdBanner />
 
         {/* ── 연인 궁합 Section ── */}
         <Animated.View entering={FadeInDown.duration(400).delay(200)} style={{ marginTop: Spacing.md }}>
