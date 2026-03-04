@@ -26,7 +26,7 @@ import { useTodayFortune } from '@/hooks/queries/use-today-fortune';
 import { useConnections } from '@/hooks/queries/use-connections';
 import { useLottoHistory } from '@/hooks/queries/use-lotto-history';
 import { shareService } from '@/services/share';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LottoBall } from '@/components/lotto/lotto-ball';
 import { FortuneCardSkeleton } from '@/components/ui/skeleton';
@@ -49,6 +49,18 @@ import { AdBanner } from '@/components/ads/ad-banner';
 import type { Connection } from '@/types/connection';
 
 type TimePeriod = 'morning' | 'afternoon' | 'evening' | 'night';
+
+function getFortuneIcon(score: number | null | undefined): {
+  name: IconSymbolName;
+  gradient: readonly [string, string];
+} {
+  if (score == null) return { name: 'sparkles', gradient: ['#A78BFA', '#7C5CBF'] };
+  if (score >= 80) return { name: 'sun.max.fill', gradient: ['#F59E0B', '#EF6C00'] };
+  if (score >= 60) return { name: 'cloud.sun.fill', gradient: ['#60A5FA', '#3B82F6'] };
+  if (score >= 40) return { name: 'cloud.fill', gradient: ['#94A3B8', '#64748B'] };
+  if (score >= 20) return { name: 'cloud.rain.fill', gradient: ['#6B7280', '#4B5563'] };
+  return { name: 'cloud.bolt.rain.fill', gradient: ['#4B5563', '#374151'] };
+}
 
 function getTimePeriod(): TimePeriod {
   const hour = new Date().getHours();
@@ -195,14 +207,19 @@ export default function HomeScreen() {
                 accessibilityLabel="오늘의 운세 카드"
               >
                 <View style={styles.iconContainer}>
-                  <LinearGradient
-                    colors={[timeConfig.iconGradient[0], timeConfig.iconGradient[1]]}
-                    style={styles.iconGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <IconSymbol name="sparkles" size={32} color="#FFF" />
-                  </LinearGradient>
+                  {(() => {
+                    const icon = getFortuneIcon(todayFortune.score);
+                    return (
+                      <LinearGradient
+                        colors={[icon.gradient[0], icon.gradient[1]]}
+                        style={styles.iconGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                      >
+                        <IconSymbol name={icon.name} size={32} color="#FFF" />
+                      </LinearGradient>
+                    );
+                  })()}
                 </View>
 
                 {todayFortune.score != null && (

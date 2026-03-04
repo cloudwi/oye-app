@@ -5,8 +5,8 @@ import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
-export type IconSymbolName = keyof typeof MAPPING;
+type IconMapping = Record<string, ComponentProps<typeof MaterialIcons>['name']>;
+export type IconSymbolName = SymbolViewProps['name'];
 
 /**
  * Add your SF Symbols to Material Icons mappings here.
@@ -62,6 +62,10 @@ const MAPPING = {
   'magnifyingglass': 'search',
   'xmark.circle.fill': 'cancel',
   'ticket': 'confirmation-number',
+  'cloud.sun.fill': 'wb-cloudy',
+  'cloud.fill': 'cloud',
+  'cloud.rain.fill': 'grain',
+  'cloud.bolt.rain.fill': 'thunderstorm',
 } as IconMapping;
 
 /**
