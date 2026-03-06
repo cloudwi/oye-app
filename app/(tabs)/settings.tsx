@@ -103,27 +103,18 @@ export default function SettingsScreen() {
   const {
     darkMode,
     notificationEnabled,
-    notificationTime,
     setDarkMode,
     setNotificationEnabled,
     reset: resetSettings,
   } = useSettingsStore();
   const profileSummary = [user?.gender === 'MALE' ? '남성' : user?.gender === 'FEMALE' ? '여성' : null, user?.mbti, user?.occupation].filter(Boolean).join(' · ') || '프로필을 설정해보세요';
 
-  const formatNotificationTime = (time: string) => {
-    const [h, m] = time.split(':').map(Number);
-    const period = h < 12 ? '오전' : '오후';
-    const displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h;
-    return `매일 ${period} ${displayHour}시 ${String(m).padStart(2, '0')}분`;
-  };
-
   const handleNotificationToggle = async (enabled: boolean) => {
     if (enabled) {
       const granted = await notificationService.requestPermissions();
       if (granted) {
         await notificationService.getExpoPushToken();
-        const [hour, minute] = notificationTime.split(':').map(Number);
-        await notificationService.scheduleDailyNotification(hour, minute);
+        await notificationService.scheduleDailyNotification(6, 0);
         setNotificationEnabled(true);
         notificationService.registerPushTokenToServer();
       } else {
@@ -269,13 +260,6 @@ export default function SettingsScreen() {
                   thumbColor={notificationEnabled ? tintColor : '#F3EDE5'}
                 />
               }
-            />
-            <SettingRow
-              icon="clock.fill"
-              iconColor="#E8944E"
-              title="알림 시간"
-              subtitle={formatNotificationTime(notificationTime)}
-              onPress={() => router.push('/settings/notification-time')}
               isLast
             />
           </View>

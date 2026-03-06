@@ -57,7 +57,7 @@ export default function OnboardingNotification() {
       const granted = await notificationService.requestPermissions();
       if (granted) {
         await notificationService.getExpoPushToken();
-        await notificationService.scheduleDailyNotification(8, 0);
+        await notificationService.scheduleDailyNotification(6, 0);
         setNotificationEnabled(true);
         notificationService.registerPushTokenToServer();
       }
@@ -99,7 +99,7 @@ export default function OnboardingNotification() {
         <Animated.View entering={FadeInDown.duration(500).delay(200)}>
           <Text style={[styles.title, { color: textColor }]}>알림 설정</Text>
           <Text style={[styles.subtitle, { color: textSecondary }]}>
-            매일 아침 8시에{'\n'}오늘의 예감을 알려드릴게요
+            매일 아침 6시에{'\n'}오늘의 예감을 알려드릴게요
           </Text>
         </Animated.View>
 
@@ -113,7 +113,7 @@ export default function OnboardingNotification() {
             </View>
             <View style={styles.previewHeaderText}>
               <Text style={[styles.previewApp, { color: textColor }]}>오늘의 예감</Text>
-              <Text style={[styles.previewTime, { color: textSecondary }]}>오전 8:00</Text>
+              <Text style={[styles.previewTime, { color: textSecondary }]}>오전 6:00</Text>
             </View>
           </View>
           <Text style={[styles.previewMessage, { color: textColor }]}>

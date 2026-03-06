@@ -7,14 +7,12 @@ interface SettingsState extends UserSettings {
   // Actions
   setDarkMode: (mode: UserSettings['darkMode']) => void;
   setNotificationEnabled: (enabled: boolean) => void;
-  setNotificationTime: (time: string) => void;
   reset: () => void;
 }
 
 const defaultSettings: UserSettings = {
   darkMode: 'system',
   notificationEnabled: false,
-  notificationTime: '08:00',
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -24,7 +22,6 @@ export const useSettingsStore = create<SettingsState>()(
 
       setDarkMode: (darkMode) => set({ darkMode }),
       setNotificationEnabled: (notificationEnabled) => set({ notificationEnabled }),
-      setNotificationTime: (notificationTime) => set({ notificationTime }),
 
       reset: () => set(defaultSettings),
     }),

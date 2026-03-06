@@ -18,7 +18,6 @@ export interface User {
   bloodType: BloodType | null;
   interests: string | null;
   role: UserRole;
-  fortuneScheduleHour: number;
   createdAt: string; // ISO datetime
 }
 
@@ -37,7 +36,6 @@ export interface UserUpdateRequest {
 export interface UserSettings {
   darkMode: 'system' | 'light' | 'dark';
   notificationEnabled: boolean;
-  notificationTime: string; // HH:mm format (default: "08:00")
 }
 
 export interface OnboardingState {

@@ -14,7 +14,6 @@ const mockUser: User = {
   bloodType: 'A',
   interests: 'coding',
   role: 'USER',
-  fortuneScheduleHour: 6,
   createdAt: '2025-01-01T00:00:00Z',
 };
 
