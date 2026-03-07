@@ -63,7 +63,7 @@ export default function CompatibilityScreen() {
   if (isLoading && !myCode && !connections && !groups) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingHorizontal: Spacing.lg }]}>
           <Text style={[styles.title, { color: textColor }]}>궁합</Text>
         </View>
         <View style={styles.skeletonContainer}>

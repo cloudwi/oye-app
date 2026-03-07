@@ -129,7 +129,7 @@ export default function LottoHistoryScreen() {
             </Text>
             <View style={lottoStyles.ballRow}>
               {set.numbers.map((num, i) => (
-                <LottoBall key={i} number={num} size={36} />
+                <LottoBall key={i} number={num} size={32} />
               ))}
             </View>
             {set.rank ? (

@@ -36,7 +36,7 @@ export function LottoBall({ number, size = 40, isBonus = false, isMatched = fals
       <Text
         style={[
           styles.number,
-          { fontSize: size * 0.38, lineHeight: size },
+          { fontSize: size * 0.4 },
         ]}
       >
         {number}
@@ -60,13 +60,13 @@ const styles = StyleSheet.create({
     borderColor: '#FFD700',
   },
   matchedBall: {
-    borderWidth: 2.5,
-    borderColor: '#4CAF82',
-    shadowColor: '#4CAF82',
+    borderWidth: 3,
+    borderColor: '#4ADE80',
+    shadowColor: '#4ADE80',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 8,
   },
   number: {
     color: '#FFFFFF',
