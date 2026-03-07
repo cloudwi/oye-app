@@ -99,7 +99,7 @@ export default function LottoHistoryScreen() {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const CARD_HEIGHT = 260; // approximate: padding(32) + roundHeader(20) + 5 sets(~44ea) + gaps
+  const CARD_HEIGHT = 300; // approximate: padding(32) + roundHeader(20) + drawRow(30) + 5 sets(~44ea) + gaps
   const getItemLayout = useCallback((_data: any, index: number) => ({
     length: CARD_HEIGHT,
     offset: CARD_HEIGHT * index,
@@ -107,44 +107,68 @@ export default function LottoHistoryScreen() {
   }), []);
 
   const renderRoundCard = useCallback(
-    ({ item }: { item: RoundGroup }) => (
-      <View
-        style={[
-          styles.historyCard,
-          { backgroundColor: surfaceColor, borderColor: cardBorderColor },
-        ]}
-      >
-        <View style={styles.roundHeader}>
-          <Text style={[styles.roundLabel, { color: tintColor }]}>
-            {item.round}회차
-          </Text>
-          <Text style={[styles.dateText, { color: textSecondary }]}>
-            {item.date}
-          </Text>
-        </View>
-        {item.sets.map((set) => (
-          <View key={set.id} style={lottoStyles.numberSetRow}>
-            <Text style={[lottoStyles.setLabelBase, { color: textSecondary }]}>
-              {String.fromCharCode(64 + set.setNumber)}
+    ({ item }: { item: RoundGroup }) => {
+      const firstEvaluated = item.sets.find((s) => s.drawNumbers && s.drawBonusNumber != null);
+      const drawNumbers = firstEvaluated?.drawNumbers ?? null;
+      const drawBonus = firstEvaluated?.drawBonusNumber ?? null;
+      const winningSet = drawNumbers ? new Set(drawNumbers) : null;
+
+      return (
+        <View
+          style={[
+            styles.historyCard,
+            { backgroundColor: surfaceColor, borderColor: cardBorderColor },
+          ]}
+        >
+          <View style={styles.roundHeader}>
+            <Text style={[styles.roundLabel, { color: tintColor }]}>
+              {item.round}회차
             </Text>
-            <View style={lottoStyles.ballRow}>
-              {set.numbers.map((num, i) => (
-                <LottoBall key={i} number={num} size={32} />
-              ))}
-            </View>
-            {set.rank ? (
-              <View style={styles.rankBadge}>
-                <Text style={styles.rankText}>{set.rank}</Text>
-              </View>
-            ) : set.evaluated && !set.rank ? (
-              <View style={styles.loseBadge}>
-                <Text style={styles.loseBadgeText}>낙첨</Text>
-              </View>
-            ) : null}
+            <Text style={[styles.dateText, { color: textSecondary }]}>
+              {item.date}
+            </Text>
           </View>
-        ))}
-      </View>
-    ),
+          {drawNumbers && drawBonus != null && (
+            <View style={styles.drawRow}>
+              <Text style={[styles.drawLabel, { color: textSecondary }]}>당첨</Text>
+              <View style={styles.drawBalls}>
+                {drawNumbers.map((num, i) => (
+                  <LottoBall key={i} number={num} size={20} />
+                ))}
+                <Text style={[styles.drawPlus, { color: textSecondary }]}>+</Text>
+                <LottoBall number={drawBonus} size={20} isBonus />
+              </View>
+            </View>
+          )}
+          {item.sets.map((set) => (
+            <View key={set.id} style={lottoStyles.numberSetRow}>
+              <Text style={[lottoStyles.setLabelBase, { color: textSecondary }]}>
+                {String.fromCharCode(64 + set.setNumber)}
+              </Text>
+              <View style={lottoStyles.ballRow}>
+                {set.numbers.map((num, i) => (
+                  <LottoBall
+                    key={i}
+                    number={num}
+                    size={32}
+                    isMatched={winningSet ? winningSet.has(num) : false}
+                  />
+                ))}
+              </View>
+              {set.rank ? (
+                <View style={styles.rankBadge}>
+                  <Text style={styles.rankText}>{set.rank}</Text>
+                </View>
+              ) : set.evaluated && !set.rank ? (
+                <View style={styles.loseBadge}>
+                  <Text style={styles.loseBadgeText}>낙첨</Text>
+                </View>
+              ) : null}
+            </View>
+          ))}
+        </View>
+      );
+    },
     [surfaceColor, cardBorderColor, tintColor, textSecondary],
   );
 
@@ -381,6 +405,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  drawRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: 2,
+    marginBottom: Spacing.xs,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255,255,255,0.08)',
+    paddingBottom: Spacing.sm,
+  },
+  drawLabel: {
+    fontSize: FontSizes.xs,
+    fontWeight: '600',
+    width: 20,
+  },
+  drawBalls: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  drawPlus: {
+    fontSize: 10,
+    fontWeight: '600',
+    marginHorizontal: 1,
   },
   roundLabel: {
     fontSize: FontSizes.sm,
