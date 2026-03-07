@@ -20,7 +20,7 @@ import { userApi } from '@/services/api/user';
 import { queryClient } from '@/services/query-client';
 import { notificationService } from '@/services/notification';
 import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
-import { router, type Href } from 'expo-router';
+import { router } from 'expo-router';
 import { showAlert } from '@/utils/alert';
 import {
   BrandColors,
@@ -221,26 +221,6 @@ export default function SettingsScreen() {
             </View>
             <IconSymbol name="chevron.right" size={14} color={textSecondary} />
           </TouchableOpacity>
-        </View>
-
-        {/* History Section */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: textSecondary }]}>기록</Text>
-          <View style={[styles.card, { backgroundColor: surfaceColor }, Shadows.sm]}>
-            <SettingRow
-              icon="clock"
-              iconColor="#E8944E"
-              title="지난 예감"
-              onPress={() => router.push('/(tabs)/history')}
-            />
-            <SettingRow
-              icon="dice.fill"
-              iconColor="#9189D0"
-              title="로또 추천 기록"
-              onPress={() => router.push('/lotto/history' as Href)}
-              isLast
-            />
-          </View>
         </View>
 
         {/* Notification Section */}
