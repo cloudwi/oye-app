@@ -180,7 +180,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   rankBadge: {
-    backgroundColor: '#FFD700',
+    borderWidth: 1,
+    borderColor: '#888',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
   rankText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#333',
+    color: '#888',
   },
   ballsRow: {
     flexDirection: 'row',
