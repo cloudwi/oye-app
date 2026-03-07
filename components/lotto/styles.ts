@@ -14,9 +14,10 @@ export const lottoStyles = StyleSheet.create({
   },
   /** Horizontal row of LottoBall components */
   ballRow: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 6,
+    gap: 4,
     flexShrink: 1,
   },
   /** Set label (A, B, C...) — base without color */

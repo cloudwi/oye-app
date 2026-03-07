@@ -135,7 +135,7 @@ export default function LottoScreen() {
                         <LottoBall
                           key={i}
                           number={num}
-                          size={36}
+                          size={32}
                           isMatched={isEvaluated && winningNumbers ? winningNumbers.numbers.has(num) : false}
                         />
                       ))}

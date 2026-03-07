@@ -67,7 +67,7 @@ export function LottoMatchResult({ sets, roundData }: Props) {
                 <LottoBall
                   key={i}
                   number={num}
-                  size={36}
+                  size={32}
                   isMatched={winningSet.has(num)}
                 />
               ))}
