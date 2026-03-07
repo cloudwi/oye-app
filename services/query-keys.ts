@@ -28,6 +28,7 @@ export const queryKeys = {
     list: () => ['group', 'list'] as const,
     detail: (id: number) => ['group', 'detail', id] as const,
     todayCompatibility: (id: number) => ['group', 'todayCompatibility', id] as const,
+    compatibilityHistory: (id: number) => ['group', 'compatibilityHistory', id] as const,
   },
   lotto: {
     all: () => ['lotto'] as const,

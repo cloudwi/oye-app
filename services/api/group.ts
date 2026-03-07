@@ -3,6 +3,7 @@ import type {
   GroupSummary,
   GroupDetail,
   GroupTodayCompatibility,
+  GroupCompatibilityHistory,
   CreateGroupRequest,
   JoinGroupRequest,
   UpdateGroupRequest,
@@ -48,6 +49,13 @@ export const groupApi = {
 
   async getTodayCompatibility(id: number): Promise<GroupTodayCompatibility> {
     const response = await apiClient.get<GroupTodayCompatibility>(`/api/v1/groups/${id}/compatibility`);
+    return response.data;
+  },
+
+  async getCompatibilityHistory(id: number, days = 10): Promise<GroupCompatibilityHistory> {
+    const response = await apiClient.get<GroupCompatibilityHistory>(`/api/v1/groups/${id}/compatibility/history`, {
+      params: { days },
+    });
     return response.data;
   },
 };

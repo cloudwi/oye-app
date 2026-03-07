@@ -14,6 +14,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useGroupDetail } from '@/hooks/queries/use-group-detail';
 import { useGroupCompatibility } from '@/hooks/queries/use-group-compatibility';
+import { useGroupCompatibilityHistory } from '@/hooks/queries/use-group-compatibility-history';
 import { useRefresh } from '@/hooks/use-refresh';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -45,8 +46,9 @@ export default function GroupDetailScreen() {
 
   const { data: group, isLoading: isGroupLoading, refetch: refetchGroup } = useGroupDetail(groupId);
   const { data: compatibility, refetch: refetchCompatibility } = useGroupCompatibility(groupId);
+  const { data: historyData, refetch: refetchHistory } = useGroupCompatibilityHistory(groupId);
 
-  const { refreshing, onRefresh } = useRefresh(refetchGroup, refetchCompatibility);
+  const { refreshing, onRefresh } = useRefresh(refetchGroup, refetchCompatibility, refetchHistory);
 
   // Rewarded ad for unlocking group compatibility
   const { isLoaded: isAdLoaded, isEarned, show: showAd, reset: resetAd } = useRewardedAd();
@@ -230,6 +232,42 @@ export default function GroupDetailScreen() {
             />
           )}
         </Animated.View>
+
+        {/* Compatibility History */}
+        {historyData && historyData.history.length > 1 && (
+          <Animated.View entering={FadeInDown.duration(400).delay(400)}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: textColor }]}>최근 궁합 추이</Text>
+              <Text style={[styles.sectionCount, { color: textSecondary }]}>
+                {historyData.history.length}일
+              </Text>
+            </View>
+            <View style={[styles.historyCard, { backgroundColor: surfaceColor }]}>
+              <View style={styles.historyBars}>
+                {[...historyData.history].reverse().map((item) => {
+                  const barHeight = Math.max((item.score / 100) * 80, 4);
+                  const dateStr = item.date.slice(5);
+                  return (
+                    <View key={item.date} style={styles.historyBarItem}>
+                      <Text style={[styles.historyScore, { color: getScoreColor(item.score) }]}>
+                        {item.score}
+                      </Text>
+                      <View style={styles.historyBarTrack}>
+                        <View
+                          style={[
+                            styles.historyBarFill,
+                            { height: barHeight, backgroundColor: getScoreColor(item.score) },
+                          ]}
+                        />
+                      </View>
+                      <Text style={[styles.historyDate, { color: textSecondary }]}>{dateStr}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          </Animated.View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -358,5 +396,43 @@ const styles = StyleSheet.create({
   adSubtext: {
     fontSize: FontSizes.sm,
     textAlign: 'center',
+  },
+
+  // History
+  historyCard: {
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.md,
+  },
+  historyBars: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-around',
+    gap: 2,
+  },
+  historyBarItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  historyScore: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  historyBarTrack: {
+    width: '100%',
+    maxWidth: 28,
+    height: 80,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  historyBarFill: {
+    width: '100%',
+    borderRadius: 4,
+  },
+  historyDate: {
+    fontSize: 9,
+    fontWeight: '500',
   },
 });

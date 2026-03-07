@@ -33,6 +33,11 @@ export interface GroupCompatibilityResult {
   date: string;
 }
 
+export interface GroupCompatibilityHistory {
+  groupId: number;
+  history: GroupCompatibilityResult[];
+}
+
 export interface GroupTodayCompatibility {
   groupId: number;
   date: string;
