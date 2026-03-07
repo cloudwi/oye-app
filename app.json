@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "oyeapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.oyeapp.fortune",
@@ -25,7 +24,6 @@
         "backgroundColor": "#6366F1",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.oyeapp.fortune"
     },

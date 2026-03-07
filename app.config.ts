@@ -55,5 +55,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     'expo-tracking-transparency',
+    'expo-font',
+    'expo-image',
+    'expo-sharing',
+    'expo-web-browser',
   ],
 });

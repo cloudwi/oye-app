@@ -13,48 +13,26 @@ import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { EmptyState } from '@/components/ui/empty-state';
 import { LottoBall } from '@/components/lotto/lotto-ball';
-import { LottoWinningNumbers } from '@/components/lotto/winning-numbers';
-import { LottoMatchResult } from '@/components/lotto/match-result';
-import { LottoWinnersPreview } from '@/components/lotto/winners-preview';
 import { useLottoHistory } from '@/hooks/queries/use-lotto-history';
-import { useLottoStats } from '@/hooks/queries/use-lotto-stats';
 import {
   Spacing,
   BorderRadius,
   FontSizes,
-  Shadows,
-  LottoColors,
 } from '@/constants/theme';
 import { lottoStyles } from '@/components/lotto/styles';
-
-function formatPrize(amount: number): string {
-  if (amount >= 100_000_000) {
-    const eok = Math.floor(amount / 100_000_000);
-    const remainder = amount % 100_000_000;
-    if (remainder >= 10_000) {
-      const man = Math.floor(remainder / 10_000);
-      return `${eok}억 ${man.toLocaleString()}만원`;
-    }
-    return `${eok}억원`;
-  }
-  if (amount >= 10_000) {
-    const man = Math.floor(amount / 10_000);
-    return `${man.toLocaleString()}만원`;
-  }
-  return `${amount.toLocaleString()}원`;
-}
 
 export default function LottoScreen() {
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const surfaceColor = useThemeColor({}, 'surface');
+  const cardBorderColor = useThemeColor({}, 'cardBorder');
   const tintColor = useThemeColor({}, 'tint');
   const { contentStyle } = useResponsiveLayout();
 
   const { data: historyData, refetch: refetchHistory } = useLottoHistory();
-  const { data: statsData } = useLottoStats();
 
   const latestSets = historyData?.pages[0]?.content ?? [];
 
@@ -63,16 +41,10 @@ export default function LottoScreen() {
     return latestSets[0].round;
   }, [latestSets]);
 
-  const roundData = useMemo(() => {
+  const winningNumbers = useMemo(() => {
     const set = latestSets.find((s) => s.drawNumbers && s.drawBonusNumber != null);
     if (!set || !set.drawNumbers || set.drawBonusNumber == null) return undefined;
-    return {
-      round: set.round,
-      numbers: set.drawNumbers,
-      bonusNumber: set.drawBonusNumber,
-      drawDate: set.createdAt,
-      firstPrizeAmount: null,
-    };
+    return { numbers: new Set(set.drawNumbers), bonus: set.drawBonusNumber, raw: set.drawNumbers };
   }, [latestSets]);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -89,14 +61,20 @@ export default function LottoScreen() {
       .sort((a, b) => a.setNumber - b.setNumber);
   }, [latestSets, latestRound]);
 
+  const isEvaluated = displaySets.length > 0 && displaySets[0].evaluated;
+  const hasData = displaySets.length > 0;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
         <Text style={[styles.title, { color: textColor }]}>로또 번호 추천</Text>
-        <Text style={[styles.subtitle, { color: textSecondary }]}>
-          행운의 번호를 받아보세요
-        </Text>
+        {latestRound && (
+          <View style={[styles.roundBadge, { backgroundColor: tintColor + '15' }]}>
+            <Text style={[styles.roundBadgeText, { color: tintColor }]}>
+              {latestRound}회
+            </Text>
+          </View>
+        )}
       </Animated.View>
 
       <ScrollView
@@ -111,90 +89,94 @@ export default function LottoScreen() {
           />
         }
       >
-        {/* Latest Generated Numbers */}
-        {displaySets.length > 0 && (
-          <Animated.View
-            entering={FadeInDown.duration(400).delay(200)}
-            style={[styles.resultCard, Shadows.md]}
-          >
-            <Text style={styles.resultTitle}>
-              이번 회차 추천 번호
-            </Text>
-            {displaySets.map((set, idx) => (
-              <View key={set.id} style={lottoStyles.numberSetRow}>
-                <Text style={[lottoStyles.setLabelBase, { color: LottoColors.setLabel }]}>
-                  {String.fromCharCode(65 + idx)}
-                </Text>
-                <View style={lottoStyles.ballRow}>
-                  {set.numbers.map((num, i) => (
-                    <LottoBall key={i} number={num} size={36} />
-                  ))}
-                </View>
+        {/* Empty State */}
+        {!hasData && (
+          <Animated.View entering={FadeInDown.duration(400).delay(100)}>
+            <EmptyState
+              icon="ticket"
+              title="아직 추천 번호가 없어요"
+              message={'매주 자동으로 행운의 번호가 생성됩니다'}
+            />
+          </Animated.View>
+        )}
+
+        {/* Winning Numbers - compact inline row when evaluated */}
+        {hasData && isEvaluated && winningNumbers && (
+          <Animated.View entering={FadeInDown.duration(400).delay(100)}>
+            <View style={[styles.winningRow, { backgroundColor: surfaceColor, borderColor: cardBorderColor }]}>
+              <Text style={[styles.winningLabel, { color: textSecondary }]}>당첨번호</Text>
+              <View style={styles.winningBalls}>
+                {winningNumbers.raw.map((num, i) => (
+                  <LottoBall key={i} number={num} size={28} />
+                ))}
+                <Text style={[styles.plus, { color: textSecondary }]}>+</Text>
+                <LottoBall number={winningNumbers.bonus} size={28} isBonus />
               </View>
-            ))}
-          </Animated.View>
-        )}
-
-        {/* Winning Numbers Section */}
-        {roundData && (
-          <Animated.View entering={FadeInDown.duration(400).delay(300)}>
-            <LottoWinningNumbers roundData={roundData} />
-          </Animated.View>
-        )}
-
-        {/* Match Result Section */}
-        {roundData && displaySets.length > 0 && (
-          <Animated.View entering={FadeInDown.duration(400).delay(400)}>
-            <LottoMatchResult sets={displaySets} roundData={roundData} />
-          </Animated.View>
-        )}
-
-        {/* Winners Preview Section */}
-        <Animated.View entering={FadeInDown.duration(400).delay(500)}>
-          <LottoWinnersPreview />
-        </Animated.View>
-
-        {/* Stats Card */}
-        {statsData && (
-          <Animated.View entering={FadeInDown.duration(400).delay(600)}>
-            <View style={[styles.statsCard, { backgroundColor: surfaceColor }]}>
-              <View style={styles.statsRow}>
-                <Text style={[styles.statsLabel, { color: textSecondary }]}>
-                  누적 당첨 금액
-                </Text>
-                <Text style={[styles.statsValue, { color: tintColor }]}>
-                  {statsData.totalPrize > 0
-                    ? formatPrize(statsData.totalPrize)
-                    : '아직 당첨 내역이 없어요'}
-                </Text>
-              </View>
-              {statsData.winCount > 0 && (
-                <View style={styles.statsRow}>
-                  <Text style={[styles.statsLabel, { color: textSecondary }]}>
-                    당첨 횟수
-                  </Text>
-                  <Text style={[styles.statsValue, { color: tintColor }]}>
-                    {statsData.winCount}회
-                  </Text>
-                </View>
-              )}
             </View>
           </Animated.View>
         )}
 
-        {/* History Button */}
-        <Animated.View entering={FadeInDown.duration(400).delay(700)}>
-          <TouchableOpacity
-            style={[styles.historyButton, { backgroundColor: surfaceColor }]}
-            onPress={() => router.push('/lotto/history')}
-            activeOpacity={0.7}
-          >
-            <IconSymbol name="clock.arrow.circlepath" size={20} color={tintColor} />
-            <Text style={[styles.historyButtonText, { color: tintColor }]}>
-              추천 기록 보기
-            </Text>
-            <IconSymbol name="chevron.right" size={16} color={tintColor} />
-          </TouchableOpacity>
+        {/* Recommended Numbers with inline results */}
+        {hasData && (
+          <Animated.View entering={FadeInDown.duration(400).delay(200)}>
+            <View style={[styles.card, { backgroundColor: surfaceColor, borderColor: cardBorderColor }]}>
+              {displaySets.map((set, idx) => {
+                const matchCount = winningNumbers
+                  ? set.numbers.filter((n) => winningNumbers.numbers.has(n)).length
+                  : 0;
+
+                return (
+                  <View key={set.id} style={styles.setRow}>
+                    <Text style={[lottoStyles.setLabelBase, { color: textSecondary }]}>
+                      {String.fromCharCode(65 + idx)}
+                    </Text>
+                    <View style={lottoStyles.ballRow}>
+                      {set.numbers.map((num, i) => (
+                        <LottoBall
+                          key={i}
+                          number={num}
+                          size={36}
+                          isMatched={isEvaluated && winningNumbers ? winningNumbers.numbers.has(num) : false}
+                        />
+                      ))}
+                    </View>
+                    {/* Inline result badge */}
+                    {set.rank ? (
+                      <View style={styles.rankBadge}>
+                        <Text style={styles.rankText}>{set.rank}</Text>
+                      </View>
+                    ) : isEvaluated ? (
+                      <View style={styles.loseBadge}>
+                        <Text style={styles.loseBadgeText}>낙첨</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                );
+              })}
+            </View>
+          </Animated.View>
+        )}
+
+        {/* Navigation */}
+        <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+          <View style={styles.navRow}>
+            <TouchableOpacity
+              style={[styles.navButton, { backgroundColor: surfaceColor, borderColor: cardBorderColor }]}
+              onPress={() => router.push('/lotto/history')}
+              activeOpacity={0.7}
+            >
+              <IconSymbol name="clock.arrow.circlepath" size={18} color={tintColor} />
+              <Text style={[styles.navText, { color: textColor }]}>추천 기록</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.navButton, { backgroundColor: surfaceColor, borderColor: cardBorderColor }]}
+              onPress={() => router.push('/lotto/winners')}
+              activeOpacity={0.7}
+            >
+              <IconSymbol name="trophy.fill" size={18} color="#B8860B" />
+              <Text style={[styles.navText, { color: textColor }]}>당첨자 현황</Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       </ScrollView>
     </SafeAreaView>
@@ -206,18 +188,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.md,
     paddingHorizontal: Spacing.lg,
+    gap: Spacing.sm,
   },
   title: {
     fontSize: FontSizes.xxl,
     fontWeight: '700',
   },
-  subtitle: {
-    fontSize: FontSizes.sm,
-    marginTop: Spacing.xs,
+  roundBadge: {
+    paddingHorizontal: Spacing.sm + 2,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.full,
+  },
+  roundBadgeText: {
+    fontSize: FontSizes.xs,
+    fontWeight: '700',
   },
   scrollView: {
     flex: 1,
@@ -227,47 +217,86 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xxl,
     gap: Spacing.md,
   },
-  resultCard: {
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    gap: Spacing.md,
-    backgroundColor: LottoColors.cardBg,
-  },
-  resultTitle: {
-    fontSize: FontSizes.lg,
-    fontWeight: '600',
-    marginBottom: Spacing.xs,
-    color: LottoColors.title,
-  },
-  statsCard: {
+  // Winning numbers compact row
+  winningRow: {
     borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
+    padding: Spacing.sm + 2,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.sm,
   },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  winningLabel: {
+    fontSize: FontSizes.xs,
+    fontWeight: '600',
+    width: 44,
   },
-  statsLabel: {
-    fontSize: FontSizes.sm,
-  },
-  statsValue: {
-    fontSize: FontSizes.md,
-    fontWeight: '700',
-  },
-  historyButton: {
+  winningBalls: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    gap: Spacing.sm,
-    height: 52,
+    gap: 4,
   },
-  historyButtonText: {
-    fontSize: FontSizes.md,
+  plus: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    marginHorizontal: 1,
+  },
+  // Main card
+  card: {
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    gap: Spacing.sm,
+  },
+  setRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: 2,
+  },
+  rankBadge: {
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginLeft: 'auto',
+  },
+  rankText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#333',
+  },
+  loseBadge: {
+    backgroundColor: '#9398A7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginLeft: 'auto',
+  },
+  loseBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  // Navigation
+  navRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  navButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+  },
+  navText: {
+    fontSize: FontSizes.sm,
     fontWeight: '600',
   },
-
 });
