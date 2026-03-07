@@ -54,7 +54,7 @@ export function BirthdateForm({
       : 31;
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const hours = Array.from({ length: 24 }, (_, i) => i);
-  const minutes = Array.from({ length: 60 }, (_, i) => i);
+  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
 
   useEffect(() => {
     if (selectedDay != null && selectedDay > daysInMonth) {

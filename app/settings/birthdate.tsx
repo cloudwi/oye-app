@@ -32,7 +32,9 @@ export default function BirthDateEditScreen() {
   const [selectedMonth, setSelectedMonth] = useState(parsedDate[1]);
   const [selectedDay, setSelectedDay] = useState(parsedDate[2]);
   const [selectedHour, setSelectedHour] = useState<number | null>(parsedTime[0]);
-  const [selectedMinute, setSelectedMinute] = useState<number | null>(parsedTime[1]);
+  const [selectedMinute, setSelectedMinute] = useState<number | null>(
+    parsedTime[1] != null ? Math.min(Math.round(parsedTime[1] / 5) * 5, 55) : null
+  );
 
   const originalBirthDate = user?.birthDate || null;
   const originalBirthTime = user?.birthTime || null;

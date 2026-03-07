@@ -169,26 +169,39 @@ export default function GroupDetailScreen() {
         <Animated.View entering={FadeInDown.duration(400).delay(300)}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: textColor }]}>오늘의 궁합</Text>
-            {compatibility?.compatibility && isUnlocked && (
-              <Text style={[styles.compatibilityScore, { color: getScoreColor(compatibility.compatibility.score) }]}>
-                {compatibility.compatibility.score}점
+            {compatibility?.compatibility && (
+              <Text style={[styles.compatibilityMemberCount, { color: textSecondary }]}>
+                {Object.keys(compatibility.members).length}명 기준
               </Text>
             )}
           </View>
 
           {compatibility?.compatibility ? (
             isUnlocked ? (
-              <View style={[styles.compatibilityCard, { backgroundColor: surfaceColor }, Shadows.sm]}>
+              <View style={[styles.scoreCard, { backgroundColor: surfaceColor }, Shadows.md]}>
+                <Text style={[styles.scoreValue, { color: getScoreColor(compatibility.compatibility.score) }]}>
+                  {compatibility.compatibility.score}
+                </Text>
+                <Text style={[styles.scoreUnit, { color: getScoreColor(compatibility.compatibility.score) }]}>점</Text>
+                <View style={styles.scoreBarTrack}>
+                  <View
+                    style={[styles.scoreBarFill, {
+                      width: `${compatibility.compatibility.score}%`,
+                      backgroundColor: getScoreColor(compatibility.compatibility.score),
+                    }]}
+                  />
+                </View>
                 <Text style={[styles.compatibilityContent, { color: textSecondary }]}>
                   {compatibility.compatibility.content}
                 </Text>
               </View>
             ) : (
               <>
-                <View style={[styles.compatibilityCard, { backgroundColor: surfaceColor, overflow: 'hidden' }, Shadows.sm]}>
+                <View style={[styles.scoreCard, { backgroundColor: surfaceColor, overflow: 'hidden' }, Shadows.md]}>
+                  <Text style={[styles.scoreValue, { color: textSecondary, opacity: 0.15 }]}>??</Text>
                   <Text
-                    numberOfLines={3}
-                    style={[styles.compatibilityContent, { color: textSecondary, opacity: 0.12 }]}
+                    numberOfLines={2}
+                    style={[styles.compatibilityContent, { color: textSecondary, opacity: 0.12, marginTop: Spacing.md }]}
                   >
                     {compatibility.compatibility.content}
                   </Text>
@@ -258,9 +271,8 @@ const styles = StyleSheet.create({
   sectionCount: {
     fontSize: FontSizes.sm,
   },
-  compatibilityScore: {
+  compatibilityMemberCount: {
     fontSize: FontSizes.sm,
-    fontWeight: '600',
   },
 
   // Member Item
@@ -291,15 +303,40 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Compatibility Card
-  compatibilityCard: {
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
+  // Score Card
+  scoreCard: {
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
     marginBottom: Spacing.sm,
+    alignItems: 'center',
+  },
+  scoreValue: {
+    fontSize: 56,
+    fontWeight: '800',
+    lineHeight: 64,
+  },
+  scoreUnit: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+    marginTop: -4,
+  },
+  scoreBarTrack: {
+    width: '100%',
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    marginTop: Spacing.md,
+    marginBottom: Spacing.lg,
+    overflow: 'hidden',
+  },
+  scoreBarFill: {
+    height: '100%',
+    borderRadius: 3,
   },
   compatibilityContent: {
     fontSize: FontSizes.sm,
-    lineHeight: 20,
+    lineHeight: 22,
+    textAlign: 'center',
   },
 
   // Ad lock

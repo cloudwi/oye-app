@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -31,6 +31,8 @@ import { getScoreColor } from '@/utils/score';
 import type { Connection } from '@/types/connection';
 import type { GroupSummary } from '@/types/group';
 
+type Tab = 'lover' | 'group';
+
 export default function CompatibilityScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
@@ -39,6 +41,8 @@ export default function CompatibilityScreen() {
   const surfaceColor = useThemeColor({}, 'surface');
 
   const { contentStyle } = useResponsiveLayout();
+
+  const [activeTab, setActiveTab] = useState<Tab>('lover');
 
   const { data: myCode, isLoading: isCodeLoading, refetch: refetchCode } = useMyCode();
   const { data: connections, isLoading: isConnectionsLoading, refetch: refetchConnections } = useConnections();
@@ -74,7 +78,6 @@ export default function CompatibilityScreen() {
     );
   }
 
-  // Filter connections to only show LOVER type in the 1:1 section
   const loverConnections = connections?.filter((c) => c.relationType === 'LOVER') ?? [];
 
   return (
@@ -96,162 +99,188 @@ export default function CompatibilityScreen() {
           <Text style={[styles.title, { color: textColor }]}>궁합</Text>
         </Animated.View>
 
-        {/* My Code Card */}
-        <InviteCodeCard
-          code={myCode?.code ?? ''}
-          label="내 초대 코드"
-          shareTitle="오늘의 예감 - 궁합 초대"
-          shareMessage={`[오늘의 예감] 궁합 초대 코드\n\n내 코드: ${myCode?.code ?? ''}\n\n오늘의 예감 앱에서 코드를 입력하고 궁합을 확인해보세요!`}
-        />
-
-        {/* ── 연인 궁합 Section ── */}
-        <Animated.View entering={FadeInDown.duration(400).delay(200)} style={{ marginTop: Spacing.md }}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: textColor }]}>연인 궁합</Text>
-            {loverConnections.length > 0 && (
-              <Text style={[styles.sectionCount, { color: textSecondary }]}>
-                {loverConnections.length}명
-              </Text>
-            )}
-          </View>
-
-          {/* Add Connection Button */}
+        {/* Segment Tabs */}
+        <View style={[styles.segmentContainer, { backgroundColor: surfaceColor }]}>
           <TouchableOpacity
-            style={[styles.addButton, { backgroundColor: tintColor + '10' }]}
-            onPress={() => router.push('/connection/connect')}
+            style={[styles.segmentTab, activeTab === 'lover' && { backgroundColor }]}
+            onPress={() => setActiveTab('lover')}
             activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="연인 코드로 연결하기"
           >
-            <IconSymbol name="plus" size={18} color={tintColor} />
-            <Text style={[styles.addButtonText, { color: tintColor }]}>연인 코드로 연결하기</Text>
+            <Text style={[styles.segmentText, { color: activeTab === 'lover' ? tintColor : textSecondary }]}>
+              연인 궁합
+            </Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.segmentTab, activeTab === 'group' && { backgroundColor }]}
+            onPress={() => setActiveTab('group')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.segmentText, { color: activeTab === 'group' ? tintColor : textSecondary }]}>
+              그룹 궁합
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-          {loverConnections.length > 0 ? (
-            loverConnections.map((connection, index) => {
-              const config = RelationConfig[connection.relationType];
-              return (
+        {/* ── 연인 궁합 Tab ── */}
+        {activeTab === 'lover' && (
+          <Animated.View entering={FadeInDown.duration(300)}>
+            {/* Invite Code */}
+            <View style={{ marginTop: Spacing.md }}>
+              <InviteCodeCard
+                code={myCode?.code ?? ''}
+                label="내 초대 코드"
+                shareTitle="오늘의 예감 - 궁합 초대"
+                shareMessage={`[오늘의 예감] 궁합 초대 코드\n\n내 코드: ${myCode?.code ?? ''}\n\n오늘의 예감 앱에서 코드를 입력하고 궁합을 확인해보세요!`}
+              />
+            </View>
+
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: textColor }]}>연인 궁합</Text>
+              {loverConnections.length > 0 && (
+                <Text style={[styles.sectionCount, { color: textSecondary }]}>
+                  {loverConnections.length}명
+                </Text>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.addButton, { backgroundColor: tintColor + '10' }]}
+              onPress={() => router.push('/connection/connect')}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="연인 코드로 연결하기"
+            >
+              <IconSymbol name="plus" size={18} color={tintColor} />
+              <Text style={[styles.addButtonText, { color: tintColor }]}>연인 코드로 연결하기</Text>
+            </TouchableOpacity>
+
+            {loverConnections.length > 0 ? (
+              loverConnections.map((connection, index) => {
+                const config = RelationConfig[connection.relationType];
+                return (
+                  <Animated.View
+                    key={connection.id}
+                    entering={FadeInDown.duration(400).delay(100 + index * 80)}
+                  >
+                    <TouchableOpacity
+                      style={[styles.connectionItem, { backgroundColor: surfaceColor }, Shadows.sm]}
+                      onPress={() => handleConnectionPress(connection)}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${connection.partnerName}, ${config.label}, 궁합 확인하기`}
+                    >
+                      <View style={styles.connectionInfo}>
+                        <View style={styles.connectionNameRow}>
+                          <Text style={[styles.connectionName, { color: textColor }]}>
+                            {connection.partnerName}
+                          </Text>
+                          <View style={[styles.relationBadge, { backgroundColor: config.color + '15' }]}>
+                            <Text style={[styles.relationText, { color: config.color }]}>
+                              {config.label}
+                            </Text>
+                          </View>
+                        </View>
+                        {connection.latestScore !== null ? (
+                          <Text style={[styles.latestScore, { color: getScoreColor(connection.latestScore) }]}>
+                            최근 궁합 {connection.latestScore}점
+                          </Text>
+                        ) : (
+                          <Text style={[styles.latestScore, { color: textSecondary }]}>
+                            아직 궁합을 확인하지 않았어요
+                          </Text>
+                        )}
+                      </View>
+                      <IconSymbol name="chevron.right" size={14} color={textSecondary} />
+                    </TouchableOpacity>
+                  </Animated.View>
+                );
+              })
+            ) : (
+              <EmptyState
+                icon="heart.fill"
+                title="아직 연인 궁합이 없어요"
+                message="초대 코드를 공유하거나 상대방의 코드를 입력해보세요"
+              />
+            )}
+          </Animated.View>
+        )}
+
+        {/* ── 그룹 궁합 Tab ── */}
+        {activeTab === 'group' && (
+          <Animated.View entering={FadeInDown.duration(300)}>
+            <View style={[styles.sectionHeader, { marginTop: Spacing.md }]}>
+              <Text style={[styles.sectionTitle, { color: textColor }]}>그룹 궁합</Text>
+              {groups && groups.length > 0 && (
+                <Text style={[styles.sectionCount, { color: textSecondary }]}>
+                  {groups.length}개
+                </Text>
+              )}
+            </View>
+
+            <View style={styles.groupActions}>
+              <TouchableOpacity
+                style={[styles.groupActionButton, { backgroundColor: tintColor + '10' }]}
+                onPress={() => router.push('/group/create')}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="그룹 만들기"
+              >
+                <IconSymbol name="plus" size={18} color={tintColor} />
+                <Text style={[styles.addButtonText, { color: tintColor }]}>만들기</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.groupActionButton, { backgroundColor: tintColor + '10' }]}
+                onPress={() => router.push('/group/join')}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="그룹 참여하기"
+              >
+                <IconSymbol name="person.2.fill" size={18} color={tintColor} />
+                <Text style={[styles.addButtonText, { color: tintColor }]}>참여하기</Text>
+              </TouchableOpacity>
+            </View>
+
+            {groups && groups.length > 0 ? (
+              groups.map((group, index) => (
                 <Animated.View
-                  key={connection.id}
-                  entering={FadeInDown.duration(400).delay(300 + index * 80)}
+                  key={group.id}
+                  entering={FadeInDown.duration(400).delay(100 + index * 80)}
                 >
                   <TouchableOpacity
                     style={[styles.connectionItem, { backgroundColor: surfaceColor }, Shadows.sm]}
-                    onPress={() => handleConnectionPress(connection)}
+                    onPress={() => handleGroupPress(group)}
                     activeOpacity={0.7}
                     accessibilityRole="button"
-                    accessibilityLabel={`${connection.partnerName}, ${config.label}, 궁합 확인하기`}
+                    accessibilityLabel={`${group.name} 그룹, 궁합 확인하기`}
                   >
                     <View style={styles.connectionInfo}>
                       <View style={styles.connectionNameRow}>
                         <Text style={[styles.connectionName, { color: textColor }]}>
-                          {connection.partnerName}
+                          {group.name}
                         </Text>
-                        <View style={[styles.relationBadge, { backgroundColor: config.color + '15' }]}>
-                          <Text style={[styles.relationText, { color: config.color }]}>
-                            {config.label}
+                        <View style={[styles.relationBadge, { backgroundColor: tintColor + '15' }]}>
+                          <Text style={[styles.relationText, { color: tintColor }]}>
+                            {group.memberCount}명
                           </Text>
                         </View>
                       </View>
-                      {connection.latestScore !== null ? (
-                        <Text style={[styles.latestScore, { color: getScoreColor(connection.latestScore) }]}>
-                          최근 궁합 {connection.latestScore}점
-                        </Text>
-                      ) : (
-                        <Text style={[styles.latestScore, { color: textSecondary }]}>
-                          아직 궁합을 확인하지 않았어요
-                        </Text>
-                      )}
+                      <Text style={[styles.latestScore, { color: textSecondary }]}>
+                        {group.isOwner ? '내가 관리' : RelationConfig[group.relationType]?.label ?? '그룹'}
+                      </Text>
                     </View>
                     <IconSymbol name="chevron.right" size={14} color={textSecondary} />
                   </TouchableOpacity>
                 </Animated.View>
-              );
-            })
-          ) : (
-            <EmptyState
-              icon="heart.fill"
-              title="아직 연인 궁합이 없어요"
-              message="초대 코드를 공유하거나 상대방의 코드를 입력해보세요"
-            />
-          )}
-        </Animated.View>
-
-        {/* ── 그룹 궁합 Section ── */}
-        <Animated.View entering={FadeInDown.duration(400).delay(400)}>
-          <View style={[styles.sectionHeader, { marginTop: Spacing.xl }]}>
-            <Text style={[styles.sectionTitle, { color: textColor }]}>그룹 궁합</Text>
-            {groups && groups.length > 0 && (
-              <Text style={[styles.sectionCount, { color: textSecondary }]}>
-                {groups.length}개
-              </Text>
+              ))
+            ) : (
+              <EmptyState
+                icon="person.2.fill"
+                title="아직 그룹이 없어요"
+                message="그룹을 만들거나 초대 코드로 참여해보세요"
+              />
             )}
-          </View>
-
-          {/* Group Action Buttons */}
-          <View style={styles.groupActions}>
-            <TouchableOpacity
-              style={[styles.groupActionButton, { backgroundColor: tintColor + '10' }]}
-              onPress={() => router.push('/group/create')}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="그룹 만들기"
-            >
-              <IconSymbol name="plus" size={18} color={tintColor} />
-              <Text style={[styles.addButtonText, { color: tintColor }]}>만들기</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.groupActionButton, { backgroundColor: tintColor + '10' }]}
-              onPress={() => router.push('/group/join')}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="그룹 참여하기"
-            >
-              <IconSymbol name="person.2.fill" size={18} color={tintColor} />
-              <Text style={[styles.addButtonText, { color: tintColor }]}>참여하기</Text>
-            </TouchableOpacity>
-          </View>
-
-          {groups && groups.length > 0 ? (
-            groups.map((group, index) => (
-              <Animated.View
-                key={group.id}
-                entering={FadeInDown.duration(400).delay(500 + index * 80)}
-              >
-                <TouchableOpacity
-                  style={[styles.connectionItem, { backgroundColor: surfaceColor }, Shadows.sm]}
-                  onPress={() => handleGroupPress(group)}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${group.name} 그룹, 궁합 확인하기`}
-                >
-                  <View style={styles.connectionInfo}>
-                    <View style={styles.connectionNameRow}>
-                      <Text style={[styles.connectionName, { color: textColor }]}>
-                        {group.name}
-                      </Text>
-                      <View style={[styles.relationBadge, { backgroundColor: tintColor + '15' }]}>
-                        <Text style={[styles.relationText, { color: tintColor }]}>
-                          {group.memberCount}명
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={[styles.latestScore, { color: textSecondary }]}>
-                      {group.isOwner ? '내가 관리' : RelationConfig[group.relationType]?.label ?? '그룹'}
-                    </Text>
-                  </View>
-                  <IconSymbol name="chevron.right" size={14} color={textSecondary} />
-                </TouchableOpacity>
-              </Animated.View>
-            ))
-          ) : (
-            <EmptyState
-              icon="person.2.fill"
-              title="아직 그룹이 없어요"
-              message="그룹을 만들거나 초대 코드로 참여해보세요"
-            />
-          )}
-        </Animated.View>
+          </Animated.View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -280,6 +309,23 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FontSizes.xxl,
     fontWeight: '700',
+  },
+
+  // Segment Tabs
+  segmentContainer: {
+    flexDirection: 'row',
+    borderRadius: BorderRadius.md,
+    padding: 4,
+  },
+  segmentTab: {
+    flex: 1,
+    paddingVertical: Spacing.sm + 2,
+    alignItems: 'center',
+    borderRadius: BorderRadius.sm + 2,
+  },
+  segmentText: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
   },
 
   // Add Button
@@ -319,6 +365,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: Spacing.md,
+    marginTop: Spacing.md,
   },
   sectionTitle: {
     fontSize: FontSizes.lg,

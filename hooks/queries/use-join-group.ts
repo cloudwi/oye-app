@@ -9,7 +9,7 @@ export function useJoinGroup() {
   return useMutation({
     mutationFn: (data: JoinGroupRequest) => groupApi.join(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.group.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.group.all() });
     },
   });
 }
