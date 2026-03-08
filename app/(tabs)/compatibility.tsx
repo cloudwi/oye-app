@@ -6,6 +6,7 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -13,6 +14,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useConnections } from '@/hooks/queries/use-connections';
 import { useGroups } from '@/hooks/queries/use-groups';
+import { useSetLover, useUnsetLover } from '@/hooks/queries/use-set-lover';
 import { useRefresh } from '@/hooks/use-refresh';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -46,6 +48,9 @@ export default function CompatibilityScreen() {
   const { data: connections, isLoading: isConnectionsLoading, refetch: refetchConnections } = useConnections();
   const { data: groups, isLoading: isGroupsLoading, refetch: refetchGroups } = useGroups();
 
+  const setLover = useSetLover();
+  const unsetLover = useUnsetLover();
+
   const { refreshing, onRefresh } = useRefresh(refetchConnections, refetchGroups);
 
   const handleConnectionPress = useCallback((connection: Connection) => {
@@ -74,7 +79,8 @@ export default function CompatibilityScreen() {
     );
   }
 
-  const loverConnections = connections?.filter((c) => c.relationType === 'LOVER') ?? [];
+  const loverConnection = connections?.find((c) => c.relationType === 'LOVER') ?? null;
+  const friendConnections = connections?.filter((c) => c.relationType === 'FRIEND') ?? [];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -119,59 +125,93 @@ export default function CompatibilityScreen() {
           <Animated.View entering={FadeInDown.duration(300)}>
             <View style={[styles.sectionHeader, { marginTop: Spacing.md }]}>
               <Text style={[styles.sectionTitle, { color: textColor }]}>연인 궁합</Text>
-              {loverConnections.length > 0 && (
-                <Text style={[styles.sectionCount, { color: textSecondary }]}>
-                  {loverConnections.length}명
-                </Text>
-              )}
             </View>
 
-            {loverConnections.length > 0 ? (
-              loverConnections.map((connection, index) => {
-                const config = RelationConfig[connection.relationType];
-                return (
+            {loverConnection ? (
+              <>
+                <Animated.View entering={FadeInDown.duration(400).delay(100)}>
+                  <TouchableOpacity
+                    style={[styles.connectionItem, { backgroundColor: surfaceColor }, Shadows.sm]}
+                    onPress={() => handleConnectionPress(loverConnection)}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${loverConnection.partnerName}, 연인 궁합 확인하기`}
+                  >
+                    <View style={styles.connectionInfo}>
+                      <View style={styles.connectionNameRow}>
+                        <Text style={[styles.connectionName, { color: textColor }]}>
+                          {loverConnection.partnerName}
+                        </Text>
+                        <View style={[styles.relationBadge, { backgroundColor: RelationConfig.LOVER.color + '15' }]}>
+                          <Text style={[styles.relationText, { color: RelationConfig.LOVER.color }]}>
+                            연인
+                          </Text>
+                        </View>
+                      </View>
+                      {loverConnection.latestScore !== null ? (
+                        <Text style={[styles.latestScore, { color: getScoreColor(loverConnection.latestScore) }]}>
+                          최근 궁합 {loverConnection.latestScore}점
+                        </Text>
+                      ) : (
+                        <Text style={[styles.latestScore, { color: textSecondary }]}>
+                          아직 궁합을 확인하지 않았어요
+                        </Text>
+                      )}
+                    </View>
+                    <IconSymbol name="chevron.right" size={14} color={textSecondary} />
+                  </TouchableOpacity>
+                </Animated.View>
+                <TouchableOpacity
+                  style={styles.changeLoverButton}
+                  onPress={() => unsetLover.mutate(loverConnection.id)}
+                  disabled={unsetLover.isPending}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.changeLoverText, { color: textSecondary }]}>
+                    {unsetLover.isPending ? '변경 중...' : '연인 변경하기'}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : friendConnections.length > 0 ? (
+              <>
+                <Text style={[styles.pickerDescription, { color: textSecondary }]}>
+                  친구 중 1명을 연인으로 선택하세요
+                </Text>
+                {friendConnections.map((connection, index) => (
                   <Animated.View
                     key={connection.id}
-                    entering={FadeInDown.duration(400).delay(100 + index * 80)}
+                    entering={FadeInDown.duration(400).delay(100 + index * 60)}
                   >
                     <TouchableOpacity
                       style={[styles.connectionItem, { backgroundColor: surfaceColor }, Shadows.sm]}
-                      onPress={() => handleConnectionPress(connection)}
+                      onPress={() => setLover.mutate(connection.id)}
+                      disabled={setLover.isPending}
                       activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${connection.partnerName}, ${config.label}, 궁합 확인하기`}
                     >
                       <View style={styles.connectionInfo}>
-                        <View style={styles.connectionNameRow}>
-                          <Text style={[styles.connectionName, { color: textColor }]}>
-                            {connection.partnerName}
-                          </Text>
-                          <View style={[styles.relationBadge, { backgroundColor: config.color + '15' }]}>
-                            <Text style={[styles.relationText, { color: config.color }]}>
-                              {config.label}
-                            </Text>
-                          </View>
-                        </View>
-                        {connection.latestScore !== null ? (
-                          <Text style={[styles.latestScore, { color: getScoreColor(connection.latestScore) }]}>
-                            최근 궁합 {connection.latestScore}점
-                          </Text>
-                        ) : (
+                        <Text style={[styles.connectionName, { color: textColor }]}>
+                          {connection.partnerName}
+                        </Text>
+                        {connection.partnerNickname && (
                           <Text style={[styles.latestScore, { color: textSecondary }]}>
-                            아직 궁합을 확인하지 않았어요
+                            @{connection.partnerNickname}
                           </Text>
                         )}
                       </View>
-                      <IconSymbol name="chevron.right" size={14} color={textSecondary} />
+                      {setLover.isPending && setLover.variables === connection.id ? (
+                        <ActivityIndicator size="small" color={tintColor} />
+                      ) : (
+                        <IconSymbol name="heart" size={18} color={RelationConfig.LOVER.color} />
+                      )}
                     </TouchableOpacity>
                   </Animated.View>
-                );
-              })
+                ))}
+              </>
             ) : (
               <EmptyState
                 icon="heart.fill"
                 title="아직 연인 궁합이 없어요"
-                message="친구 탭에서 연인을 추가해보세요"
+                message="먼저 친구를 추가한 후 연인으로 선택해보세요"
               />
             )}
           </Animated.View>
@@ -349,5 +389,19 @@ const styles = StyleSheet.create({
   },
   latestScore: {
     fontSize: FontSizes.sm,
+  },
+
+  // Lover picker
+  pickerDescription: {
+    fontSize: FontSizes.sm,
+    marginBottom: Spacing.md,
+  },
+  changeLoverButton: {
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+  },
+  changeLoverText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
   },
 });

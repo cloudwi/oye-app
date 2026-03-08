@@ -20,4 +20,14 @@ export const connectionApi = {
   async deleteConnection(id: number): Promise<void> {
     await apiClient.delete(`/api/v1/connections/${id}`);
   },
+
+  async setLover(id: number): Promise<Connection> {
+    const response = await apiClient.patch<Connection>(`/api/v1/connections/${id}/lover`);
+    return response.data;
+  },
+
+  async unsetLover(id: number): Promise<Connection> {
+    const response = await apiClient.delete<Connection>(`/api/v1/connections/${id}/lover`);
+    return response.data;
+  },
 };

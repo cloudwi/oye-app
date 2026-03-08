@@ -26,7 +26,6 @@ import {
   BorderRadius,
   FontSizes,
   Shadows,
-  RelationConfig,
 } from '@/constants/theme';
 import type { Connection } from '@/types/connection';
 
@@ -119,7 +118,6 @@ export default function FriendsScreen() {
         {/* Connection list */}
         {connections && connections.length > 0 ? (
           connections.map((connection, index) => {
-            const config = RelationConfig[connection.relationType];
             const isDeleting = deletingId === connection.id;
 
             return (
@@ -138,23 +136,16 @@ export default function FriendsScreen() {
                   activeOpacity={0.7}
                   disabled={isDeleting}
                   accessibilityRole="button"
-                  accessibilityLabel={`${connection.partnerName}, ${config.label}`}
+                  accessibilityLabel={connection.partnerName}
                 >
-                  <View style={[styles.avatar, { backgroundColor: config.color + '15' }]}>
-                    <IconSymbol name="person.fill" size={20} color={config.color} />
+                  <View style={[styles.avatar, { backgroundColor: tintColor + '15' }]}>
+                    <IconSymbol name="person.fill" size={20} color={tintColor} />
                   </View>
 
                   <View style={styles.connectionInfo}>
-                    <View style={styles.nameRow}>
-                      <Text style={[styles.name, { color: textColor }]} numberOfLines={1}>
-                        {connection.partnerName}
-                      </Text>
-                      <View style={[styles.badge, { backgroundColor: config.color + '15' }]}>
-                        <Text style={[styles.badgeText, { color: config.color }]}>
-                          {config.label}
-                        </Text>
-                      </View>
-                    </View>
+                    <Text style={[styles.name, { color: textColor }]} numberOfLines={1}>
+                      {connection.partnerName}
+                    </Text>
                     {connection.partnerNickname && (
                       <Text style={[styles.nickname, { color: textSecondary }]} numberOfLines={1}>
                         @{connection.partnerNickname}
@@ -232,22 +223,8 @@ const styles = StyleSheet.create({
   connectionInfo: {
     flex: 1,
   },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
   name: {
     fontSize: FontSizes.md,
-    fontWeight: '600',
-  },
-  badge: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.sm,
-  },
-  badgeText: {
-    fontSize: FontSizes.xs,
     fontWeight: '600',
   },
   nickname: {

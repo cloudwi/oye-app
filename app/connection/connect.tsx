@@ -25,21 +25,12 @@ import {
   Spacing,
   BorderRadius,
   FontSizes,
-  RelationConfig,
 } from '@/constants/theme';
 import { getUserFriendlyError } from '@/services/api/client';
 import { userApi } from '@/services/api/user';
-import type { RelationType } from '@/types/connection';
 
 const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 const wrapperProps = Platform.OS === 'ios' ? { behavior: 'padding' as const } : {};
-
-const RELATION_OPTIONS: { type: RelationType; label: string }[] = [
-  { type: 'LOVER', label: '연인' },
-  { type: 'FRIEND', label: '친구' },
-  { type: 'FAMILY', label: '가족' },
-  { type: 'COLLEAGUE', label: '동료' },
-];
 
 export default function ConnectScreen() {
   const tintColor = useThemeColor({}, 'tint');
@@ -48,12 +39,10 @@ export default function ConnectScreen() {
   const textSecondary = useThemeColor({}, 'textSecondary');
   const inputBg = useThemeColor({}, 'inputBackground');
   const placeholderColor = useThemeColor({}, 'placeholder');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { contentStyle } = useResponsiveLayout();
 
   const [nickname, setNickname] = useState('');
-  const [relationType, setRelationType] = useState<RelationType>('FRIEND');
   const [nicknameStatus, setNicknameStatus] = useState<'idle' | 'checking' | 'found' | 'not_found'>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const connect = useConnect();
@@ -92,7 +81,7 @@ export default function ConnectScreen() {
     }
 
     connect.mutate(
-      { nickname: nickname.trim(), relationType },
+      { nickname: nickname.trim(), relationType: 'FRIEND' },
       {
         onSuccess: () => {
           showAlert('완료', '친구가 추가되었습니다!');
@@ -104,7 +93,7 @@ export default function ConnectScreen() {
         },
       },
     );
-  }, [isValid, connect, nickname, relationType]);
+  }, [isValid, connect, nickname]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -155,38 +144,6 @@ export default function ConnectScreen() {
             )}
           </Animated.View>
 
-          {/* Relation Type Selection */}
-          <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(150)}>
-            <Text style={[styles.label, { color: textSecondary }]}>관계 유형</Text>
-            <View style={styles.relationGrid}>
-              {RELATION_OPTIONS.map(({ type, label }) => {
-                const config = RelationConfig[type];
-                const isSelected = relationType === type;
-                return (
-                  <TouchableOpacity
-                    key={type}
-                    style={[
-                      styles.relationChip,
-                      { backgroundColor: isSelected ? config.color + '15' : surfaceColor },
-                      isSelected && { borderColor: config.color, borderWidth: 1.5 },
-                    ]}
-                    onPress={() => setRelationType(type)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={[styles.relationDot, { backgroundColor: config.color }]} />
-                    <Text
-                      style={[
-                        styles.relationChipText,
-                        { color: isSelected ? config.color : textSecondary },
-                      ]}
-                    >
-                      {label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </Animated.View>
         </ScrollView>
 
         {/* Submit Button */}
@@ -261,32 +218,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.xs,
     fontWeight: '500',
     marginLeft: Spacing.xs,
-  },
-
-  // Relation Type
-  relationGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  relationChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm + 2,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  relationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  relationChipText: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
   },
 
   // Bottom
