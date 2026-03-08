@@ -48,9 +48,7 @@ export default function GroupInviteScreen() {
   const availableFriends = useMemo(() => {
     if (!connections || !group) return [];
     const memberIds = new Set(group.members.map((m) => m.userId));
-    return connections.filter(
-      (c) => c.relationType === 'FRIEND' && !memberIds.has(c.partnerId)
-    );
+    return connections.filter((c) => !memberIds.has(c.partnerId));
   }, [connections, group]);
 
   const handleInvite = useCallback(
@@ -105,7 +103,7 @@ export default function GroupInviteScreen() {
           <EmptyState
             icon="person.2.fill"
             title="초대할 친구가 없어요"
-            message="모든 친구가 이미 그룹에 참여 중이거나, 아직 친구가 없습니다"
+            message="모두 이미 그룹에 참여 중이거나, 아직 연결된 사람이 없습니다"
           />
         }
         renderItem={({ item }) => {
