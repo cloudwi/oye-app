@@ -14,7 +14,6 @@ export const queryKeys = {
   connection: {
     all: () => ['connection'] as const,
     list: () => ['connection', 'list'] as const,
-    myCode: () => ['connection', 'myCode'] as const,
   },
   compatibility: {
     all: () => ['compatibility'] as const,

@@ -18,6 +18,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useConnect } from '@/hooks/queries/use-connect';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { SettingsHeader } from '@/components/ui/settings-header';
 import { router } from 'expo-router';
 import { showAlert } from '@/utils/alert';
 import {
@@ -28,11 +29,17 @@ import {
 } from '@/constants/theme';
 import { getUserFriendlyError } from '@/services/api/client';
 import { userApi } from '@/services/api/user';
-
-type InputMode = 'nickname' | 'code';
+import type { RelationType } from '@/types/connection';
 
 const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 const wrapperProps = Platform.OS === 'ios' ? { behavior: 'padding' as const } : {};
+
+const RELATION_OPTIONS: { type: RelationType; label: string }[] = [
+  { type: 'LOVER', label: '연인' },
+  { type: 'FRIEND', label: '친구' },
+  { type: 'FAMILY', label: '가족' },
+  { type: 'COLLEAGUE', label: '동료' },
+];
 
 export default function ConnectScreen() {
   const tintColor = useThemeColor({}, 'tint');
@@ -45,20 +52,16 @@ export default function ConnectScreen() {
 
   const { contentStyle } = useResponsiveLayout();
 
-  const [mode, setMode] = useState<InputMode>('nickname');
   const [nickname, setNickname] = useState('');
-  const [code, setCode] = useState('');
+  const [relationType, setRelationType] = useState<RelationType>('FRIEND');
   const [nicknameStatus, setNicknameStatus] = useState<'idle' | 'checking' | 'found' | 'not_found'>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const connect = useConnect();
 
-  const isValid = mode === 'nickname'
-    ? nickname.length >= 2 && nicknameStatus === 'found'
-    : code.trim().length === 6;
+  const isValid = nickname.length >= 2 && nicknameStatus === 'found';
 
-  // Debounced nickname check
   useEffect(() => {
-    if (mode !== 'nickname' || nickname.length < 2) {
+    if (nickname.length < 2) {
       setNicknameStatus('idle');
       return;
     }
@@ -69,8 +72,6 @@ export default function ConnectScreen() {
     debounceRef.current = setTimeout(async () => {
       try {
         const result = await userApi.checkNickname(nickname);
-        // available=true means no one has it → not found
-        // available=false means someone has it → found
         setNicknameStatus(result.available ? 'not_found' : 'found');
       } catch {
         setNicknameStatus('idle');
@@ -80,7 +81,7 @@ export default function ConnectScreen() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [nickname, mode]);
+  }, [nickname]);
 
   const handleSubmit = useCallback(() => {
     if (!isValid || connect.isPending) return;
@@ -90,41 +91,25 @@ export default function ConnectScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
-    const request = mode === 'nickname'
-      ? { nickname: nickname.trim(), relationType: 'LOVER' as const }
-      : { code: code.trim().toUpperCase(), relationType: 'LOVER' as const };
-
-    connect.mutate(request, {
-      onSuccess: () => {
-        showAlert('완료', '연결되었습니다!');
-        router.back();
+    connect.mutate(
+      { nickname: nickname.trim(), relationType },
+      {
+        onSuccess: () => {
+          showAlert('완료', '친구가 추가되었습니다!');
+          router.back();
+        },
+        onError: (error) => {
+          const msg = getUserFriendlyError(error) || '친구 추가에 실패했습니다.';
+          showAlert('추가 실패', msg);
+        },
       },
-      onError: (error) => {
-        const msg = getUserFriendlyError(error) || '연결에 실패했습니다.';
-        showAlert('연결 실패', msg);
-      },
-    });
-  }, [isValid, connect, mode, nickname, code]);
-
-  const toggleMode = () => {
-    setMode((prev) => (prev === 'nickname' ? 'code' : 'nickname'));
-    setNicknameStatus('idle');
-  };
+    );
+  }, [isValid, connect, nickname, relationType]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <Wrapper style={styles.flex} {...wrapperProps}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <IconSymbol name="chevron.left" size={20} color={textColor} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: textColor }]}>연인 연결하기</Text>
-          <View style={styles.backButton} />
-        </View>
+        <SettingsHeader title="친구 추가" />
 
         <ScrollView
           style={styles.flex}
@@ -132,111 +117,75 @@ export default function ConnectScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Mode Toggle */}
-          <Animated.View entering={FadeInDown.duration(400).delay(50)}>
-            <View style={[styles.modeToggle, { backgroundColor: surfaceColor }]}>
-              <TouchableOpacity
-                style={[styles.modeTab, mode === 'nickname' && { backgroundColor }]}
-                onPress={() => setMode('nickname')}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.modeTabText, { color: mode === 'nickname' ? tintColor : textSecondary }]}>
-                  닉네임
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modeTab, mode === 'code' && { backgroundColor }]}
-                onPress={() => setMode('code')}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.modeTabText, { color: mode === 'code' ? tintColor : textSecondary }]}>
-                  초대 코드
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-
           {/* Nickname Input */}
-          {mode === 'nickname' && (
-            <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(100)}>
-              <Text style={[styles.label, { color: textSecondary }]}>상대방의 닉네임</Text>
-              <View style={[styles.inputWrapper, { backgroundColor: inputBg }]}>
-                <IconSymbol name="magnifyingglass" size={16} color={placeholderColor} />
-                <TextInput
-                  style={[styles.textInput, { color: textColor }]}
-                  placeholder="닉네임 검색"
-                  placeholderTextColor={placeholderColor}
-                  value={nickname}
-                  onChangeText={setNickname}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  returnKeyType="search"
-                />
-                {nicknameStatus === 'checking' && (
-                  <ActivityIndicator size="small" color={tintColor} />
-                )}
-                {nicknameStatus === 'found' && (
-                  <IconSymbol name="checkmark.circle.fill" size={18} color="#10B981" />
-                )}
-                {nicknameStatus === 'not_found' && nickname.length >= 2 && (
-                  <IconSymbol name="xmark.circle.fill" size={18} color="#EF4444" />
-                )}
-              </View>
+          <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(50)}>
+            <Text style={[styles.label, { color: textSecondary }]}>닉네임으로 검색</Text>
+            <View style={[styles.inputWrapper, { backgroundColor: inputBg }]}>
+              <IconSymbol name="magnifyingglass" size={16} color={placeholderColor} />
+              <TextInput
+                style={[styles.textInput, { color: textColor }]}
+                placeholder="상대방의 닉네임 입력"
+                placeholderTextColor={placeholderColor}
+                value={nickname}
+                onChangeText={setNickname}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="search"
+                autoFocus
+              />
+              {nicknameStatus === 'checking' && (
+                <ActivityIndicator size="small" color={tintColor} />
+              )}
               {nicknameStatus === 'found' && (
-                <Text style={[styles.statusText, { color: '#10B981' }]}>
-                  사용자를 찾았습니다
-                </Text>
+                <IconSymbol name="checkmark.circle.fill" size={18} color="#10B981" />
               )}
               {nicknameStatus === 'not_found' && nickname.length >= 2 && (
-                <Text style={[styles.statusText, { color: '#EF4444' }]}>
-                  해당 닉네임의 사용자가 없습니다
-                </Text>
+                <IconSymbol name="xmark.circle.fill" size={18} color="#EF4444" />
               )}
-            </Animated.View>
-          )}
-
-          {/* Code Input */}
-          {mode === 'code' && (
-            <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(100)}>
-              <Text style={[styles.label, { color: textSecondary }]}>상대방의 초대 코드</Text>
-              <TextInput
-                style={[styles.codeInput, { backgroundColor: inputBg, color: textColor }]}
-                placeholder="6자리 코드 입력"
-                placeholderTextColor={placeholderColor}
-                value={code}
-                onChangeText={(text) => {
-                  setCode(text.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6));
-                }}
-                maxLength={6}
-                autoCapitalize="characters"
-                autoCorrect={false}
-                returnKeyType="done"
-              />
-            </Animated.View>
-          )}
-
-          {/* Relation Info */}
-          <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(200)}>
-            <View style={[styles.relationInfo, { backgroundColor: surfaceColor }]}>
-              <View style={[styles.relationDot, { backgroundColor: RelationConfig.LOVER.color }]} />
-              <Text style={[styles.relationLabel, { color: textColor }]}>
-                연인 궁합으로 연결됩니다
-              </Text>
             </View>
-            <Text style={[styles.hint, { color: textSecondary }]}>
-              친구, 가족, 동료와 궁합을 보려면 그룹을 이용해주세요.
-            </Text>
-            <TouchableOpacity
-              onPress={() => {
-                router.back();
-                setTimeout(() => router.push('/group/create'), 300);
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.groupLink, { color: tintColor }]}>
-                그룹 만들기 →
+            {nicknameStatus === 'found' && (
+              <Text style={[styles.statusText, { color: '#10B981' }]}>
+                사용자를 찾았습니다
               </Text>
-            </TouchableOpacity>
+            )}
+            {nicknameStatus === 'not_found' && nickname.length >= 2 && (
+              <Text style={[styles.statusText, { color: '#EF4444' }]}>
+                해당 닉네임의 사용자가 없습니다
+              </Text>
+            )}
+          </Animated.View>
+
+          {/* Relation Type Selection */}
+          <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(150)}>
+            <Text style={[styles.label, { color: textSecondary }]}>관계 유형</Text>
+            <View style={styles.relationGrid}>
+              {RELATION_OPTIONS.map(({ type, label }) => {
+                const config = RelationConfig[type];
+                const isSelected = relationType === type;
+                return (
+                  <TouchableOpacity
+                    key={type}
+                    style={[
+                      styles.relationChip,
+                      { backgroundColor: isSelected ? config.color + '15' : surfaceColor },
+                      isSelected && { borderColor: config.color, borderWidth: 1.5 },
+                    ]}
+                    onPress={() => setRelationType(type)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.relationDot, { backgroundColor: config.color }]} />
+                    <Text
+                      style={[
+                        styles.relationChipText,
+                        { color: isSelected ? config.color : textSecondary },
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </Animated.View>
         </ScrollView>
 
@@ -264,7 +213,7 @@ export default function ConnectScreen() {
                   !isValid && { color: textSecondary + '80' },
                 ]}
               >
-                연결하기
+                추가하기
               </Text>
             )}
           </TouchableOpacity>
@@ -281,46 +230,9 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-    gap: Spacing.md,
-  },
-  backButton: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: FontSizes.xl,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
   formContent: {
     padding: Spacing.lg,
     gap: Spacing.xl,
-  },
-
-  // Mode Toggle
-  modeToggle: {
-    flexDirection: 'row',
-    borderRadius: BorderRadius.md,
-    padding: 4,
-  },
-  modeTab: {
-    flex: 1,
-    paddingVertical: Spacing.sm + 2,
-    alignItems: 'center',
-    borderRadius: BorderRadius.sm + 2,
-  },
-  modeTabText: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
   },
 
   // Fields
@@ -350,42 +262,31 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: Spacing.xs,
   },
-  codeInput: {
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    fontSize: 24,
-    fontWeight: '700',
-    letterSpacing: 6,
-    textAlign: 'center',
-  },
 
-  // Relation Info
-  relationInfo: {
+  // Relation Type
+  relationGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  relationChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   relationDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
-  relationLabel: {
+  relationChipText: {
     fontSize: FontSizes.md,
     fontWeight: '600',
-  },
-  hint: {
-    fontSize: FontSizes.sm,
-    lineHeight: 20,
-    marginLeft: Spacing.xs,
-  },
-  groupLink: {
-    fontSize: FontSizes.sm,
-    fontWeight: '600',
-    marginLeft: Spacing.xs,
-    marginTop: Spacing.xs,
   },
 
   // Bottom

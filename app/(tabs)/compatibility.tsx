@@ -11,14 +11,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
-import { useMyCode } from '@/hooks/queries/use-my-code';
 import { useConnections } from '@/hooks/queries/use-connections';
 import { useGroups } from '@/hooks/queries/use-groups';
 import { useRefresh } from '@/hooks/use-refresh';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { InviteCodeCard } from '@/components/ui/invite-code-card';
 import { TabHeader } from '@/components/ui/tab-header';
 import { router } from 'expo-router';
 import {
@@ -45,11 +43,10 @@ export default function CompatibilityScreen() {
 
   const [activeTab, setActiveTab] = useState<Tab>('lover');
 
-  const { data: myCode, isLoading: isCodeLoading, refetch: refetchCode } = useMyCode();
   const { data: connections, isLoading: isConnectionsLoading, refetch: refetchConnections } = useConnections();
   const { data: groups, isLoading: isGroupsLoading, refetch: refetchGroups } = useGroups();
 
-  const { refreshing, onRefresh } = useRefresh(refetchCode, refetchConnections, refetchGroups);
+  const { refreshing, onRefresh } = useRefresh(refetchConnections, refetchGroups);
 
   const handleConnectionPress = useCallback((connection: Connection) => {
     router.push({ pathname: '/connection/[id]', params: { id: connection.id } });
@@ -59,9 +56,9 @@ export default function CompatibilityScreen() {
     router.push({ pathname: '/group/[id]', params: { id: group.id } });
   }, []);
 
-  const isLoading = isCodeLoading || isConnectionsLoading || isGroupsLoading;
+  const isLoading = isConnectionsLoading || isGroupsLoading;
 
-  if (isLoading && !myCode && !connections && !groups) {
+  if (isLoading && !connections && !groups) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
         <TabHeader title="궁합" />
@@ -121,20 +118,7 @@ export default function CompatibilityScreen() {
         {/* ── 연인 궁합 Tab ── */}
         {activeTab === 'lover' && (
           <Animated.View entering={FadeInDown.duration(300)}>
-            {/* Invite Code */}
-            <View style={{ marginTop: Spacing.md }}>
-              <InviteCodeCard
-                code={myCode?.nickname ?? myCode?.code ?? ''}
-                label={myCode?.nickname ? '내 닉네임' : '내 초대 코드'}
-                shareTitle="오늘의 예감 - 궁합 초대"
-                shareMessage={myCode?.nickname
-                  ? `[오늘의 예감] 궁합 초대\n\n내 닉네임: ${myCode.nickname}\n\n오늘의 예감 앱에서 닉네임을 검색하고 궁합을 확인해보세요!`
-                  : `[오늘의 예감] 궁합 초대 코드\n\n내 코드: ${myCode?.code ?? ''}\n\n오늘의 예감 앱에서 코드를 입력하고 궁합을 확인해보세요!`
-                }
-              />
-            </View>
-
-            <View style={styles.sectionHeader}>
+            <View style={[styles.sectionHeader, { marginTop: Spacing.md }]}>
               <Text style={[styles.sectionTitle, { color: textColor }]}>연인 궁합</Text>
               {loverConnections.length > 0 && (
                 <Text style={[styles.sectionCount, { color: textSecondary }]}>
@@ -142,17 +126,6 @@ export default function CompatibilityScreen() {
                 </Text>
               )}
             </View>
-
-            <TouchableOpacity
-              style={[styles.addButton, { backgroundColor: tintColor + '10' }]}
-              onPress={() => router.push('/connection/connect')}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="연인 코드로 연결하기"
-            >
-              <IconSymbol name="plus" size={18} color={tintColor} />
-              <Text style={[styles.addButtonText, { color: tintColor }]}>연인 연결하기</Text>
-            </TouchableOpacity>
 
             {loverConnections.length > 0 ? (
               loverConnections.map((connection, index) => {
@@ -199,7 +172,7 @@ export default function CompatibilityScreen() {
               <EmptyState
                 icon="heart.fill"
                 title="아직 연인 궁합이 없어요"
-                message="초대 코드를 공유하거나 상대방의 코드를 입력해보세요"
+                message="친구 탭에서 연인을 추가해보세요"
               />
             )}
           </Animated.View>
@@ -318,16 +291,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Add Button
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.md,
-  },
   addButtonText: {
     fontSize: FontSizes.md,
     fontWeight: '600',

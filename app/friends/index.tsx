@@ -172,7 +172,7 @@ export default function FriendsScreen() {
           <EmptyState
             icon="person.2.fill"
             title="아직 연결된 친구가 없어요"
-            message="닉네임 또는 코드로 친구를 추가해보세요"
+            message="닉네임으로 친구를 추가해보세요"
           />
         )}
       </ScrollView>
