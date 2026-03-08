@@ -17,6 +17,7 @@ export interface User {
   mbti: string | null;
   bloodType: BloodType | null;
   interests: string | null;
+  nickname: string | null;
   role: UserRole;
   createdAt: string; // ISO datetime
 }

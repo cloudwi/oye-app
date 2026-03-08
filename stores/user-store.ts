@@ -32,6 +32,7 @@ const defaultUser: User = {
   mbti: null,
   bloodType: null,
   interests: null,
+  nickname: null,
   role: 'USER',
   createdAt: new Date().toISOString(),
 };

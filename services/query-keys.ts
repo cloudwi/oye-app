@@ -30,6 +30,10 @@ export const queryKeys = {
     todayCompatibility: (id: number) => ['group', 'todayCompatibility', id] as const,
     compatibilityHistory: (id: number) => ['group', 'compatibilityHistory', id] as const,
   },
+  user: {
+    all: () => ['user'] as const,
+    nicknameCheck: (nickname: string) => ['user', 'nicknameCheck', nickname] as const,
+  },
   lotto: {
     all: () => ['lotto'] as const,
     stats: () => ['lotto', 'stats'] as const,

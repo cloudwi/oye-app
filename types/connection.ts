@@ -3,6 +3,7 @@ export type RelationType = 'LOVER' | 'FRIEND' | 'FAMILY' | 'COLLEAGUE';
 export interface Connection {
   id: number;
   partnerName: string;
+  partnerNickname: string | null;
   relationType: RelationType;
   latestScore: number | null;
   latestContent: string | null;
@@ -10,10 +11,12 @@ export interface Connection {
 }
 
 export interface ConnectRequest {
-  code: string;
+  code?: string;
+  nickname?: string;
   relationType: RelationType;
 }
 
 export interface MyCodeResponse {
   code: string;
+  nickname: string | null;
 }

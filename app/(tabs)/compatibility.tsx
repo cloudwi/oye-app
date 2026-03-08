@@ -127,10 +127,13 @@ export default function CompatibilityScreen() {
             {/* Invite Code */}
             <View style={{ marginTop: Spacing.md }}>
               <InviteCodeCard
-                code={myCode?.code ?? ''}
-                label="내 초대 코드"
+                code={myCode?.nickname ?? myCode?.code ?? ''}
+                label={myCode?.nickname ? '내 닉네임' : '내 초대 코드'}
                 shareTitle="오늘의 예감 - 궁합 초대"
-                shareMessage={`[오늘의 예감] 궁합 초대 코드\n\n내 코드: ${myCode?.code ?? ''}\n\n오늘의 예감 앱에서 코드를 입력하고 궁합을 확인해보세요!`}
+                shareMessage={myCode?.nickname
+                  ? `[오늘의 예감] 궁합 초대\n\n내 닉네임: ${myCode.nickname}\n\n오늘의 예감 앱에서 닉네임을 검색하고 궁합을 확인해보세요!`
+                  : `[오늘의 예감] 궁합 초대 코드\n\n내 코드: ${myCode?.code ?? ''}\n\n오늘의 예감 앱에서 코드를 입력하고 궁합을 확인해보세요!`
+                }
               />
             </View>
 
@@ -151,7 +154,7 @@ export default function CompatibilityScreen() {
               accessibilityLabel="연인 코드로 연결하기"
             >
               <IconSymbol name="plus" size={18} color={tintColor} />
-              <Text style={[styles.addButtonText, { color: tintColor }]}>연인 코드로 연결하기</Text>
+              <Text style={[styles.addButtonText, { color: tintColor }]}>연인 연결하기</Text>
             </TouchableOpacity>
 
             {loverConnections.length > 0 ? (

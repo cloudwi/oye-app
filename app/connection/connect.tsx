@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,9 @@ import {
   RelationConfig,
 } from '@/constants/theme';
 import { getUserFriendlyError } from '@/services/api/client';
+import { userApi } from '@/services/api/user';
+
+type InputMode = 'nickname' | 'code';
 
 const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 const wrapperProps = Platform.OS === 'ios' ? { behavior: 'padding' as const } : {};
@@ -42,49 +45,80 @@ export default function ConnectScreen() {
 
   const { contentStyle } = useResponsiveLayout();
 
+  const [mode, setMode] = useState<InputMode>('nickname');
+  const [nickname, setNickname] = useState('');
   const [code, setCode] = useState('');
-  const [codeError, setCodeError] = useState('');
+  const [nicknameStatus, setNicknameStatus] = useState<'idle' | 'checking' | 'found' | 'not_found'>('idle');
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const connect = useConnect();
 
-  const isValid = code.trim().length === 6 && !codeError;
+  const isValid = mode === 'nickname'
+    ? nickname.length >= 2 && nicknameStatus === 'found'
+    : code.trim().length === 6;
 
-  const handleSubmit = () => {
+  // Debounced nickname check
+  useEffect(() => {
+    if (mode !== 'nickname' || nickname.length < 2) {
+      setNicknameStatus('idle');
+      return;
+    }
+
+    setNicknameStatus('checking');
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const result = await userApi.checkNickname(nickname);
+        // available=true means no one has it → not found
+        // available=false means someone has it → found
+        setNicknameStatus(result.available ? 'not_found' : 'found');
+      } catch {
+        setNicknameStatus('idle');
+      }
+    }, 400);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [nickname, mode]);
+
+  const handleSubmit = useCallback(() => {
     if (!isValid || connect.isPending) return;
 
     Keyboard.dismiss();
-
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
-    connect.mutate(
-      { code: code.trim().toUpperCase(), relationType: 'LOVER' },
-      {
-        onSuccess: () => {
-          showAlert('완료', '연결되었습니다!');
-          router.back();
-        },
-        onError: (error) => {
-          const msg = getUserFriendlyError(error) || '연결에 실패했습니다. 코드를 다시 확인해주세요.';
-          showAlert('연결 실패', msg);
-        },
-      }
-    );
+    const request = mode === 'nickname'
+      ? { nickname: nickname.trim(), relationType: 'LOVER' as const }
+      : { code: code.trim().toUpperCase(), relationType: 'LOVER' as const };
+
+    connect.mutate(request, {
+      onSuccess: () => {
+        showAlert('완료', '연결되었습니다!');
+        router.back();
+      },
+      onError: (error) => {
+        const msg = getUserFriendlyError(error) || '연결에 실패했습니다.';
+        showAlert('연결 실패', msg);
+      },
+    });
+  }, [isValid, connect, mode, nickname, code]);
+
+  const toggleMode = () => {
+    setMode((prev) => (prev === 'nickname' ? 'code' : 'nickname'));
+    setNicknameStatus('idle');
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <Wrapper
-        style={styles.flex}
-        {...wrapperProps}
-      >
+      <Wrapper style={styles.flex} {...wrapperProps}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
-            accessibilityRole="button"
-            accessibilityLabel="뒤로 가기"
           >
             <IconSymbol name="chevron.left" size={20} color={textColor} />
           </TouchableOpacity>
@@ -98,36 +132,88 @@ export default function ConnectScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Code Input */}
-          <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(100)}>
-            <Text style={[styles.label, { color: textSecondary }]}>상대방의 초대 코드</Text>
-            <TextInput
-              style={[
-                styles.codeInput,
-                { backgroundColor: inputBg, color: textColor },
-                codeError && { borderColor: '#EF4444', borderWidth: 2 },
-              ]}
-              placeholder="6자리 코드 입력"
-              placeholderTextColor={placeholderColor}
-              value={code}
-              onChangeText={(text) => {
-                const filtered = text.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6);
-                setCode(filtered);
-                if (text !== filtered) {
-                  setCodeError('영문 대문자와 숫자만 입력 가능합니다');
-                } else {
-                  setCodeError('');
-                }
-              }}
-              maxLength={6}
-              autoCapitalize="characters"
-              autoCorrect={false}
-              returnKeyType="done"
-            />
-            {codeError ? (
-              <Text style={[styles.errorText, { color: '#EF4444' }]}>{codeError}</Text>
-            ) : null}
+          {/* Mode Toggle */}
+          <Animated.View entering={FadeInDown.duration(400).delay(50)}>
+            <View style={[styles.modeToggle, { backgroundColor: surfaceColor }]}>
+              <TouchableOpacity
+                style={[styles.modeTab, mode === 'nickname' && { backgroundColor }]}
+                onPress={() => setMode('nickname')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.modeTabText, { color: mode === 'nickname' ? tintColor : textSecondary }]}>
+                  닉네임
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modeTab, mode === 'code' && { backgroundColor }]}
+                onPress={() => setMode('code')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.modeTabText, { color: mode === 'code' ? tintColor : textSecondary }]}>
+                  초대 코드
+                </Text>
+              </TouchableOpacity>
+            </View>
           </Animated.View>
+
+          {/* Nickname Input */}
+          {mode === 'nickname' && (
+            <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(100)}>
+              <Text style={[styles.label, { color: textSecondary }]}>상대방의 닉네임</Text>
+              <View style={[styles.inputWrapper, { backgroundColor: inputBg }]}>
+                <IconSymbol name="magnifyingglass" size={16} color={placeholderColor} />
+                <TextInput
+                  style={[styles.textInput, { color: textColor }]}
+                  placeholder="닉네임 검색"
+                  placeholderTextColor={placeholderColor}
+                  value={nickname}
+                  onChangeText={setNickname}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                />
+                {nicknameStatus === 'checking' && (
+                  <ActivityIndicator size="small" color={tintColor} />
+                )}
+                {nicknameStatus === 'found' && (
+                  <IconSymbol name="checkmark.circle.fill" size={18} color="#10B981" />
+                )}
+                {nicknameStatus === 'not_found' && nickname.length >= 2 && (
+                  <IconSymbol name="xmark.circle.fill" size={18} color="#EF4444" />
+                )}
+              </View>
+              {nicknameStatus === 'found' && (
+                <Text style={[styles.statusText, { color: '#10B981' }]}>
+                  사용자를 찾았습니다
+                </Text>
+              )}
+              {nicknameStatus === 'not_found' && nickname.length >= 2 && (
+                <Text style={[styles.statusText, { color: '#EF4444' }]}>
+                  해당 닉네임의 사용자가 없습니다
+                </Text>
+              )}
+            </Animated.View>
+          )}
+
+          {/* Code Input */}
+          {mode === 'code' && (
+            <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(100)}>
+              <Text style={[styles.label, { color: textSecondary }]}>상대방의 초대 코드</Text>
+              <TextInput
+                style={[styles.codeInput, { backgroundColor: inputBg, color: textColor }]}
+                placeholder="6자리 코드 입력"
+                placeholderTextColor={placeholderColor}
+                value={code}
+                onChangeText={(text) => {
+                  setCode(text.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6));
+                }}
+                maxLength={6}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                returnKeyType="done"
+              />
+            </Animated.View>
+          )}
 
           {/* Relation Info */}
           <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(200)}>
@@ -148,7 +234,7 @@ export default function ConnectScreen() {
               activeOpacity={0.7}
             >
               <Text style={[styles.groupLink, { color: tintColor }]}>
-                그룹 만들기 &rarr;
+                그룹 만들기 →
               </Text>
             </TouchableOpacity>
           </Animated.View>
@@ -168,8 +254,6 @@ export default function ConnectScreen() {
             onPress={handleSubmit}
             disabled={!isValid || connect.isPending}
             activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="연결하기"
           >
             {connect.isPending ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
@@ -221,12 +305,49 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     gap: Spacing.xl,
   },
+
+  // Mode Toggle
+  modeToggle: {
+    flexDirection: 'row',
+    borderRadius: BorderRadius.md,
+    padding: 4,
+  },
+  modeTab: {
+    flex: 1,
+    paddingVertical: Spacing.sm + 2,
+    alignItems: 'center',
+    borderRadius: BorderRadius.sm + 2,
+  },
+  modeTabText: {
+    fontSize: FontSizes.md,
+    fontWeight: '600',
+  },
+
+  // Fields
   field: {
     gap: Spacing.sm,
   },
   label: {
     fontSize: FontSizes.sm,
     fontWeight: '600',
+    marginLeft: Spacing.xs,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    height: 48,
+    gap: Spacing.sm,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: FontSizes.md,
+    paddingVertical: 0,
+  },
+  statusText: {
+    fontSize: FontSizes.xs,
+    fontWeight: '500',
     marginLeft: Spacing.xs,
   },
   codeInput: {
@@ -236,11 +357,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 6,
     textAlign: 'center',
-  },
-  errorText: {
-    fontSize: FontSizes.sm,
-    fontWeight: '500',
-    marginLeft: Spacing.xs,
   },
 
   // Relation Info

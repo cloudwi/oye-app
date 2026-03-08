@@ -102,6 +102,13 @@ export default function ProfileScreen() {
               onPress={() => router.push('/settings/name')}
             />
             <ProfileRow
+              icon="at"
+              iconColor={tintColor}
+              title="닉네임"
+              value={user?.nickname || '미설정'}
+              onPress={() => router.push('/settings/nickname')}
+            />
+            <ProfileRow
               icon="person.fill"
               iconColor={tintColor}
               title="성별"

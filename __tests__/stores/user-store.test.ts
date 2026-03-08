@@ -13,6 +13,7 @@ const mockUser: User = {
   mbti: 'INTJ',
   bloodType: 'A',
   interests: 'coding',
+  nickname: null,
   role: 'USER',
   createdAt: '2025-01-01T00:00:00Z',
 };

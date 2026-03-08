@@ -17,6 +17,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="bloodtype" />
       <Stack.Screen name="interests" />
       <Stack.Screen name="notification-time" />
+      <Stack.Screen name="nickname" />
     </Stack>
   );
 }
