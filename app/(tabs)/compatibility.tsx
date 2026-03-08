@@ -95,8 +95,16 @@ export default function CompatibilityScreen() {
         }
       >
         {/* Header */}
-        <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
+        <Animated.View style={[styles.header, styles.headerRow]} entering={FadeIn.duration(300)}>
           <Text style={[styles.title, { color: textColor }]}>궁합</Text>
+          <TouchableOpacity
+            onPress={() => router.push('/connection/manage')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel="친구 관리"
+          >
+            <IconSymbol name="person.2.fill" size={22} color={textSecondary} />
+          </TouchableOpacity>
         </Animated.View>
 
         {/* Segment Tabs */}
@@ -308,6 +316,11 @@ const styles = StyleSheet.create({
   header: {
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.md,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   title: {
     fontSize: FontSizes.xxl,

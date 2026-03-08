@@ -338,8 +338,8 @@ const styles = StyleSheet.create({
   },
   numberInput: {
     flex: 1,
-    aspectRatio: 1,
-    maxHeight: 48,
+    height: 48,
+    maxWidth: 48,
     borderRadius: BorderRadius.sm,
     fontSize: FontSizes.md,
     fontWeight: '700',
