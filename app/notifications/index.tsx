@@ -15,7 +15,6 @@ import { useNotifications, useMarkAsRead, useMarkAllAsRead, useUnreadCount } fro
 import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SettingsHeader } from '@/components/ui/settings-header';
 import {
   Spacing,
   BorderRadius,
@@ -136,10 +135,26 @@ export default function NotificationsScreen() {
     );
   }, [textColor, textSecondary, tintColor, handlePress]);
 
+  const renderHeader = () => (
+    <View style={styles.headerRow}>
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton} activeOpacity={0.7}>
+        <IconSymbol name="chevron.left" size={24} color={textColor} />
+      </TouchableOpacity>
+      <Text style={[styles.headerTitle, { color: textColor }]}>알림</Text>
+      <View style={styles.headerRight}>
+        {hasUnread && (
+          <TouchableOpacity onPress={handleMarkAllAsRead} activeOpacity={0.6}>
+            <Text style={[styles.markAllText, { color: tintColor }]}>모두 읽음</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+
   if (isLoading && notifications.length === 0) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <SettingsHeader title="알림" />
+        {renderHeader()}
         <View style={styles.skeletonContainer}>
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} height={72} borderRadius={BorderRadius.lg} />
@@ -151,18 +166,7 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <View style={styles.headerRow}>
-        <SettingsHeader title="알림" />
-        {hasUnread && (
-          <TouchableOpacity
-            style={styles.markAllButton}
-            onPress={handleMarkAllAsRead}
-            activeOpacity={0.6}
-          >
-            <Text style={[styles.markAllText, { color: tintColor }]}>모두 읽음</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      {renderHeader()}
 
       <FlatList
         data={notifications}
@@ -204,13 +208,23 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
-  markAllButton: {
-    position: 'absolute',
-    right: Spacing.lg,
-    top: 0,
-    bottom: 0,
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: FontSizes.lg,
+    fontWeight: '600',
+    flex: 1,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   markAllText: {
     fontSize: FontSizes.sm,

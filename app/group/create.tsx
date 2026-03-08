@@ -24,39 +24,29 @@ import {
   Spacing,
   BorderRadius,
   FontSizes,
-  RelationConfig,
 } from '@/constants/theme';
 import { getUserFriendlyError } from '@/services/api/client';
-import type { RelationType } from '@/types/connection';
 
 const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 const wrapperProps = Platform.OS === 'ios' ? { behavior: 'padding' as const } : {};
 
-const GROUP_RELATION_OPTIONS = (
-  Object.entries(RelationConfig) as [RelationType, typeof RelationConfig[keyof typeof RelationConfig]][]
-)
-  .filter(([type]) => type !== 'LOVER')
-  .map(([type, config]) => ({ type, ...config }));
-
 export default function CreateGroupScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const inputBg = useThemeColor({}, 'inputBackground');
+  const textColor = useThemeColor({}, 'text');
   const placeholderColor = useThemeColor({}, 'placeholder');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { contentStyle } = useResponsiveLayout();
 
   const [name, setName] = useState('');
-  const [relationType, setRelationType] = useState<RelationType | null>(null);
   const createGroup = useCreateGroup();
 
-  const isValid = name.trim().length >= 2 && name.trim().length <= 20 && relationType !== null;
+  const isValid = name.trim().length >= 2 && name.trim().length <= 20;
 
   const handleSubmit = () => {
-    if (!isValid || createGroup.isPending || !relationType) return;
+    if (!isValid || createGroup.isPending) return;
 
     Keyboard.dismiss();
 
@@ -65,7 +55,7 @@ export default function CreateGroupScreen() {
     }
 
     createGroup.mutate(
-      { name: name.trim(), relationType },
+      { name: name.trim(), relationType: 'FRIEND' as const },
       {
         onSuccess: () => {
           showAlert('완료', '그룹이 생성되었습니다!');
@@ -111,49 +101,10 @@ export default function CreateGroupScreen() {
             </Text>
           </Animated.View>
 
-          {/* Relation Type Selection */}
-          <Animated.View style={styles.field} entering={FadeInDown.duration(400).delay(200)}>
-            <Text style={[styles.label, { color: textSecondary }]}>관계 유형</Text>
-            <View style={styles.relationGrid}>
-              {GROUP_RELATION_OPTIONS.map((option) => {
-                const isSelected = relationType === option.type;
-                return (
-                  <TouchableOpacity
-                    key={option.type}
-                    style={[
-                      styles.relationOption,
-                      { backgroundColor: surfaceColor },
-                      isSelected && { backgroundColor: option.color + '15', borderColor: option.color, borderWidth: 2 },
-                      !isSelected && { borderWidth: 2, borderColor: 'transparent' },
-                    ]}
-                    onPress={() => {
-                      setRelationType(option.type);
-                      if (Platform.OS !== 'web') {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      }
-                    }}
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${option.label} 선택${isSelected ? ', 선택됨' : ''}`}
-                  >
-                    <Text
-                      style={[
-                        styles.relationLabel,
-                        { color: isSelected ? option.color : textColor },
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </Animated.View>
-
-          <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+          <Animated.View entering={FadeInDown.duration(400).delay(200)}>
             <Text style={[styles.hint, { color: textSecondary }]}>
               그룹을 만들면 초대 코드가 자동으로 생성됩니다.{'\n'}
-              초대 코드를 공유해서 친구, 가족, 동료를 초대해보세요.
+              초대 코드를 공유해서 친구를 초대해보세요.
             </Text>
           </Animated.View>
         </ScrollView>
@@ -228,24 +179,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     lineHeight: 20,
     marginLeft: Spacing.xs,
-  },
-  relationGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  relationOption: {
-    width: '48%',
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    gap: Spacing.xs,
-  },
-  relationLabel: {
-    fontSize: FontSizes.md,
-    fontWeight: '600',
   },
   bottomContainer: {
     padding: Spacing.lg,
