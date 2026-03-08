@@ -9,7 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
@@ -19,7 +19,6 @@ import { useRefresh } from '@/hooks/use-refresh';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SettingsHeader } from '@/components/ui/settings-header';
 import {
   Spacing,
   BorderRadius,
@@ -29,7 +28,7 @@ import {
 } from '@/constants/theme';
 import type { Connection } from '@/types/connection';
 
-export default function ManageConnectionsScreen() {
+export default function FriendsScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -72,7 +71,9 @@ export default function ManageConnectionsScreen() {
   if (isLoading && !connections) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <SettingsHeader title="친구 관리" />
+        <View style={[styles.header, { paddingHorizontal: Spacing.lg }]}>
+          <Text style={[styles.title, { color: textColor }]}>친구</Text>
+        </View>
         <View style={styles.skeletonContainer}>
           <Skeleton height={72} borderRadius={BorderRadius.lg} />
           <Skeleton height={72} borderRadius={BorderRadius.lg} />
@@ -84,8 +85,6 @@ export default function ManageConnectionsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <SettingsHeader title="친구 관리" />
-
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[styles.content, contentStyle]}
@@ -98,22 +97,27 @@ export default function ManageConnectionsScreen() {
           />
         }
       >
+        {/* Header */}
+        <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
+          <Text style={[styles.title, { color: textColor }]}>친구</Text>
+          {connections && connections.length > 0 && (
+            <Text style={[styles.countBadge, { color: textSecondary }]}>
+              {connections.length}명
+            </Text>
+          )}
+        </Animated.View>
+
         {/* Add friend button */}
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: tintColor + '10' }]}
           onPress={() => router.push('/connection/connect')}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="친구 추가"
         >
           <IconSymbol name="plus" size={18} color={tintColor} />
           <Text style={[styles.addButtonText, { color: tintColor }]}>친구 추가</Text>
         </TouchableOpacity>
-
-        {/* Connection count */}
-        {connections && connections.length > 0 && (
-          <Text style={[styles.countText, { color: textSecondary }]}>
-            총 {connections.length}명
-          </Text>
-        )}
 
         {/* Connection list */}
         {connections && connections.length > 0 ? (
@@ -136,6 +140,8 @@ export default function ManageConnectionsScreen() {
                   onPress={() => handleConnectionPress(connection)}
                   activeOpacity={0.7}
                   disabled={isDeleting}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${connection.partnerName}, ${config.label}`}
                 >
                   <View style={[styles.avatar, { backgroundColor: config.color + '15' }]}>
                     <IconSymbol name="person.fill" size={20} color={config.color} />
@@ -198,6 +204,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     gap: Spacing.sm,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: Spacing.sm,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.md,
+  },
+  title: {
+    fontSize: FontSizes.xxl,
+    fontWeight: '700',
+  },
+  countBadge: {
+    fontSize: FontSizes.md,
+  },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -210,11 +230,6 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: FontSizes.md,
     fontWeight: '600',
-  },
-  countText: {
-    fontSize: FontSizes.sm,
-    marginBottom: Spacing.sm,
-    marginLeft: Spacing.xs,
   },
   connectionCard: {
     flexDirection: 'row',

@@ -9,7 +9,6 @@ export default function ConnectionLayout() {
       }}
     >
       <Stack.Screen name="connect" />
-      <Stack.Screen name="manage" />
       <Stack.Screen name="[id]" />
       <Stack.Screen name="history/[id]" />
     </Stack>

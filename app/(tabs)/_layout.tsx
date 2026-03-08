@@ -62,6 +62,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="friends"
+        options={{
+          title: '친구',
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="person.2.fill" color={color} />,
+          tabBarAccessibilityLabel: '친구 탭',
+        }}
+      />
+      <Tabs.Screen
         name="compatibility"
         options={{
           title: '궁합',
