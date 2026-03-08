@@ -33,6 +33,11 @@ export const queryKeys = {
     all: () => ['user'] as const,
     nicknameCheck: (nickname: string) => ['user', 'nicknameCheck', nickname] as const,
   },
+  notification: {
+    all: () => ['notification'] as const,
+    list: () => ['notification', 'list'] as const,
+    unreadCount: () => ['notification', 'unreadCount'] as const,
+  },
   lotto: {
     all: () => ['lotto'] as const,
     stats: () => ['lotto', 'stats'] as const,
