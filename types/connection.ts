@@ -1,4 +1,5 @@
 export type RelationType = 'LOVER' | 'FRIEND' | 'FAMILY' | 'COLLEAGUE';
+export type ConnectionStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
 
 export interface Connection {
   id: number;
@@ -8,6 +9,7 @@ export interface Connection {
   relationType: RelationType;
   latestScore: number | null;
   latestContent: string | null;
+  status: ConnectionStatus;
   createdAt: string;
 }
 

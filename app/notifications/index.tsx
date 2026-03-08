@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,15 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useNotifications, useMarkAsRead, useMarkAllAsRead, useUnreadCount } from '@/hooks/queries/use-notifications';
+import { useAcceptConnection } from '@/hooks/queries/use-accept-connection';
+import { useRejectConnection } from '@/hooks/queries/use-reject-connection';
 import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,7 +22,6 @@ import {
   Spacing,
   BorderRadius,
   FontSizes,
-  Shadows,
 } from '@/constants/theme';
 import type { UserNotification, NotificationType } from '@/types/notification';
 
@@ -47,12 +49,20 @@ function formatTimeAgo(dateStr: string): string {
   return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
+function parseMetadata(metadata: string | null): Record<string, unknown> | null {
+  if (!metadata) return null;
+  try {
+    return JSON.parse(metadata);
+  } catch {
+    return null;
+  }
+}
+
 export default function NotificationsScreen() {
   const tintColor = useThemeColor({}, 'tint');
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const textSecondary = useThemeColor({}, 'textSecondary');
-  const surfaceColor = useThemeColor({}, 'surface');
 
   const { contentStyle } = useResponsiveLayout();
 
@@ -68,11 +78,14 @@ export default function NotificationsScreen() {
   const { data: unreadData } = useUnreadCount();
   const markAsRead = useMarkAsRead();
   const markAllAsRead = useMarkAllAsRead();
+  const acceptConnection = useAcceptConnection();
+  const rejectConnection = useRejectConnection();
 
   const notifications = data?.pages.flatMap((p) => p.content) ?? [];
   const hasUnread = (unreadData?.count ?? 0) > 0;
 
   const [refreshing, setRefreshing] = React.useState(false);
+  const [processedIds, setProcessedIds] = useState<Set<number>>(new Set());
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -90,8 +103,35 @@ export default function NotificationsScreen() {
     markAllAsRead.mutate();
   }, [markAllAsRead]);
 
+  const handleAccept = useCallback((connectionId: number, notificationId: number) => {
+    acceptConnection.mutate(connectionId, {
+      onSuccess: () => {
+        setProcessedIds((prev) => new Set(prev).add(notificationId));
+        if (!notifications.find((n) => n.id === notificationId)?.isRead) {
+          markAsRead.mutate(notificationId);
+        }
+      },
+    });
+  }, [acceptConnection, markAsRead, notifications]);
+
+  const handleReject = useCallback((connectionId: number, notificationId: number) => {
+    rejectConnection.mutate(connectionId, {
+      onSuccess: () => {
+        setProcessedIds((prev) => new Set(prev).add(notificationId));
+        if (!notifications.find((n) => n.id === notificationId)?.isRead) {
+          markAsRead.mutate(notificationId);
+        }
+      },
+    });
+  }, [rejectConnection, markAsRead, notifications]);
+
   const renderItem = useCallback(({ item }: { item: UserNotification }) => {
     const iconConfig = NOTIFICATION_ICON[item.type] ?? NOTIFICATION_ICON.GENERAL;
+    const meta = parseMetadata(item.metadata);
+    const isConnectionRequest = item.type === 'CONNECTION' && meta?.action === 'CONNECTION_REQUEST';
+    const connectionId = meta?.connectionId as number | undefined;
+    const isProcessed = processedIds.has(item.id);
+    const isActioning = (acceptConnection.isPending || rejectConnection.isPending);
 
     return (
       <TouchableOpacity
@@ -127,13 +167,47 @@ export default function NotificationsScreen() {
           >
             {item.body}
           </Text>
+
+          {isConnectionRequest && connectionId && !isProcessed && (
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: tintColor }]}
+                onPress={() => handleAccept(connectionId, item.id)}
+                disabled={isActioning}
+                activeOpacity={0.7}
+              >
+                {acceptConnection.isPending ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Text style={styles.actionButtonText}>수락</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.rejectButton]}
+                onPress={() => handleReject(connectionId, item.id)}
+                disabled={isActioning}
+                activeOpacity={0.7}
+              >
+                {rejectConnection.isPending ? (
+                  <ActivityIndicator size="small" color="#6B7280" />
+                ) : (
+                  <Text style={[styles.actionButtonText, styles.rejectButtonText]}>거절</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {isConnectionRequest && isProcessed && (
+            <Text style={[styles.processedText, { color: textSecondary }]}>처리 완료</Text>
+          )}
+
           <Text style={[styles.timeText, { color: textSecondary }]}>
             {formatTimeAgo(item.createdAt)}
           </Text>
         </View>
       </TouchableOpacity>
     );
-  }, [textColor, textSecondary, tintColor, handlePress]);
+  }, [textColor, textSecondary, tintColor, handlePress, handleAccept, handleReject, processedIds, acceptConnection.isPending, rejectConnection.isPending]);
 
   const renderHeader = () => (
     <View style={styles.headerRow}>
@@ -281,5 +355,33 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: FontSizes.xs,
     marginTop: 2,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  actionButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs + 2,
+    borderRadius: BorderRadius.sm,
+    minWidth: 60,
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: '#FFF',
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+  },
+  rejectButton: {
+    backgroundColor: '#F3F4F6',
+  },
+  rejectButtonText: {
+    color: '#6B7280',
+  },
+  processedText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '500',
+    marginTop: Spacing.xs,
   },
 });

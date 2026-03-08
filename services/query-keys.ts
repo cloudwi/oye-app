@@ -14,6 +14,7 @@ export const queryKeys = {
   connection: {
     all: () => ['connection'] as const,
     list: () => ['connection', 'list'] as const,
+    pending: () => ['connection', 'pending'] as const,
   },
   compatibility: {
     all: () => ['compatibility'] as const,

@@ -84,12 +84,12 @@ export default function ConnectScreen() {
       { nickname: nickname.trim(), relationType: 'FRIEND' },
       {
         onSuccess: () => {
-          showAlert('완료', '친구가 추가되었습니다!');
+          showAlert('완료', '친구 요청을 보냈습니다!');
           router.back();
         },
         onError: (error) => {
-          const msg = getUserFriendlyError(error) || '친구 추가에 실패했습니다.';
-          showAlert('추가 실패', msg);
+          const msg = getUserFriendlyError(error) || '친구 요청에 실패했습니다.';
+          showAlert('요청 실패', msg);
         },
       },
     );
@@ -170,7 +170,7 @@ export default function ConnectScreen() {
                   !isValid && { color: textSecondary + '80' },
                 ]}
               >
-                추가하기
+                요청 보내기
               </Text>
             )}
           </TouchableOpacity>

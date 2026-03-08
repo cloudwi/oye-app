@@ -17,6 +17,20 @@ export const connectionApi = {
     return response.data;
   },
 
+  async getPendingRequests(): Promise<Connection[]> {
+    const response = await apiClient.get<Connection[]>('/api/v1/connections/pending');
+    return response.data;
+  },
+
+  async acceptConnection(id: number): Promise<Connection> {
+    const response = await apiClient.patch<Connection>(`/api/v1/connections/${id}/accept`);
+    return response.data;
+  },
+
+  async rejectConnection(id: number): Promise<void> {
+    await apiClient.delete(`/api/v1/connections/${id}/reject`);
+  },
+
   async deleteConnection(id: number): Promise<void> {
     await apiClient.delete(`/api/v1/connections/${id}`);
   },
