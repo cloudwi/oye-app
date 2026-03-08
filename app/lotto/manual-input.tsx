@@ -19,7 +19,7 @@ import { LottoBall } from '@/components/lotto/lotto-ball';
 import { Spacing, BorderRadius, FontSizes } from '@/constants/theme';
 
 const MAX_SETS = 5;
-const LOTTO_EPOCH = new Date(2002, 11, 7); // 2002-12-07
+const LOTTO_EPOCH = new Date(2002, 11, 7);
 
 function getCurrentRound(): number {
   const now = new Date();
@@ -41,7 +41,6 @@ export default function ManualInputScreen() {
   const currentRound = useMemo(() => getCurrentRound(), []);
   const [sets, setSets] = useState<string[][]>([['', '', '', '', '', '']]);
 
-  // refs for auto-focus: inputRefs[setIdx][numIdx]
   const inputRefs = useRef<(TextInput | null)[][]>([]);
 
   const ensureRefs = (setIdx: number) => {
@@ -57,7 +56,6 @@ export default function ManualInputScreen() {
       next[setIdx][numIdx] = cleaned;
       return next;
     });
-    // Auto-advance to next input when 2 digits entered
     if (cleaned.length === 2) {
       if (numIdx < 5) {
         inputRefs.current[setIdx]?.[numIdx + 1]?.focus();
@@ -147,6 +145,11 @@ export default function ManualInputScreen() {
             </View>
           </View>
 
+          {/* Guide Text */}
+          <Text style={[styles.guideText, { color: textSecondary }]}>
+            구매한 로또 번호 6개를 입력하세요 (1~45)
+          </Text>
+
           {/* Number Sets */}
           {sets.map((set, setIdx) => {
             ensureRefs(setIdx);
@@ -184,47 +187,45 @@ export default function ManualInputScreen() {
                   )}
                 </View>
 
-                {/* 6 number inputs */}
-                <View style={styles.numbersRow}>
-                  {set.map((num, numIdx) => {
-                    const parsed = parseInt(num, 10);
-                    const isInvalid = num !== '' && (isNaN(parsed) || parsed < 1 || parsed > 45);
-                    return (
-                      <TextInput
-                        key={numIdx}
-                        ref={(ref) => {
-                          if (inputRefs.current[setIdx]) {
-                            inputRefs.current[setIdx][numIdx] = ref;
-                          }
-                        }}
-                        style={[
-                          styles.numberInput,
-                          {
-                            backgroundColor: inputBgColor,
-                            color: textColor,
-                          },
-                          isInvalid && styles.numberInputError,
-                          num !== '' && !isInvalid && styles.numberInputFilled,
-                        ]}
-                        value={num}
-                        onChangeText={(v) => updateNumber(setIdx, numIdx, v)}
-                        keyboardType="number-pad"
-                        maxLength={2}
-                        textAlign="center"
-                        placeholder=""
-                        placeholderTextColor={placeholderColor}
-                        selectTextOnFocus
-                      />
-                    );
-                  })}
-                </View>
-
-                {/* Ball preview when valid */}
-                {parsedNums && (
+                {parsedNums ? (
                   <View style={styles.previewRow}>
                     {parsedNums.map((n, i) => (
-                      <LottoBall key={i} number={n} size={30} />
+                      <LottoBall key={i} number={n} size={36} />
                     ))}
+                  </View>
+                ) : (
+                  <View style={styles.numbersRow}>
+                    {set.map((num, numIdx) => {
+                      const parsed = parseInt(num, 10);
+                      const isInvalid = num !== '' && (isNaN(parsed) || parsed < 1 || parsed > 45);
+                      return (
+                        <TextInput
+                          key={numIdx}
+                          ref={(ref) => {
+                            if (inputRefs.current[setIdx]) {
+                              inputRefs.current[setIdx][numIdx] = ref;
+                            }
+                          }}
+                          style={[
+                            styles.numberInput,
+                            {
+                              backgroundColor: inputBgColor,
+                              color: textColor,
+                            },
+                            isInvalid && styles.numberInputError,
+                            num !== '' && !isInvalid && styles.numberInputFilled,
+                          ]}
+                          value={num}
+                          onChangeText={(v) => updateNumber(setIdx, numIdx, v)}
+                          keyboardType="number-pad"
+                          maxLength={2}
+                          textAlign="center"
+                          placeholder={String(numIdx + 1)}
+                          placeholderTextColor={placeholderColor}
+                          selectTextOnFocus
+                        />
+                      );
+                    })}
                   </View>
                 )}
               </View>
@@ -300,11 +301,16 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.sm,
     fontWeight: '700',
   },
+  guideText: {
+    fontSize: FontSizes.sm,
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+  },
   setCard: {
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     borderWidth: 1,
-    gap: Spacing.sm,
+    gap: Spacing.md,
   },
   setHeader: {
     flexDirection: 'row',
@@ -334,14 +340,14 @@ const styles = StyleSheet.create({
   },
   numbersRow: {
     flexDirection: 'row',
-    gap: 6,
+    justifyContent: 'space-between',
+    gap: 8,
   },
   numberInput: {
     flex: 1,
     height: 48,
-    maxWidth: 48,
     borderRadius: BorderRadius.sm,
-    fontSize: FontSizes.md,
+    fontSize: FontSizes.lg,
     fontWeight: '700',
     textAlign: 'center',
   },
@@ -356,8 +362,7 @@ const styles = StyleSheet.create({
   previewRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 4,
-    paddingTop: 2,
+    gap: 8,
   },
   addSetButton: {
     flexDirection: 'row',
