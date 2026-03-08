@@ -61,6 +61,9 @@ export default function LottoScreen() {
       .sort((a, b) => a.setNumber - b.setNumber);
   }, [latestSets, latestRound]);
 
+  const aiSets = useMemo(() => displaySets.filter((s) => s.source === 'AI'), [displaySets]);
+  const userSets = useMemo(() => displaySets.filter((s) => s.source !== 'AI'), [displaySets]);
+
   const isEvaluated = displaySets.length > 0 && displaySets[0].evaluated;
   const hasData = displaySets.length > 0;
 
@@ -116,49 +119,105 @@ export default function LottoScreen() {
           </Animated.View>
         )}
 
-        {/* Recommended Numbers with inline results */}
-        {hasData && (
+        {/* AI Recommended Numbers */}
+        {hasData && aiSets.length > 0 && (
           <Animated.View entering={FadeInDown.duration(400).delay(200)}>
+            <Text style={[styles.sectionLabel, { color: textSecondary }]}>AI 추천</Text>
             <View style={[styles.card, { backgroundColor: surfaceColor, borderColor: cardBorderColor }]}>
-              {displaySets.map((set, idx) => {
-                const matchCount = winningNumbers
-                  ? set.numbers.filter((n) => winningNumbers.numbers.has(n)).length
-                  : 0;
-
-                return (
-                  <View key={set.id} style={styles.setRow}>
-                    <Text style={[lottoStyles.setLabelBase, { color: textSecondary }]}>
-                      {String.fromCharCode(65 + idx)}
-                    </Text>
-                    <View style={lottoStyles.ballRow}>
-                      {set.numbers.map((num, i) => (
-                        <LottoBall
-                          key={i}
-                          number={num}
-                          size={32}
-                          isMatched={isEvaluated && winningNumbers ? winningNumbers.numbers.has(num) : false}
-                        />
-                      ))}
-                    </View>
-                    {/* Inline result badge */}
-                    {set.rank ? (
-                      <View style={styles.rankBadge}>
-                        <Text style={styles.rankText}>{set.rank}</Text>
-                      </View>
-                    ) : isEvaluated ? (
-                      <View style={styles.loseBadge}>
-                        <Text style={styles.loseBadgeText}>낙첨</Text>
-                      </View>
-                    ) : null}
+              {aiSets.map((set, idx) => (
+                <View key={set.id} style={styles.setRow}>
+                  <Text style={[lottoStyles.setLabelBase, { color: textSecondary }]}>
+                    {String.fromCharCode(65 + idx)}
+                  </Text>
+                  <View style={lottoStyles.ballRow}>
+                    {set.numbers.map((num, i) => (
+                      <LottoBall
+                        key={i}
+                        number={num}
+                        size={32}
+                        isMatched={isEvaluated && winningNumbers ? winningNumbers.numbers.has(num) : false}
+                      />
+                    ))}
                   </View>
-                );
-              })}
+                  {set.rank ? (
+                    <View style={styles.rankBadge}>
+                      <Text style={styles.rankText}>{set.rank}</Text>
+                    </View>
+                  ) : isEvaluated ? (
+                    <View style={styles.loseBadge}>
+                      <Text style={styles.loseBadgeText}>낙첨</Text>
+                    </View>
+                  ) : null}
+                </View>
+              ))}
             </View>
           </Animated.View>
         )}
 
-        {/* Navigation */}
+        {/* User Registered Numbers */}
+        {userSets.length > 0 && (
+          <Animated.View entering={FadeInDown.duration(400).delay(250)}>
+            <Text style={[styles.sectionLabel, { color: textSecondary }]}>내 번호</Text>
+            <View style={[styles.card, { backgroundColor: surfaceColor, borderColor: cardBorderColor }]}>
+              {userSets.map((set, idx) => (
+                <View key={set.id} style={styles.setRow}>
+                  <Text style={[lottoStyles.setLabelBase, { color: textSecondary }]}>
+                    {String.fromCharCode(65 + idx)}
+                  </Text>
+                  <View style={lottoStyles.ballRow}>
+                    {set.numbers.map((num, i) => (
+                      <LottoBall
+                        key={i}
+                        number={num}
+                        size={32}
+                        isMatched={isEvaluated && winningNumbers ? winningNumbers.numbers.has(num) : false}
+                      />
+                    ))}
+                  </View>
+                  {set.source === 'QR_SCAN' && (
+                    <View style={styles.sourceBadge}>
+                      <Text style={styles.sourceBadgeText}>QR</Text>
+                    </View>
+                  )}
+                  {set.rank ? (
+                    <View style={styles.rankBadge}>
+                      <Text style={styles.rankText}>{set.rank}</Text>
+                    </View>
+                  ) : isEvaluated ? (
+                    <View style={styles.loseBadge}>
+                      <Text style={styles.loseBadgeText}>낙첨</Text>
+                    </View>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          </Animated.View>
+        )}
+
+        {/* Register Buttons */}
         <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+          <View style={styles.navRow}>
+            <TouchableOpacity
+              style={[styles.navButton, { backgroundColor: surfaceColor, borderColor: cardBorderColor }]}
+              onPress={() => router.push('/lotto/qr-scan')}
+              activeOpacity={0.7}
+            >
+              <IconSymbol name="qrcode.viewfinder" size={18} color={tintColor} />
+              <Text style={[styles.navText, { color: textColor }]}>QR 스캔</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.navButton, { backgroundColor: surfaceColor, borderColor: cardBorderColor }]}
+              onPress={() => router.push('/lotto/manual-input')}
+              activeOpacity={0.7}
+            >
+              <IconSymbol name="pencil.line" size={18} color={tintColor} />
+              <Text style={[styles.navText, { color: textColor }]}>번호 등록</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+
+        {/* Navigation */}
+        <Animated.View entering={FadeInDown.duration(400).delay(350)}>
           <View style={styles.navRow}>
             <TouchableOpacity
               style={[styles.navButton, { backgroundColor: surfaceColor, borderColor: cardBorderColor }]}
@@ -277,6 +336,23 @@ const styles = StyleSheet.create({
   },
   loseBadgeText: {
     fontSize: 11,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  sectionLabel: {
+    fontSize: FontSizes.xs,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+    marginLeft: Spacing.xs,
+  },
+  sourceBadge: {
+    backgroundColor: '#6366F1',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  sourceBadgeText: {
+    fontSize: 9,
     fontWeight: '700',
     color: '#fff',
   },

@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 import type { PageResponse } from '@/types/api';
-import type { LottoRecommendation, LottoWinner, LottoRound, LottoMyStats } from '@/types/lotto';
+import type { LottoRecommendation, LottoWinner, LottoRound, LottoMyStats, LottoRegisterRequest } from '@/types/lotto';
 
 export const lottoApi = {
   async getHistory(page: number = 0, size: number = 20, winOnly?: boolean): Promise<PageResponse<LottoRecommendation>> {
@@ -24,6 +24,11 @@ export const lottoApi = {
 
   async getRound(round: number): Promise<LottoRound> {
     const response = await apiClient.get<LottoRound>(`/api/v1/lotto/rounds/${round}`);
+    return response.data;
+  },
+
+  async registerNumbers(request: LottoRegisterRequest): Promise<LottoRecommendation[]> {
+    const response = await apiClient.post<LottoRecommendation[]>('/api/v1/lotto/registrations', request);
     return response.data;
   },
 };

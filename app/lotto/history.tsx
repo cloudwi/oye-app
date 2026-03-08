@@ -155,6 +155,11 @@ export default function LottoHistoryScreen() {
                   />
                 ))}
               </View>
+              {set.source && set.source !== 'AI' && (
+                <View style={[styles.sourceBadge, { backgroundColor: set.source === 'QR_SCAN' ? '#6366F1' : '#10B981' }]}>
+                  <Text style={styles.sourceBadgeText}>{set.source === 'QR_SCAN' ? 'QR' : '수동'}</Text>
+                </View>
+              )}
               {set.rank ? (
                 <View style={styles.rankBadge}>
                   <Text style={styles.rankText}>{set.rank}</Text>
@@ -458,6 +463,16 @@ const styles = StyleSheet.create({
   },
   loseBadgeText: {
     fontSize: 11,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  sourceBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  sourceBadgeText: {
+    fontSize: 9,
     fontWeight: '700',
     color: '#fff',
   },

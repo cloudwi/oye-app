@@ -1,3 +1,5 @@
+export type LottoSource = 'AI' | 'MANUAL' | 'QR_SCAN';
+
 export interface LottoRecommendation {
   id: number;
   round: number;
@@ -10,6 +12,7 @@ export interface LottoRecommendation {
   prizeAmount: number | null;
   drawNumbers: number[] | null;
   drawBonusNumber: number | null;
+  source: LottoSource;
   createdAt: string;
 }
 
@@ -33,4 +36,15 @@ export interface LottoRound {
 export interface LottoMyStats {
   totalPrize: number;
   winCount: number;
+}
+
+export interface LottoRegisterRequest {
+  round: number;
+  source: LottoSource;
+  numberSets: number[][];
+}
+
+export interface ParsedLottoQR {
+  round: number;
+  numberSets: number[][];
 }

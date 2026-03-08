@@ -69,6 +69,12 @@
         {
           "iosAppId": "ca-app-pub-8460185175778038~3639846464"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "로또 QR 코드를 스캔하기 위해 카메라 접근 권한이 필요합니다."
+        }
       ]
     ],
     "experiments": {
