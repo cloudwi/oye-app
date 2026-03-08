@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { useMyCode } from '@/hooks/queries/use-my-code';
@@ -19,6 +19,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InviteCodeCard } from '@/components/ui/invite-code-card';
+import { TabHeader } from '@/components/ui/tab-header';
 import { router } from 'expo-router';
 import {
   Spacing,
@@ -63,9 +64,7 @@ export default function CompatibilityScreen() {
   if (isLoading && !myCode && !connections && !groups) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={[styles.header, { paddingHorizontal: Spacing.lg }]}>
-          <Text style={[styles.title, { color: textColor }]}>궁합</Text>
-        </View>
+        <TabHeader title="궁합" />
         <View style={styles.skeletonContainer}>
           <Skeleton height={120} borderRadius={BorderRadius.xl} />
           <View style={{ marginTop: Spacing.lg, gap: Spacing.sm }}>
@@ -95,9 +94,7 @@ export default function CompatibilityScreen() {
         }
       >
         {/* Header */}
-        <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
-          <Text style={[styles.title, { color: textColor }]}>궁합</Text>
-        </Animated.View>
+        <TabHeader title="궁합" />
 
         {/* Segment Tabs */}
         <View style={[styles.segmentContainer, { backgroundColor: surfaceColor }]}>
@@ -302,16 +299,6 @@ const styles = StyleSheet.create({
   },
   skeletonContainer: {
     paddingHorizontal: Spacing.lg,
-  },
-
-  // Header
-  header: {
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.md,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
   },
 
   // Segment Tabs

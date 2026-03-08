@@ -9,7 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
@@ -19,6 +19,7 @@ import { useRefresh } from '@/hooks/use-refresh';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SettingsHeader } from '@/components/ui/settings-header';
 import {
   Spacing,
   BorderRadius,
@@ -71,9 +72,7 @@ export default function FriendsScreen() {
   if (isLoading && !connections) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <View style={[styles.header, { paddingHorizontal: Spacing.lg }]}>
-          <Text style={[styles.title, { color: textColor }]}>친구</Text>
-        </View>
+        <SettingsHeader title="친구" />
         <View style={styles.skeletonContainer}>
           <Skeleton height={72} borderRadius={BorderRadius.lg} />
           <Skeleton height={72} borderRadius={BorderRadius.lg} />
@@ -85,6 +84,8 @@ export default function FriendsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <SettingsHeader title="친구" />
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[styles.content, contentStyle]}
@@ -97,16 +98,6 @@ export default function FriendsScreen() {
           />
         }
       >
-        {/* Header */}
-        <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
-          <Text style={[styles.title, { color: textColor }]}>친구</Text>
-          {connections && connections.length > 0 && (
-            <Text style={[styles.countBadge, { color: textSecondary }]}>
-              {connections.length}명
-            </Text>
-          )}
-        </Animated.View>
-
         {/* Add friend button */}
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: tintColor + '10' }]}
@@ -203,20 +194,6 @@ const styles = StyleSheet.create({
   skeletonContainer: {
     paddingHorizontal: Spacing.lg,
     gap: Spacing.sm,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: Spacing.sm,
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.md,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
-  },
-  countBadge: {
-    fontSize: FontSizes.md,
   },
   addButton: {
     flexDirection: 'row',

@@ -140,6 +140,16 @@ export default function HomeScreen() {
       <View style={[styles.container, { backgroundColor }]}>
         {backgroundGradient}
         <SafeAreaView style={styles.safeArea}>
+          <View style={styles.topBar}>
+            <View style={{ width: 36 }} />
+            <TouchableOpacity
+              onPress={() => router.push('/friends')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              activeOpacity={0.6}
+            >
+              <IconSymbol name="person.2.fill" size={22} color={textSecondary} />
+            </TouchableOpacity>
+          </View>
           <View style={styles.content}>
             <View style={styles.header}>
               <Text style={[styles.greetingText, { color: textSecondary }]}>
@@ -159,6 +169,20 @@ export default function HomeScreen() {
     <View style={[styles.container, { backgroundColor }]}>
       {backgroundGradient}
       <SafeAreaView style={styles.safeArea}>
+        {/* Top Bar */}
+        <View style={styles.topBar}>
+          <View style={{ width: 36 }} />
+          <TouchableOpacity
+            onPress={() => router.push('/friends')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            activeOpacity={0.6}
+            accessibilityRole="button"
+            accessibilityLabel="친구"
+          >
+            <IconSymbol name="person.2.fill" size={22} color={textSecondary} />
+          </TouchableOpacity>
+        </View>
+
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={[styles.content, contentStyle]}
@@ -298,6 +322,14 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xxl,
+  },
+
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
   },
 
   // Header

@@ -8,12 +8,13 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useResponsiveLayout } from '@/hooks/use-responsive-layout';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
+import { TabHeader } from '@/components/ui/tab-header';
 import { LottoBall } from '@/components/lotto/lotto-ball';
 import { useLottoHistory } from '@/hooks/queries/use-lotto-history';
 import {
@@ -69,16 +70,16 @@ export default function LottoScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
-        <Text style={[styles.title, { color: textColor }]}>로또 번호 추천</Text>
-        {latestRound && (
+      <TabHeader
+        title="로또"
+        badge={latestRound ? (
           <View style={[styles.roundBadge, { backgroundColor: tintColor + '15' }]}>
             <Text style={[styles.roundBadgeText, { color: tintColor }]}>
               {latestRound}회
             </Text>
           </View>
-        )}
-      </Animated.View>
+        ) : undefined}
+      />
 
       <ScrollView
         style={styles.scrollView}
@@ -245,19 +246,6 @@ export default function LottoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.sm,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
   },
   roundBadge: {
     paddingHorizontal: Spacing.sm + 2,
