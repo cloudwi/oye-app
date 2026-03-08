@@ -2,6 +2,7 @@ export type RelationType = 'LOVER' | 'FRIEND' | 'FAMILY' | 'COLLEAGUE';
 
 export interface Connection {
   id: number;
+  partnerId: number;
   partnerName: string;
   partnerNickname: string | null;
   relationType: RelationType;

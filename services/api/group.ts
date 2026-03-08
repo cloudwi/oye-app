@@ -43,6 +43,11 @@ export const groupApi = {
     await apiClient.post(`/api/v1/groups/${id}/leave`);
   },
 
+  async addMember(id: number, userId: number): Promise<GroupDetail> {
+    const response = await apiClient.post<GroupDetail>(`/api/v1/groups/${id}/members`, { userId });
+    return response.data;
+  },
+
   async kickMember(id: number, userId: number): Promise<void> {
     await apiClient.delete(`/api/v1/groups/${id}/members/${userId}`);
   },

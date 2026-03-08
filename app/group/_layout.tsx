@@ -9,8 +9,8 @@ export default function GroupLayout() {
       }}
     >
       <Stack.Screen name="create" />
-      <Stack.Screen name="join" />
       <Stack.Screen name="[id]" />
+      <Stack.Screen name="invite/[id]" />
       <Stack.Screen name="settings/[id]" />
     </Stack>
   );

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -46,21 +47,26 @@ export default function FriendsScreen() {
 
   const handleDelete = useCallback((connection: Connection) => {
     const name = connection.partnerNickname || connection.partnerName;
+    const doDelete = () => {
+      setDeletingId(connection.id);
+      deleteConnection.mutate(connection.id, {
+        onSettled: () => setDeletingId(null),
+      });
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(`${name}님과의 연결을 해제하시겠습니까?\n궁합 기록이 모두 삭제됩니다.`)) {
+        doDelete();
+      }
+      return;
+    }
+
     Alert.alert(
       '연결 해제',
       `${name}님과의 연결을 해제하시겠습니까?\n궁합 기록이 모두 삭제됩니다.`,
       [
         { text: '취소', style: 'cancel' },
-        {
-          text: '해제',
-          style: 'destructive',
-          onPress: () => {
-            setDeletingId(connection.id);
-            deleteConnection.mutate(connection.id, {
-              onSettled: () => setDeletingId(null),
-            });
-          },
-        },
+        { text: '해제', style: 'destructive', onPress: doDelete },
       ],
     );
   }, [deleteConnection]);

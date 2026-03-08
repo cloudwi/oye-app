@@ -200,16 +200,6 @@ export default function CompatibilityScreen() {
                 <IconSymbol name="plus" size={18} color={tintColor} />
                 <Text style={[styles.addButtonText, { color: tintColor }]}>만들기</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.groupActionButton, { backgroundColor: tintColor + '10' }]}
-                onPress={() => router.push('/group/join')}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="그룹 참여하기"
-              >
-                <IconSymbol name="person.2.fill" size={18} color={tintColor} />
-                <Text style={[styles.addButtonText, { color: tintColor }]}>참여하기</Text>
-              </TouchableOpacity>
             </View>
 
             {groups && groups.length > 0 ? (
@@ -248,7 +238,7 @@ export default function CompatibilityScreen() {
               <EmptyState
                 icon="person.2.fill"
                 title="아직 그룹이 없어요"
-                message="그룹을 만들거나 초대 코드로 참여해보세요"
+                message="그룹을 만들고 친구를 초대해보세요"
               />
             )}
           </Animated.View>

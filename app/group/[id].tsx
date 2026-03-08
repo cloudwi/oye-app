@@ -19,7 +19,6 @@ import { useRefresh } from '@/hooks/use-refresh';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { InviteCodeCard } from '@/components/ui/invite-code-card';
 import { ScreenHeader } from '@/components/ui/screen-header';
 import { router, useLocalSearchParams } from 'expo-router';
 import {
@@ -131,14 +130,6 @@ export default function GroupDetailScreen() {
           />
         }
       >
-        {/* Invite Code Card */}
-        <InviteCodeCard
-          code={group.inviteCode}
-          label="그룹 초대 코드"
-          shareTitle="오늘의 예감 - 그룹 초대"
-          shareMessage={`[오늘의 예감] 그룹 초대\n\n"${group.name}" 그룹에 초대합니다!\n초대 코드: ${group.inviteCode}\n\n오늘의 예감 앱에서 코드를 입력하고 그룹 궁합을 확인해보세요!`}
-        />
-
         {/* Members Section */}
         <Animated.View entering={FadeInDown.duration(400).delay(200)}>
           <View style={styles.sectionHeader}>
@@ -165,6 +156,15 @@ export default function GroupDetailScreen() {
               </View>
             </View>
           ))}
+
+          <TouchableOpacity
+            style={[styles.inviteButton, { borderColor: tintColor }]}
+            onPress={() => router.push({ pathname: '/group/invite/[id]', params: { id: groupId } })}
+            activeOpacity={0.7}
+          >
+            <IconSymbol name="plus" size={16} color={tintColor} />
+            <Text style={[styles.inviteButtonText, { color: tintColor }]}>친구 초대</Text>
+          </TouchableOpacity>
         </Animated.View>
 
         {/* Compatibility Section */}
@@ -338,6 +338,23 @@ const styles = StyleSheet.create({
   },
   ownerBadgeText: {
     fontSize: FontSizes.xs,
+    fontWeight: '600',
+  },
+
+  // Invite Button
+  inviteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    marginBottom: Spacing.sm,
+  },
+  inviteButtonText: {
+    fontSize: FontSizes.md,
     fontWeight: '600',
   },
 
