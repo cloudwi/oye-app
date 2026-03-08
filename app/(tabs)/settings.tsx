@@ -20,6 +20,7 @@ import { userApi } from '@/services/api/user';
 import { queryClient } from '@/services/query-client';
 import { notificationService } from '@/services/notification';
 import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
+import { TabHeader } from '@/components/ui/tab-header';
 import { router } from 'expo-router';
 import { showAlert } from '@/utils/alert';
 import {
@@ -195,10 +196,8 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <TabHeader title="마이" />
       <ScrollView style={styles.scrollView} contentContainerStyle={contentStyle} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: textColor }]}>마이</Text>
-        </View>
 
         {/* Profile Section */}
         <View style={styles.section}>
@@ -325,15 +324,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.sm,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
   },
   section: {
     paddingHorizontal: Spacing.lg,

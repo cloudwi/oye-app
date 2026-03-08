@@ -26,6 +26,7 @@ import { shareService } from '@/services/share';
 import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FortuneCardSkeleton } from '@/components/ui/skeleton';
+import { TabHeader } from '@/components/ui/tab-header';
 import { router } from 'expo-router';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -140,23 +141,13 @@ export default function HomeScreen() {
       <View style={[styles.container, { backgroundColor }]}>
         {backgroundGradient}
         <SafeAreaView style={styles.safeArea}>
-          <View style={styles.topBar}>
-            <View style={{ width: 36 }} />
-            <TouchableOpacity
-              onPress={() => router.push('/friends')}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              activeOpacity={0.6}
-            >
-              <IconSymbol name="person.2.fill" size={22} color={textSecondary} />
-            </TouchableOpacity>
-          </View>
+          <TabHeader title="오늘의 예감" />
           <View style={styles.content}>
-            <View style={styles.header}>
+            <View style={styles.subHeader}>
               <Text style={[styles.greetingText, { color: textSecondary }]}>
                 {timeConfig.greeting}
               </Text>
               <Text style={[styles.dateText, { color: textSecondary }]}>{today}</Text>
-              <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
             </View>
             <FortuneCardSkeleton />
           </View>
@@ -169,19 +160,7 @@ export default function HomeScreen() {
     <View style={[styles.container, { backgroundColor }]}>
       {backgroundGradient}
       <SafeAreaView style={styles.safeArea}>
-        {/* Top Bar */}
-        <View style={styles.topBar}>
-          <View style={{ width: 36 }} />
-          <TouchableOpacity
-            onPress={() => router.push('/friends')}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            activeOpacity={0.6}
-            accessibilityRole="button"
-            accessibilityLabel="친구"
-          >
-            <IconSymbol name="person.2.fill" size={22} color={textSecondary} />
-          </TouchableOpacity>
-        </View>
+        <TabHeader title="오늘의 예감" />
 
         <ScrollView
           style={styles.scrollView}
@@ -195,13 +174,12 @@ export default function HomeScreen() {
             />
           }
         >
-          {/* Header */}
-          <Animated.View style={styles.header} entering={FadeIn.duration(300)}>
+          {/* Sub Header */}
+          <Animated.View style={styles.subHeader} entering={FadeIn.duration(300)}>
             <Text style={[styles.greetingText, { color: textSecondary }]}>
               {timeConfig.greeting}
             </Text>
             <Text style={[styles.dateText, { color: textSecondary }]}>{today}</Text>
-            <Text style={[styles.title, { color: textColor }]}>오늘의 예감</Text>
           </Animated.View>
 
           {todayFortune ? (
@@ -324,32 +302,17 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xxl,
   },
 
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+  subHeader: {
     alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.sm,
-  },
-
-  // Header
-  header: {
-    alignItems: 'center',
-    paddingTop: Spacing.xl,
-    paddingBottom: Spacing.lg,
+    paddingBottom: Spacing.md,
   },
   greetingText: {
     fontSize: FontSizes.md,
     fontWeight: '500',
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
   dateText: {
     fontSize: FontSizes.sm,
-    marginBottom: Spacing.xs,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: '700',
   },
 
   // Fortune Card
