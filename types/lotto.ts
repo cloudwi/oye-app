@@ -23,6 +23,7 @@ export interface LottoWinner {
   matchCount: number;
   bonusMatch: boolean;
   drawDate: string | null;
+  nickname: string;
 }
 
 export interface LottoRound {

@@ -60,9 +60,14 @@ export default function LottoWinnersScreen() {
         ]}
       >
         <View style={styles.cardHeader}>
-          <Text style={[styles.roundLabel, { color: tintColor }]}>
-            {item.round}회차
-          </Text>
+          <View style={styles.cardHeaderLeft}>
+            <Text style={[styles.roundLabel, { color: tintColor }]}>
+              {item.round}회차
+            </Text>
+            <Text style={[styles.nickname, { color: textSecondary }]}>
+              @{item.nickname}
+            </Text>
+          </View>
           <View style={styles.rankBadge}>
             <Text style={styles.rankText}>{item.rank}</Text>
           </View>
@@ -174,6 +179,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  cardHeaderLeft: {
+    gap: 2,
+  },
+  nickname: {
+    fontSize: FontSizes.xs,
   },
   roundLabel: {
     fontSize: FontSizes.sm,

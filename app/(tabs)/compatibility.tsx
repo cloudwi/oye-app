@@ -78,6 +78,7 @@ export default function CompatibilityScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <TabHeader title="궁합" />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[styles.content, contentStyle]}
@@ -90,8 +91,6 @@ export default function CompatibilityScreen() {
           />
         }
       >
-        {/* Header */}
-        <TabHeader title="궁합" />
 
         {/* Segment Tabs */}
         <View style={[styles.segmentContainer, { backgroundColor: surfaceColor }]}>

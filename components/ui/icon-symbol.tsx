@@ -66,6 +66,11 @@ const MAPPING = {
   'cloud.fill': 'cloud',
   'cloud.rain.fill': 'grain',
   'cloud.bolt.rain.fill': 'thunderstorm',
+  'ellipsis': 'more-horiz',
+  'trash': 'delete-outline',
+  'bell': 'notifications-none',
+  'person.3.fill': 'groups',
+  'checkmark.circle.fill': 'check-circle',
 } as IconMapping;
 
 /**
